@@ -1,0 +1,37 @@
+# Changelog / 更新记录
+
+## Unreleased / 未发布
+
+The first planned release is **v0.1.0**. No release date, final release commit, tag, or published asset is established by this document. See the [bilingual release-notes draft](docs/releases/v0.1.0.md) and [release procedure](docs/releasing.md).
+
+首个计划版本为 **v0.1.0**。本文不代表已确定发布日期、最终发布提交、标签或已公开的附件。详见[双语发布说明草稿](docs/releases/v0.1.0.md)及[发布流程](docs/releasing.md)。
+
+### Initial toolkit / 初始工具包
+
+- Markdown-first CLI for article intake, deduplication, Chinese-title/summary finalization, classification, indexes, search, audits, and daily digests.
+- Localized media and available raw snapshots; generic RSS and site-specific HTML/docs source adapters.
+- Local reader and optional, explicitly configured encrypted publication.
+- One canonical `content-archive` Hermes skill, generic disabled configuration examples, declared dependencies, synthetic tests, bilingual READMEs, and MIT licensing.
+- Separation of public source, private archive instances, and publication targets; pinned upgrades rather than automatic deployment.
+
+- 以 Markdown 为事实源的命令行流程：收藏、去重、中文标题与摘要完成、分类、索引、检索、审计和日报。
+- 本地媒体、可用时的原始快照、通用 RSS 及特定站点 HTML/文档适配器。
+- 本地阅读页，以及须显式配置的可选加密发布。
+- 单一 `content-archive` Hermes 技能原件、通用禁用配置示例、依赖声明、合成测试、双语 README 和 MIT 许可证。
+- 公开源码、私人实例及发布目标相互分离；采用固定版本升级而非自动部署。
+
+### CI and release preparation / CI 与发布准备
+
+- Python 3.13 validation workflow for Ubuntu and macOS, with explicit Node setup, read-only repository permissions, and no release/deployment step.
+- Shared syntax, example-configuration, and public-tree integrity checks, with synthetic failure-path tests.
+- Recorded the CLI launcher's executable Git mode so clean checkouts and source exports retain a runnable `bin/ca`; launcher contents are unchanged.
+- Documented exact-commit CI gate, artifact export/installation verification, and separate tag, Release, asset, and deployment approvals.
+
+- Ubuntu/macOS 上的 Python 3.13 验证工作流，显式配置 Node，仓库权限只读，不含发布或部署步骤。
+- 本地与 CI 共用的语法、示例配置、公开树完整性检查，以及合成失败路径测试。
+- 修正命令行入口的 Git 执行权限，确保新克隆和源码导出保留可运行的 `bin/ca`；入口内容不变。
+- 明确精确提交的 CI 门槛、工具包导出与安装验证，以及标签、Release、附件和部署的独立授权。
+
+Verification boundaries and actual results belong to [initial migration acceptance](docs/acceptance.md) and [CI readiness acceptance](docs/ci-acceptance.md). Planned release-artifact verification is not a completed release or production upgrade.
+
+验证边界及实际结果见[初始迁移验收](docs/acceptance.md)与[CI 准备验收](docs/ci-acceptance.md)。计划中的发布包验证不等于已经发布或升级生产实例。

@@ -57,7 +57,11 @@ cd tests
 ../.venv/bin/python -m unittest discover -s . -t .
 ```
 
-全部测试使用合成 fixtures。浏览器验收和真实实例 dry run 需要显式开启，详见 [tests/README.md](tests/README.md)。
+全部测试使用合成 fixtures。浏览器验收和真实实例 dry run 需要显式开启；完整的本地/CI 检查（包括依赖、语法、示例配置和公开树完整性）见 [tests/README.md](tests/README.md)。
+
+## 发布准备
+
+首个计划版本为 **v0.1.0**，目前尚未发布。详见[更新记录](CHANGELOG.md)、[双语发布说明草稿](docs/releases/v0.1.0.md)和[发布流程](docs/releasing.md)。工作流在 Ubuntu/macOS 上验证 Python 3.13，但存在工作流不等于已经通过。[CI 准备验收](docs/ci-acceptance.md)区分本地结果、精确提交的 GitHub CI 与后续工具包验收。标签、Release、附件上传及私人实例升级均须另行授权。
 
 ## Hermes 技能
 
@@ -85,9 +89,9 @@ assets/                   公开品牌资源
 
 ## 当前状态
 
-初始迁移和隔离验收已完成：参考环境和干净的 Python 3.13 环境均有 **567 项测试通过**，另有 2 项依赖特定环境的测试跳过。新建收藏库和既有库副本的真实 CLI 验收也已通过。
+CI 准备单元已在干净的 Python 3.13 环境中通过本地隔离验收：**共 614 项测试，612 项通过、2 项明确跳过，零失败或错误**。[CI 准备验收](docs/ci-acceptance.md)记录测试边界，并区分本地验证与精确提交的远程 CI。
 
-验收范围见 [docs/acceptance.md](docs/acceptance.md)，项目愿景和架构见 [IDEA.md](IDEA.md)。上游提交或推送不代表私人实例已自动升级。
+[初始迁移记录](docs/acceptance.md)保留了此前新建收藏库和既有库副本的 CLI 验收证据；其中历史测试总数不是当前通过数。项目愿景和架构见 [IDEA.md](IDEA.md)。上游提交或推送不代表私人实例已自动升级。
 
 ## 隐私与部署边界
 

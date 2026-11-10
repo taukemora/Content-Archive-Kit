@@ -1,0 +1,63 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        python-version:
+          - "3.13"
+    env:
+      # Optional suites stay off: no real archive and no Chromium in CI.
+      CA_RUN_INSTANCE_TESTS: "0"
+      CA_RUN_BROWSER_TESTS: "0"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: |
+          env -u PYTHONPATH python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-publish.txt
+          env -u PYTHONPATH python -m pip check
+
+      - name: Check repository tree
+        run: env -u PYTHONPATH python tools/check_repository.py
+
+      - name: Run test suite
+        working-directory: tests
+        env:
+          # Keep throwaway project trees under the runner's temp directory.
+          CA_TEST_SCRATCH: ${{ runner.temp }}/content-archive-kit-tests
+        run: env -u PYTHONPATH python -m unittest discover -s . -t .

@@ -1,0 +1,36 @@
+# CI and Release Readiness Acceptance
+
+## Scope and status
+
+Pre-commit acceptance record for the CI/release-preparation unit based on `db4b50150c4dcde0780660e171298b030f400153`. **Local integration accepted by the parent; hosted CI is a separate post-push gate.** This record does not approve a tag, GitHub Release, release asset, private-instance upgrade, notification, or deployment.
+
+The user authorized this unit's implementation, commit, and push after verification, then separately approved the launcher-mode repair. `bin/ca` has Git mode `100755`; its Git blob remains `a6c9a28ddf40d46b588070857e885eaf74d462d8`, unchanged from the baseline. No runtime source contents or dependency versions were changed.
+
+## Parent-verified local evidence
+
+- A newly created project virtualenv uses Python 3.13.5. Installation of `requirements.txt` and `requirements-publish.txt` with injected `PYTHONPATH` removed succeeded; `pip check` and imports of `lxml.etree`, `trafilatura`, `yaml`, and `cryptography` passed.
+- The frozen baseline was exported from Git into an isolated synthetic-test workspace. Its complete unittest run reported **567 tests, 1 error, 2 skipped**. This is a failed baseline, not a green regression result.
+- The failure is reproducible in `test_publish_hooks.TestPublishCommand.test_wrapper_routes_publish_without_using_the_real_archive`: Git records `bin/ca` as `100644`, while the existing working file is executable and the checkout has `core.filemode=false`. The Git export loses the launcher execution bit. A scratch-only mode change to executable made that one test pass with identical launcher contents. No test skip or CI-only chmod is an acceptable substitute for fixing the distributed Git mode.
+- After the authorized mode-only correction, the parent exported the staged Git tree `ce5f3ffdbdc1a43176960580da05edecfdc6db95` (baseline source plus executable launcher), created another clean Python 3.13.5 environment inside the export, installed both requirements files and reran the complete baseline suite: **567 total, 565 passed, 2 skipped, 0 failures/errors**. The skips were the explicit Chromium and real-instance gates. This validates the distribution-mode repair, not the still-unintegrated new checker tests.
+- The final checker module contains **47 tests, all passed, 0 skipped**. This module count is included in, not additional to, the full integrated total below.
+- The parent ran checksum-verified `actionlint` 1.7.12 on `.github/workflows/test.yml`: exit 0. This checks Actions syntax, not an actual hosted run.
+- Parent negative probes and an independent review reproduced three checker defects: default example-loader imports wrote bytecode, a rejected symlinked loader was still executed, and manifest updates accepted enabled examples. A bounded test-first repair added regression coverage; the parent reran **45 checker tests, all passed with no skips**, then independently exercised **10 probes** across Git-checkout and extracted-tree modes. Default checks left the file inventory and bytes unchanged without either cache environment variable; verify/update rejected linked loaders without executing their markers; enabled source/publication examples were rejected without rewriting the manifest. All probes passed.
+- Integration found the scanner's own PGP-marker literal triggered its private-key screen. A new self-scan regression failed before the repair, then passed after splitting the source literal without changing the compiled detection expression. A second regression confirms that an actual synthetic PGP marker is still rejected and not printed. Both are included in the 47 checker tests.
+- A fresh staged-tree export, with a newly resolved environment inside the exported source, passed dependency installation, `pip check`, dependency imports, repository checks and the complete unittest suite: **614 total, 612 passed, 2 skipped, 0 failures/errors**. The parent measured the totals from the runner result, not by adding module summaries. Local tools were Python 3.13.5, Node v26.12.1, Bash 5.2.37 and Git 2.47.3; the hosted workflow explicitly selects Node 22 and Python 3.13 instead.
+- The two skipped tests are `test_real_chromium_unlock_search_exit_and_tamper` (requires `CA_RUN_BROWSER_TESTS=1` and browser tooling) and `test_preview_is_read_only_and_internally_consistent` (requires `CA_RUN_INSTANCE_TESTS=1` and a configured private instance). Neither is reported as passed.
+- The refreshed inventory contains **93 files**, excluding the manifest itself. Normal verification checks membership in both directions, byte counts, SHA-256, path/type/mode safety, syntax and disabled examples. The staged diff has 12 paths; the parent reviewed the full change set and screened added lines for credential literals, unsafe execution and private machine/deployment details. Runtime scripts, dependency pins, canonical skill, `AGENTS.md`, `IDEA.md` and the historical acceptance record remain unchanged.
+
+## Review disposition and remaining gates
+
+- The independent review used GLM-5.3-Flash, distinct from the DeepSeek-V4.1-Flash implementation and GPT-6-Astra parent. Its original verdict was **CONDITIONAL**, not PASS. The parent closed its reproducible required findings using the repaired code, regression tests and direct probes above; this is parent acceptance, not a fabricated second reviewer verdict.
+- The checker validates reviewed public code; it is not an untrusted-code sandbox. It imports real example loaders only after earlier integrity/safety/syntax checks pass. Private-key findings omit matched bytes, but syntax and loader diagnostics may include values. The inventory and content screens do not prove authenticity or absence of all private content.
+- Finalize only documentation/evidence and manifest after the integrated run, then repeat the affected checks and validate the final staged-tree export before the authorized commit/push. CI must never regenerate the manifest or apply a temporary launcher chmod to hide drift.
+- After push, require successful Ubuntu **and** macOS jobs for the exact immutable commit. This in-tree pre-commit record intentionally contains no claim of a future hosted pass; the final SHA and run URL are read back from GitHub and reported separately. Editing this record later creates a new candidate that requires its own CI.
+
+## Preserved boundaries
+
+The new workflow is validation-only, uses read-only repository permissions and no repository secrets, and has no notification, release, asset-upload, or deployment step. Browser and real-instance tests remain opt-in. Enabled publication code paths remain covered with synthetic fixtures; the global auto-publication suppression flag is not used to bypass those tests.
+
+No private archive is read or upgraded in this unit. No installed skill, cron job, publication target, NAS setting, or performance behavior is changed. Release notes remain a draft. Final artifact export, checksum, clean artifact installation, and release publication belong to the later separately authorized checkpoint in [releasing.md](releasing.md).
+
+Historical migration evidence remains in [acceptance.md](acceptance.md). Its earlier counts are not used as the new unit's test result. `unittest`'s `Ran N tests` includes skips; report actual pass and skip counts separately.

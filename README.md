@@ -57,7 +57,11 @@ cd tests
 ../.venv/bin/python -m unittest discover -s . -t .
 ```
 
-The test suite uses synthetic fixtures only. Browser acceptance and real-instance dry runs are opt-in; see [tests/README.md](tests/README.md).
+The test suite uses synthetic fixtures only. Browser acceptance and real-instance dry runs are opt-in; see [tests/README.md](tests/README.md) for the complete local/CI checks, including dependency, syntax, example-configuration, and public-tree integrity verification.
+
+## Release readiness
+
+The first planned release is **v0.1.0**, not yet released. See the [changelog](CHANGELOG.md), [bilingual release-notes draft](docs/releases/v0.1.0.md), and [release procedure](docs/releasing.md). The workflow validates Ubuntu/macOS with Python 3.13; its presence is not proof of a successful run. [CI readiness acceptance](docs/ci-acceptance.md) distinguishes local results from exact-commit GitHub CI and future artifact verification. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
 
 ## Hermes skill
 
@@ -85,9 +89,9 @@ assets/                   public brand assets
 
 ## Current status
 
-Initial migration and isolated acceptance are complete: 567 tests passed in both the reference environment and a clean Python 3.13 environment, with two environment-dependent tests skipped. Fresh-archive and copied-existing-archive CLI acceptance also passed.
+The CI-preparation unit passed isolated local acceptance in a clean Python 3.13 environment: **614 tests total, 612 passed and 2 explicitly skipped**, with no failures or errors. See [CI readiness acceptance](docs/ci-acceptance.md) for the test boundaries and the distinction between local verification and exact-commit hosted CI.
 
-See [docs/acceptance.md](docs/acceptance.md) for the verified scope and [IDEA.md](IDEA.md) for the project vision and architecture. No production upgrade is implied by an upstream commit or push.
+The [initial migration record](docs/acceptance.md) preserves earlier fresh-archive and copied-existing-archive CLI evidence; its historical test totals are not the current pass count. [IDEA.md](IDEA.md) describes the project vision and architecture. No production upgrade is implied by an upstream commit or push.
 
 ## Privacy and deployment boundary
 

@@ -1,12 +1,16 @@
 {
-  "captured_at": "2026-11-10T07:10:51.624820+00:00",
-  "manifest_role": "accepted_public_tree_after_followup_review",
-  "usage": "Verify the current public source and installed toolkit against this manifest. The migration-source baseline is separate provenance.",
-  "acceptance_record": "docs/acceptance.md",
+  "captured_at": "2026-11-10T08:22:40.014879+00:00",
+  "manifest_role": "accepted_public_tree_ci_readiness",
+  "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
+  "acceptance_record": "docs/ci-acceptance.md",
   "license": "MIT",
   "skill_author": "taukemora, Hermes Agent",
   "self_excluded": true,
   "files": {
+    ".github/workflows/test.yml": {
+      "bytes": 1761,
+      "sha256": "1c26365773ef1804e3f7be85d7159d381d29d7a697a87690610f58034c630081"
+    },
     ".gitignore": {
       "bytes": 398,
       "sha256": "6cd51fa68f796f8e42a06e28173e467c4b0481dffadfcd0883030110009f64ce"
@@ -14,6 +18,10 @@
     "AGENTS.md": {
       "bytes": 2370,
       "sha256": "becb2da77bb47e103ea25d2bd1bae960faa6daa8c640cc6cc3d113aa8136bc55"
+    },
+    "CHANGELOG.md": {
+      "bytes": 3269,
+      "sha256": "e6c35be36e1949b2366126074f6e295076d2a00260a12b402fe7042b65dadaaa"
     },
     "IDEA.md": {
       "bytes": 8385,
@@ -24,12 +32,12 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 4830,
-      "sha256": "86fde663f5a575c0bb4a0c9ff823b3b75ddfefb05100503b2df1f49f7780e5ff"
+      "bytes": 5692,
+      "sha256": "748505ade9f73dbb1e82e77d2e3a8af93094b173ae6b1c25f3f3f733d2cfe62e"
     },
     "README.zh-CN.md": {
-      "bytes": 4471,
-      "sha256": "3bc26319c2bc599d14ee0a7947ef892383b62213ffea9e17886773e37bb964d5"
+      "bytes": 5178,
+      "sha256": "0950b1432b397403fa1d646aaab1045548c9f8bddeced14bb1e3024e43e1194d"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -43,9 +51,21 @@
       "bytes": 4582,
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
+    "docs/ci-acceptance.md": {
+      "bytes": 7318,
+      "sha256": "1a303c4f027039f297581834b008ba9efeb74960963ad7f9e16689962e25dc22"
+    },
     "docs/migration-baseline.json": {
       "bytes": 13529,
       "sha256": "71c21b0caca122071dad19339614c26fd153cad88e9fff31aa5245ea938b01b0"
+    },
+    "docs/releases/v0.1.0.md": {
+      "bytes": 5564,
+      "sha256": "722e430313c31f8da20dbf4269b7aef889137777cca75ba5e86568a7cff1aa4c"
+    },
+    "docs/releasing.md": {
+      "bytes": 7502,
+      "sha256": "e8f7c33fa1c9d378976270e4cc7433359e33e993ac26a1b15defc97373b8d6e5"
     },
     "examples/README.md": {
       "bytes": 1497,
@@ -220,8 +240,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 4056,
-      "sha256": "6e422bf2b68c89e9bd6b56acae9a0d9f249a8112103ac150ca54dec4297f3145"
+      "bytes": 10204,
+      "sha256": "900fd4b3bb1d94d86ba1382899f02d98a7d3a98e1add383c087acd6726ba3705"
     },
     "tests/_support.py": {
       "bytes": 4129,
@@ -339,6 +359,10 @@
       "bytes": 50357,
       "sha256": "9e1b4c35d52b49bc4ae492c869c93107d8606ca9acbda179e9d2e0c08a2c070a"
     },
+    "tests/test_repository_checks.py": {
+      "bytes": 25901,
+      "sha256": "e4d2793ec6b30a083862efd92f45cd2c4b12fec7690df57de07bce776db31d66"
+    },
     "tests/test_wave1_audit_search.py": {
       "bytes": 20699,
       "sha256": "34787eb18646003c16f1ee7b2d4cd5a3d375bb1a39433f6106d048e73e04aaaa"
@@ -350,6 +374,10 @@
     "tests/test_wave1_pipeline.py": {
       "bytes": 34694,
       "sha256": "4acdf349044d6707475544183a7cd7743665674e7bfe82279f2027b60c6d632b"
+    },
+    "tools/check_repository.py": {
+      "bytes": 24699,
+      "sha256": "37325b082e0cb1651289eaf78d955b6d07d5623f47c5abdb3ba720b4c848f668"
     }
   }
 }
