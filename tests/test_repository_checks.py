@@ -616,6 +616,54 @@ class SyntaxCheckTests(RepositoryTreeCase):
         self.assertEqual(proc.returncode, 0, self.output(proc))
 
 
+class WorkflowEnvironmentTests(RepositoryTreeCase):
+    def test_runner_scratch_is_allowlisted_without_allowing_project_config(self):
+        import yaml
+
+        workflow = yaml.safe_load((ROOT / ".github/workflows/test.yml").read_text(encoding="utf-8"))
+        job = workflow["jobs"]["test"]
+        step = next(item for item in job["steps"] if item.get("working-directory") == "tests")
+        runner_temp = self.root / "runner-temp"
+        platform_temp = self.root / "platform-temp"
+        runner_temp.mkdir()
+        platform_temp.mkdir()
+        env = os.environ.copy()
+        for key in ("PYTHONPATH", "CA_SCRATCH_ROOT", "CA_TEST_SCRATCH"):
+            env.pop(key, None)
+        env.update(TMPDIR=str(platform_temp), PYTHONDONTWRITEBYTECODE="1")
+        for config in (workflow.get("env", {}), job.get("env", {}), step.get("env", {})):
+            for key, value in config.items():
+                env[key] = str(value).replace("${{ runner.temp }}", str(runner_temp))
+        code = '''import json, pathlib, sys
+sys.path[:0] = [str(pathlib.Path(sys.argv[1]) / name) for name in ("tests", "scripts")]
+import _support, common, extract_remote
+project = _support.scratch_dir("workflow_archive_")
+common.ROOT = project
+extract_remote.ROOT = project
+output = _support.SCRATCH / "output"
+try:
+    output_allowed = extract_remote.validate_output_dir(output) == output.resolve()
+except ValueError:
+    output_allowed = False
+print(json.dumps({
+    "input_allowed": common.is_allowed_file_path(_support.SCRATCH / "content.md", project),
+    "output_allowed": output_allowed,
+    "project_config_allowed": common.is_allowed_file_path(project / "sources.yaml", project),
+    "outside_allowed": common.is_allowed_file_path(pathlib.Path("/etc/cak-synthetic-outside.txt"), project),
+}))
+'''
+        proc = subprocess.run(
+            [PYTHON, "-c", code, str(ROOT)], env=env,
+            capture_output=True, text=True, timeout=60,
+        )
+        self.assertEqual(proc.returncode, 0, self.output(proc))
+        result = json.loads(proc.stdout)
+        self.assertTrue(result["input_allowed"], result)
+        self.assertTrue(result["output_allowed"], result)
+        self.assertFalse(result["project_config_allowed"], result)
+        self.assertFalse(result["outside_allowed"], result)
+
+
 class ExampleConfigTests(RepositoryTreeCase):
     def test_shipped_examples_are_safe_and_disabled(self):
         self.copy_examples()

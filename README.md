@@ -89,7 +89,7 @@ assets/                   public brand assets
 
 ## Current status
 
-The CI-preparation unit passed isolated local acceptance in a clean Python 3.13 environment: **614 tests total, 612 passed and 2 explicitly skipped**, with no failures or errors. See [CI readiness acceptance](docs/ci-acceptance.md) for the test boundaries and the distinction between local verification and exact-commit hosted CI.
+The CI-preparation unit passed isolated local acceptance in a clean Python 3.13 environment: **615 tests total, 613 passed and 2 explicitly skipped**, with no failures or errors. See [CI readiness acceptance](docs/ci-acceptance.md) for the initial hosted failure, its scratch-environment correction, and the distinction between local verification and exact-commit hosted CI.
 
 The [initial migration record](docs/acceptance.md) preserves earlier fresh-archive and copied-existing-archive CLI evidence; its historical test totals are not the current pass count. [IDEA.md](IDEA.md) describes the project vision and architecture. No production upgrade is implied by an upstream commit or push.
 

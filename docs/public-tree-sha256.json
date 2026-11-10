@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-10T08:22:40.014879+00:00",
+  "captured_at": "2026-11-10T08:48:01.471165+00:00",
   "manifest_role": "accepted_public_tree_ci_readiness",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/ci-acceptance.md",
@@ -8,8 +8,8 @@
   "self_excluded": true,
   "files": {
     ".github/workflows/test.yml": {
-      "bytes": 1761,
-      "sha256": "1c26365773ef1804e3f7be85d7159d381d29d7a697a87690610f58034c630081"
+      "bytes": 1839,
+      "sha256": "5a899215d7ac55d219c7d3684f86e41919575b17053c353b1f25de6ee1c45db9"
     },
     ".gitignore": {
       "bytes": 398,
@@ -32,12 +32,12 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 5692,
-      "sha256": "748505ade9f73dbb1e82e77d2e3a8af93094b173ae6b1c25f3f3f733d2cfe62e"
+      "bytes": 5736,
+      "sha256": "3a78706a86798b92f0cf9cd5aad5f08d1272fdd1788ccc2408889f94c693de9a"
     },
     "README.zh-CN.md": {
-      "bytes": 5178,
-      "sha256": "0950b1432b397403fa1d646aaab1045548c9f8bddeced14bb1e3024e43e1194d"
+      "bytes": 5207,
+      "sha256": "3aafa752559353e331221ba353f3b16526e0a8845bbc264965fcd487786458b9"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -52,8 +52,8 @@
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
     "docs/ci-acceptance.md": {
-      "bytes": 7318,
-      "sha256": "1a303c4f027039f297581834b008ba9efeb74960963ad7f9e16689962e25dc22"
+      "bytes": 9546,
+      "sha256": "5f4ff67d0137667dae4d190041f873e857a820905e7afa44a61116195c541154"
     },
     "docs/migration-baseline.json": {
       "bytes": 13529,
@@ -240,8 +240,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 10204,
-      "sha256": "900fd4b3bb1d94d86ba1382899f02d98a7d3a98e1add383c087acd6726ba3705"
+      "bytes": 10620,
+      "sha256": "7ef4ec0f8bcc36e5259190103a2aed075a9966f557dd3a209ebc67e7081b5bb6"
     },
     "tests/_support.py": {
       "bytes": 4129,
@@ -360,8 +360,8 @@
       "sha256": "9e1b4c35d52b49bc4ae492c869c93107d8606ca9acbda179e9d2e0c08a2c070a"
     },
     "tests/test_repository_checks.py": {
-      "bytes": 25901,
-      "sha256": "e4d2793ec6b30a083862efd92f45cd2c4b12fec7690df57de07bce776db31d66"
+      "bytes": 28190,
+      "sha256": "2b7cbda4c8ab40d375312fe19ee00a5b518b8e72ca3f2e95e9561550e106f3ac"
     },
     "tests/test_wave1_audit_search.py": {
       "bytes": 20699,

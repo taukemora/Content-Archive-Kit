@@ -144,7 +144,13 @@ publish, deploy, tag, release, or artifact-upload step. `CA_RUN_INSTANCE_TESTS`
 and `CA_RUN_BROWSER_TESTS` are explicitly `0`; `CA_SKIP_AUTO_PUBLISH` is
 deliberately not set, so the tests that exercise the enabled publication path
 still run. Throwaway trees go under the runner's temporary directory via
-`CA_TEST_SCRATCH`, and Python commands clear `PYTHONPATH` with `env -u`.
+`CA_TEST_SCRATCH`; `CA_SCRATCH_ROOT` points to that same dedicated directory so
+runtime input/output checks recognize the fixture location even when the
+runner directory is outside the platform's default temp directory. This uses
+the existing explicit scratch option, not a weaker path check. The workflow
+environment regression exercises both acceptance of fixture input/output and
+rejection of project configuration and unrelated paths. Python commands clear
+`PYTHONPATH` with `env -u`.
 
 ## Layout the tests expect
 

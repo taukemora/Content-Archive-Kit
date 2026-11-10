@@ -58,6 +58,7 @@ jobs:
       - name: Run test suite
         working-directory: tests
         env:
-          # Keep throwaway project trees under the runner's temp directory.
+          # Align test fixtures with the runtime's existing scratch allowlist.
           CA_TEST_SCRATCH: ${{ runner.temp }}/content-archive-kit-tests
-        run: env -u PYTHONPATH python -m unittest discover -s . -t .
+          CA_SCRATCH_ROOT: ${{ runner.temp }}/content-archive-kit-tests
+        run: env -u PYTHONPATH python -m unittest discover -s . -t . -v
