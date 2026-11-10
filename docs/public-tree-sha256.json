@@ -1,6 +1,6 @@
 {
-  "captured_at": "2026-11-10T06:24:00.221555+00:00",
-  "manifest_role": "accepted_public_tree_after_isolated_acceptance",
+  "captured_at": "2026-11-10T07:10:51.624820+00:00",
+  "manifest_role": "accepted_public_tree_after_followup_review",
   "usage": "Verify the current public source and installed toolkit against this manifest. The migration-source baseline is separate provenance.",
   "acceptance_record": "docs/acceptance.md",
   "license": "MIT",
@@ -8,8 +8,8 @@
   "self_excluded": true,
   "files": {
     ".gitignore": {
-      "bytes": 362,
-      "sha256": "9245c7e52035abe9a3701d9dc5574d502e31bb9a362d4df3643af153eacd1751"
+      "bytes": 398,
+      "sha256": "6cd51fa68f796f8e42a06e28173e467c4b0481dffadfcd0883030110009f64ce"
     },
     "AGENTS.md": {
       "bytes": 2370,
@@ -24,16 +24,24 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 1921,
-      "sha256": "9ca958a15d829bd9730541411cadad07786c81ce96bdc7f8532b698dbe6b1199"
+      "bytes": 4830,
+      "sha256": "86fde663f5a575c0bb4a0c9ff823b3b75ddfefb05100503b2df1f49f7780e5ff"
+    },
+    "README.zh-CN.md": {
+      "bytes": 4471,
+      "sha256": "3bc26319c2bc599d14ee0a7947ef892383b62213ffea9e17886773e37bb964d5"
+    },
+    "assets/logo.svg": {
+      "bytes": 444,
+      "sha256": "5c4b2663e3a3dac29453b541bfaff1b6e433cf4ffe50bfaa3cc052bb1da10569"
     },
     "bin/ca": {
       "bytes": 3524,
       "sha256": "ab28e01217d864687faee7af03efec855a2b54c606e41f2033c3dc0f08f8e38b"
     },
     "docs/acceptance.md": {
-      "bytes": 3479,
-      "sha256": "c16d3d2e1943d536d3850ab9f3d0a3a7a9bb19944224b43726e849903c6dfd28"
+      "bytes": 4582,
+      "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
     "docs/migration-baseline.json": {
       "bytes": 13529,
@@ -212,8 +220,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 4030,
-      "sha256": "42ff8f4d1166ad372cdff1635c2e83f6a4435795b50ec0c3165da8947951cdce"
+      "bytes": 4056,
+      "sha256": "6e422bf2b68c89e9bd6b56acae9a0d9f249a8112103ac150ca54dec4297f3145"
     },
     "tests/_support.py": {
       "bytes": 4129,
@@ -304,8 +312,8 @@
       "sha256": "0f1beed6413437cb2b91859445d12f1b04f77b1aaa6c49c452db53260e219eb7"
     },
     "tests/test_phase5_delivery.py": {
-      "bytes": 48597,
-      "sha256": "02bb669fc40c5e2ed40da5d7656e1988f3cf7be04d8a83e290766c5565b66902"
+      "bytes": 48600,
+      "sha256": "0d8b44c0158724bac2d53701817e07dbdcdf7d6fe26ee2d43bbc07159ad1cb53"
     },
     "tests/test_publish_dependencies.py": {
       "bytes": 1804,

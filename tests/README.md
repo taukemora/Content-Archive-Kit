@@ -8,7 +8,7 @@ machine-local path from a real archive is used.
 
 ```bash
 cd tests
-python -m unittest discover -s . -t .
+../.venv/bin/python -m unittest discover -s . -t .
 ```
 
 `discover` must run from this directory (the checkout path may contain spaces,
@@ -17,7 +17,7 @@ way:
 
 ```bash
 cd tests
-python -m unittest test_phase2 -v
+../.venv/bin/python -m unittest test_phase2 -v
 ```
 
 The suite needs the toolkit's own runtime dependencies (`beautifulsoup4`,

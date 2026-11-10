@@ -4,6 +4,9 @@
 !.env.example
 *.pem
 *.key
+id_rsa*
+id_ed25519*
+github-ed25519*
 
 # Python environments and caches
 .venv/

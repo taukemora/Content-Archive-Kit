@@ -24,6 +24,12 @@ An independent code review using a different model from the implementation agent
 
 The public skill author is `taukemora, Hermes Agent`, as confirmed by the maintainer. The skill's 2.0.0 version reflects the intentional generic rewrite and new instance contract.
 
+## Follow-up challenge review
+
+A separate challenge review covering the full day's development confirmed the public migration, initial commit, deploy-key boundary, and bilingual documentation work. It reproduced two documentation issues: the test command could select an unprovisioned system Python, and the instance-copy instructions did not explicitly require a working instance interpreter. Both READMEs now use `../.venv/bin/python` for tests and require an instance virtualenv or `CA_PYTHON`. The capability text now distinguishes the generic RSS adapter from site-specific HTML/docs adapters and describes local media more precisely. A delivery-test hostname was replaced with `example.com`, and common private-key filenames were added to `.gitignore`.
+
+The changed delivery module was rerun after these edits: **33 tests passed, 1 environment-dependent test skipped**. The complete current tree was then rerun in the clean Python 3.13 environment: **567 tests passed, 2 environment-dependent tests skipped**. The public-tree hash manifest was regenerated after all documentation and test edits.
+
 ## Remaining boundaries
 
 - Two optional tests remain skipped by default: a real-instance dry run and a browser acceptance test requiring Chromium and Playwright.

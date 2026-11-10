@@ -436,12 +436,12 @@ class TestConfigDefaults(SandboxCase):
     def test_proxy_resolution_rules(self):
         with mock.patch.dict(os.environ, {}, clear=True):
             os.environ["HTTPS_PROXY"] = "http://192.0.2.10:7893"
-            self.assertEqual(dd.resolve_proxy("mx.uuui.uk"), "http://192.0.2.10:7893")
+            self.assertEqual(dd.resolve_proxy("example.com"), "http://192.0.2.10:7893")
             self.assertEqual(dd.resolve_proxy("127.0.0.1"), "")
             os.environ["CA_SMTP_PROXY"] = ""
-            self.assertEqual(dd.resolve_proxy("mx.uuui.uk"), "", "empty override forces a direct dial")
+            self.assertEqual(dd.resolve_proxy("example.com"), "", "empty override forces a direct dial")
             os.environ["CA_SMTP_PROXY"] = "http://192.0.2.11:8080"
-            self.assertEqual(dd.resolve_proxy("mx.uuui.uk"), "http://192.0.2.11:8080")
+            self.assertEqual(dd.resolve_proxy("example.com"), "http://192.0.2.11:8080")
 
 
 # --------------------------------------------------- 1. the 200-char hard cap
