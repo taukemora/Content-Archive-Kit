@@ -1,0 +1,371 @@
+{
+  "captured_at": "2026-11-10T04:05:44.359350+00:00",
+  "manifest_role": "reference_source_before_public_generalization",
+  "usage": "Provenance only. Hashes describe the accepted reference source at capture and intentionally predate public generalization. Do not use this file to verify the current public tree; use a separately generated accepted-tree manifest.",
+  "reference_acceptance": {
+    "tests": 567,
+    "accepted_files": 53,
+    "current_matches": 53
+  },
+  "skill_version": "1.6.3",
+  "private_content_included": false,
+  "files": {
+    "bin/ca": {
+      "bytes": 3030,
+      "sha256": "045d35b77cb75b56d3660d9ba15abe0d8d43416722882062529a53eb7a7c693a",
+      "accepted_snapshot": false
+    },
+    "examples/media.yaml": {
+      "bytes": 250,
+      "sha256": "63123a2e0e59476121a87b5c725e4d926a79a744d1bf324c3c54680b15d917c6",
+      "accepted_snapshot": false
+    },
+    "examples/sources.yaml": {
+      "bytes": 2340,
+      "sha256": "6b9b3a35d8ade1274fe78062f46d5d16ecf8ecafe1326f74dfdb6b15f2b1ae11",
+      "accepted_snapshot": false
+    },
+    "examples/taxonomy.yaml": {
+      "bytes": 2641,
+      "sha256": "ac111c0ced4e297f2372f067eef3f04b45a1037ebada018edb822814d3656a2f",
+      "accepted_snapshot": false
+    },
+    "requirements-publish.txt": {
+      "bytes": 227,
+      "sha256": "ae469ef68095b0a7aeb11de25d5e5262c9bbee2ddeb46c9cf5371449fc155fe7",
+      "accepted_snapshot": false
+    },
+    "requirements-web.txt": {
+      "bytes": 106,
+      "sha256": "614f9b60a1582650c1304a740887e9797b9a766cb86b1e527ebde647aff0b5cf",
+      "accepted_snapshot": false
+    },
+    "scripts/archive_page.html": {
+      "bytes": 45757,
+      "sha256": "d5786bdd30f89285e65237456ac91e324f403a33d7e1ccf4a38543e5d1671961",
+      "accepted_snapshot": true
+    },
+    "scripts/archive_url.py": {
+      "bytes": 52922,
+      "sha256": "80fe252203b262ff4d929b9df7960b33a2a736d3f94936713f7774a11c66d133",
+      "accepted_snapshot": true
+    },
+    "scripts/audit.py": {
+      "bytes": 12510,
+      "sha256": "e270ece97466122d19e880933748418fc65b6e75b0f2484128cb14bd42b7f725",
+      "accepted_snapshot": true
+    },
+    "scripts/build_digest.py": {
+      "bytes": 16412,
+      "sha256": "96a6c52417d86b1f8311658e8261993f068285d84fc7a42fa1fcd701c3eea493",
+      "accepted_snapshot": true
+    },
+    "scripts/build_html.py": {
+      "bytes": 18623,
+      "sha256": "0e270ac90a0ca1b16278df53e24f5233ff9d11602995e803cd4f42a7eccfe178",
+      "accepted_snapshot": true
+    },
+    "scripts/cleanup_h1.py": {
+      "bytes": 1711,
+      "sha256": "dfab7f9bf3aa28f39068c9f4282258bd1865f47761c98f14dafb8674d385b598",
+      "accepted_snapshot": true
+    },
+    "scripts/common.py": {
+      "bytes": 24665,
+      "sha256": "d47063d86e22ed044305e159913c2b468a326cfef8e9ec6ca7815fbb5372254f",
+      "accepted_snapshot": true
+    },
+    "scripts/daily_gate.py": {
+      "bytes": 30373,
+      "sha256": "1947c26c53511f82b6a98f1e3634a3e6f7d4767257ffe2903f7125b463f890bd",
+      "accepted_snapshot": true
+    },
+    "scripts/deliver_daily.py": {
+      "bytes": 46821,
+      "sha256": "75fbcf7ef2e6c2832c8f2b9913e678db8faeba5629da3321b6b24d7d68e40d88",
+      "accepted_snapshot": true
+    },
+    "scripts/encrypted_reader.js": {
+      "bytes": 21714,
+      "sha256": "7ecd203323a2f590d1403c7cadfe3d421cdf0ebb9f23acc1be52a6272c75323d",
+      "accepted_snapshot": true
+    },
+    "scripts/encrypted_site.py": {
+      "bytes": 34983,
+      "sha256": "39d9a027c7007636c256f9319da86b84a53e2fc562f57fd5baa98ac0f1130bed",
+      "accepted_snapshot": true
+    },
+    "scripts/extract_remote.py": {
+      "bytes": 21584,
+      "sha256": "39c2f63374349585d06bf60d291f441336f496ec5784c254390e0819966b2afe",
+      "accepted_snapshot": true
+    },
+    "scripts/fetch_sources.py": {
+      "bytes": 69084,
+      "sha256": "863e17df79ad3864812eb3b74a7c11c6eb38bb3a30fcd68490480810e76aba04",
+      "accepted_snapshot": true
+    },
+    "scripts/finalize_entry.py": {
+      "bytes": 13284,
+      "sha256": "2003972ee21046fab75d0f864f60708bb6f3dd32f9933fe6c0c94cac73226f9f",
+      "accepted_snapshot": true
+    },
+    "scripts/fix_headings.py": {
+      "bytes": 1601,
+      "sha256": "874f4d93d25967c4ea99d87f8c958bd8c6eceedb9d1d82c191b3b446893d892b",
+      "accepted_snapshot": true
+    },
+    "scripts/media_markup.py": {
+      "bytes": 20609,
+      "sha256": "6aa73038bcb1daff449f244eee60f10561503942aa35a7912e26b769df7ee918",
+      "accepted_snapshot": true
+    },
+    "scripts/media_policy.py": {
+      "bytes": 6604,
+      "sha256": "12d268b8e69a8aa9019167527fdb04f52915218c110124ecd8cd7f9fe0d52dd4",
+      "accepted_snapshot": true
+    },
+    "scripts/media_preservation.py": {
+      "bytes": 11377,
+      "sha256": "1344cb36b3d7d7a32dd9353033844c0a0c9f42f230d2b1cb43ab17f26de70e43",
+      "accepted_snapshot": true
+    },
+    "scripts/publish_site.py": {
+      "bytes": 71524,
+      "sha256": "7d67d4e47ad7fb8572c010dbced8a75ced5ff19a3438553de332cb0467b100a2",
+      "accepted_snapshot": true
+    },
+    "scripts/rebuild_index.py": {
+      "bytes": 7965,
+      "sha256": "aad47cf4c1630a6662555a2b83c41c367acee67305d5a73f0ff51c2e27209aae",
+      "accepted_snapshot": true
+    },
+    "scripts/reconcile_seen.py": {
+      "bytes": 6296,
+      "sha256": "9c84046370e65e92872e118e08fb216ab26b8d5e2ae23688d5ed593af1b69b78",
+      "accepted_snapshot": true
+    },
+    "scripts/search.py": {
+      "bytes": 5222,
+      "sha256": "3539f842799f032e3f24f13873e39654ead031d58bd5f06c6872ee74ac827452",
+      "accepted_snapshot": true
+    },
+    "scripts/validate_summary.py": {
+      "bytes": 1150,
+      "sha256": "916e478cf4c555924f6d4bf1c01bec2cce2bbb90856f0a8edd94c99c1258a109",
+      "accepted_snapshot": true
+    },
+    "skills/content-archive/SKILL.md": {
+      "bytes": 67156,
+      "sha256": "453f463e113a1e4d5ad225765d96daa17a1c3093cf1a6f164f9384d19b19b99d",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/messaging-channels.md": {
+      "bytes": 5862,
+      "sha256": "ba5fd61c1c655fa3e2e484ab7a385173aa723b979c43a12a3bc8de1c89dad3a7",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/paper-archiving.md": {
+      "bytes": 2199,
+      "sha256": "68acda9b87361912fb10688e3fc96308810e3dd7b6c9b89df5410bd5dbefc969",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/repair-and-review.md": {
+      "bytes": 13505,
+      "sha256": "76ce4ef546a70dbef530c92eaad45a7964d69446552e66e4989de22bd209b92b",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/self-hosted-archive-tools.md": {
+      "bytes": 9804,
+      "sha256": "b6b2d5149e709b08e555f0353880655a689c66bd995dbf8fe95d448eae33da81",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/taxonomy-and-context.md": {
+      "bytes": 5672,
+      "sha256": "2eae131531a9bf24abad196b87110db1097288777c905a46cb4797efb77cd56c",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/vendor-sources.md": {
+      "bytes": 7075,
+      "sha256": "485d863f64468a32d5e29a2a593cf17bcec8c1b2ac2352f7b3f0f0b293dab50b",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/wechat-article-extraction.md": {
+      "bytes": 3571,
+      "sha256": "ebb7f994fac952f64e27c910175b4dffd30445f77bdede25ad46918c2248783d",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/references/x-article-extraction.md": {
+      "bytes": 3619,
+      "sha256": "a8533e0c6d27b0f8e89e55bfeb75b0650718cd98012f52b477bfb762bedda2ac",
+      "accepted_snapshot": false
+    },
+    "skills/content-archive/templates/entry.md": {
+      "bytes": 1001,
+      "sha256": "d87e60a0c1531b77c4d124e59c69115cada5275f5e06597d194a771f3879a56e",
+      "accepted_snapshot": false
+    },
+    "tests/browser_encrypted_interop.mjs": {
+      "bytes": 6815,
+      "sha256": "6ad07996542e2220c39b1e75f3d2189de7c6c43ec134211ce665e26de32e6655",
+      "accepted_snapshot": true
+    },
+    "tests/browser_encrypted_reader.py": {
+      "bytes": 11880,
+      "sha256": "436241b07d608c4b86ad6e25872ffeccfd180f61d4c40fe34df040635a34c4b6",
+      "accepted_snapshot": true
+    },
+    "tests/check_nas_web.py": {
+      "bytes": 10754,
+      "sha256": "6e42ebc4dc3244528735d5ff0ff7985737d17080b1252dfda1405d1b58284e80",
+      "accepted_snapshot": true
+    },
+    "tests/fixtures/latest-fetch-2026-10-27.json": {
+      "bytes": 6533,
+      "sha256": "5ee5d201754cc8d12077a1df74496648fe1685fa4930d1b6746ef4abf6228f5b",
+      "accepted_snapshot": false
+    },
+    "tests/test_collection.py": {
+      "bytes": 21048,
+      "sha256": "7a13f870e832948f99537b9ed643043263acf3d7176f71aceaf1bcd69c0bb135",
+      "accepted_snapshot": true
+    },
+    "tests/test_content_repair.py": {
+      "bytes": 32134,
+      "sha256": "1de1862c538449c8d52f32377e85c57d254b1630b65ce6e58fec4fb500de3ac5",
+      "accepted_snapshot": true
+    },
+    "tests/test_encrypted_site.py": {
+      "bytes": 40119,
+      "sha256": "f5dfef7a3e4ec79a1cd300219bcf9889f3bc5ad718753605837561f0d270c0aa",
+      "accepted_snapshot": true
+    },
+    "tests/test_html_index.py": {
+      "bytes": 21627,
+      "sha256": "4ec5ab731eabbc431acffd4a6f61e53a92baf26a5e7873b5b169559201167dcd",
+      "accepted_snapshot": true
+    },
+    "tests/test_index_integration.py": {
+      "bytes": 2698,
+      "sha256": "fc11c70799f289ef522816a1b7e6a994d52d52830f8eef32bc86947c8a2d4441",
+      "accepted_snapshot": true
+    },
+    "tests/test_maintenance_dates.py": {
+      "bytes": 22829,
+      "sha256": "6e648b7f5691627b0e19a88b49cb0466649a3354734db1a8a5efd745e72fcae7",
+      "accepted_snapshot": true
+    },
+    "tests/test_maintenance_delivery.py": {
+      "bytes": 27955,
+      "sha256": "959992326644907986ec5435db06e31854d8fc13e725d0434b19cea8cd6a9f3c",
+      "accepted_snapshot": true
+    },
+    "tests/test_media_localize.py": {
+      "bytes": 9573,
+      "sha256": "f0e33b94ce62002a22e201a3aa43f02ace727bd068e34179741df660e931bd26",
+      "accepted_snapshot": true
+    },
+    "tests/test_media_markup.py": {
+      "bytes": 17740,
+      "sha256": "63f940290805ed1ac252201b9787ec19b24982e2a3fe8231e182b45be61e5249",
+      "accepted_snapshot": true
+    },
+    "tests/test_media_policy.py": {
+      "bytes": 6454,
+      "sha256": "365ab193ac212f0d3a46332f3b71ff0a850c4ccddca444445b690ae379a71c0b",
+      "accepted_snapshot": true
+    },
+    "tests/test_media_rendering.py": {
+      "bytes": 9646,
+      "sha256": "c156ace9f4545d905856a5ef7e13e914f976485193a735512d31901fdfdf90ce",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase1_1.py": {
+      "bytes": 13139,
+      "sha256": "f0ca6e125d5c434041fb0d5b57653ecfb7ee3b3d5072629487eaecf22146fe09",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase2.py": {
+      "bytes": 20262,
+      "sha256": "175f872ed9f52156ce33e739aacff37719dcef4f0cc8b4f251a33964ea88d372",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase2_1.py": {
+      "bytes": 1759,
+      "sha256": "274097c33ae4f76efb1adb6bf1d290969087755cc4323dad22961799653c9cd8",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase3a.py": {
+      "bytes": 33187,
+      "sha256": "f8bb99a1645b3293c23c6d34dbd47b128528c5ba0f089630c74804ab35a82d7b",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase3b.py": {
+      "bytes": 31046,
+      "sha256": "1c5b4a96701ea0199eb027a0ecd994c0e539d73416daca2a1124ae0912b3790b",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase3c.py": {
+      "bytes": 3437,
+      "sha256": "42adea516184a155485bcc3ff663d569bafcf1f21b6ad60b2ae33fb517904644",
+      "accepted_snapshot": true
+    },
+    "tests/test_phase5_delivery.py": {
+      "bytes": 48142,
+      "sha256": "dd182d4053781c2aca424f127fe3c90947e7d27ec5013821afa11664b4072b21",
+      "accepted_snapshot": true
+    },
+    "tests/test_publish_dependencies.py": {
+      "bytes": 1804,
+      "sha256": "8e5ea92a7d6fca9cc049e65aea332cd1fb1af707d67e1715fe454fca94fa7152",
+      "accepted_snapshot": true
+    },
+    "tests/test_publish_hooks.py": {
+      "bytes": 7648,
+      "sha256": "be254a7b6c6ef38117634e3b35abf35008a34586a9440b0bcc1f96a153c116e1",
+      "accepted_snapshot": true
+    },
+    "tests/test_publish_pipeline.py": {
+      "bytes": 7469,
+      "sha256": "5fd3826ee08e0b8a9a0cce6ab010ae172bd22c71fd441e2add657938f8ded513",
+      "accepted_snapshot": true
+    },
+    "tests/test_publish_site.py": {
+      "bytes": 68019,
+      "sha256": "da0f6e993bd00b5c0e35ebb327a0444748f185bab5f1207183ca5d8b5cc7afc4",
+      "accepted_snapshot": true
+    },
+    "tests/test_reader_boundaries.py": {
+      "bytes": 8304,
+      "sha256": "eca61170a720bc499544e1fda30c08fd4433f7b6d7a10dc7bee49080400077de",
+      "accepted_snapshot": true
+    },
+    "tests/test_reliability_repair.py": {
+      "bytes": 50400,
+      "sha256": "c0ca1a9bef22f5f6e0925c3286b84dd4946150c7a6043b30c89336991ac57cb5",
+      "accepted_snapshot": true
+    },
+    "tests/test_wave1_audit_search.py": {
+      "bytes": 20731,
+      "sha256": "c7b428780dc2255e0bb5ea62c6c93874657660bf71126baf013e635f288fb5b8",
+      "accepted_snapshot": true
+    },
+    "tests/test_wave1_core.py": {
+      "bytes": 24017,
+      "sha256": "19cd376704f21517c4c64c8546ade95e82f2fb1a24b249804628e46b8b780779",
+      "accepted_snapshot": true
+    },
+    "tests/test_wave1_pipeline.py": {
+      "bytes": 34721,
+      "sha256": "9542150c9bd2653c318591ff5cedcc2cd01a0dc83cf7c45540fa4e55ccfeb2ad",
+      "accepted_snapshot": true
+    }
+  },
+  "excluded_generated_files": {
+    "count": 12,
+    "patterns": [
+      "**/__pycache__/**",
+      "*.pyc"
+    ]
+  }
+}

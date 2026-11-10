@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Interpreter resolution, most specific first:
+#   1. CA_PYTHON when set (absolute path or a name on PATH);
+#   2. a project-local virtual environment at <root>/.venv;
+#   3. python3 on PATH.
+if [[ -n "${CA_PYTHON:-}" ]]; then
+  PY="${CA_PYTHON}"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+  PY="$ROOT/.venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+  PY="$(command -v python3)"
+else
+  echo "no Python interpreter: set CA_PYTHON or create $ROOT/.venv" >&2
+  exit 1
+fi
+
+if [[ ! -x "$PY" ]]; then
+  echo "Python interpreter is missing or not executable: $PY" >&2
+  exit 1
+fi
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  root) echo "$ROOT" ;;
+  add) exec "$PY" "$ROOT/scripts/archive_url.py" "$@" ;;
+  extract) exec "$PY" "$ROOT/scripts/extract_remote.py" "$@" ;;
+  finalize) exec "$PY" "$ROOT/scripts/finalize_entry.py" "$@" ;;
+  index) exec "$PY" "$ROOT/scripts/rebuild_index.py" "$@" ;;
+  publish) exec "$PY" "$ROOT/scripts/publish_site.py" "$@" ;;
+  fetch) exec "$PY" "$ROOT/scripts/fetch_sources.py" "$@" ;;
+  search) exec "$PY" "$ROOT/scripts/search.py" "$@" ;;
+  digest) exec "$PY" "$ROOT/scripts/build_digest.py" "$@" ;;
+  audit) exec "$PY" "$ROOT/scripts/audit.py" "$@" ;;
+  fix-headings) exec "$PY" "$ROOT/scripts/fix_headings.py" "$@" ;;
+  cleanup-h1) exec "$PY" "$ROOT/scripts/cleanup_h1.py" "$@" ;;
+  validate) exec "$PY" "$ROOT/scripts/validate_summary.py" "$@" ;;
+  daily) exec "$PY" "$ROOT/scripts/daily_gate.py" "$@" ;;
+  reconcile-seen) exec "$PY" "$ROOT/scripts/reconcile_seen.py" "$@" ;;
+  snapshot-seen) exec "$PY" "$ROOT/scripts/reconcile_seen.py" --snapshot "$@" ;;
+  *)
+    cat >&2 <<'EOF'
+Usage: bin/ca <command> [args]
+
+Commands:
+  root                    print project root
+  add <url> [--collection manual|auto]
+                          archive or promote a user save (default manual; feeds use auto)
+  extract <url> --out-dir <scratch|.state>
+                          fetch full text via Exa MCP with explicit --max-characters
+                          (default 50000); completeness stays unverified
+  finalize <id> ...       write Chinese title/summary/category/context
+  index                   rebuild index.csv, index.md and offline index.html
+  publish ...             manage the separate ciphertext-only GitHub Pages export
+  fetch [--backfill N]    collect vendor candidates (JSON)
+  search ...              search index.csv (--collection/--category/--subcategory/--context/--tag/--status/--full)
+  digest [--since ...]    build a digest from recently archived entries
+  audit                   check titles/summaries/images/headings/seen parity
+  fix-headings            sync each entry's H1 with its frontmatter title
+  cleanup-h1              remove duplicate H1 headings from entries
+  validate --file ...     validate summary length
+  daily start|finish      run daily ingest start/finish checkpoints
+  daily start --deliver-on-fail
+                          also push the failure email + Weixin note when start fails
+  daily finish --deliver  finish, then push the digest by email + Weixin summary
+  daily deliver [--dry-run] [--force]
+                          send (or preview) the dual-channel delivery for this run
+  daily fail-candidate    record candidate fetch failure & park into pending queue
+  reconcile-seen          reconcile seen.json with library entries
+  snapshot-seen           gzip snapshot of seen.json to .state/backups/
+EOF
+    exit 2
+    ;;
+esac

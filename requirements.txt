@@ -1,0 +1,26 @@
+# Runtime dependencies for the Content Archive Kit scripts (bin/, scripts/).
+#
+# Scope: every third-party module imported directly by the shipped code —
+# archiving, extraction, collection, indexing, search, digest, audit and
+# delivery. Optional publishing extras stay in requirements-publish.txt;
+# requirements-web.txt remains the pin for the offline reading page.
+#
+# Versions are exact pins based on the reference implementation's tested
+# environment (CPython 3.13), with dependency-conflict fixes applied where its
+# installed metadata was inconsistent. Dependency metadata requires
+# Python >= 3.10; 3.13 is the only version exercised so far. Bump deliberately
+# and re-run the integration suite.
+#
+# Install: python3 -m pip install -r requirements.txt
+# (bin/ca picks up CA_PYTHON, then ./.venv, then python3 on PATH)
+
+beautifulsoup4==4.15.0
+charset-normalizer==3.5.2
+cryptography==50.0.2
+feedparser==6.0.14
+markdown-it-py==4.0.0
+markdownify==1.2.3
+python-dateutil==3.0.0
+PyYAML==6.0.3
+requests==2.33.0
+trafilatura==2.3.1

@@ -1,0 +1,73 @@
+# taxonomy.yaml — example configuration for a new archive instance.
+#
+# Copy this file into the archive root and adapt it. The shipped file is an
+# example, not a live configuration: no instance should edit it in place.
+#
+# Top-level category = the single folder level (library/<category>/).
+# subcategory is optional frontmatter metadata; adding one later never moves files.
+# context records why the item was saved and is orthogonal to category.
+version: 1
+
+categories:
+  - slug: tech
+    label: 科技与 AI
+    description: AI models and research, AI applications, semiconductors, hardware, science frontiers
+    keywords: [AI, 大模型, Agent, 模型, 推理, 多模态, 芯片, 半导体, 光刻, EDA, 算力]
+    children: [ai, semiconductor, hardware, science]
+
+  - slug: coding
+    label: 编程与开发
+    description: Programming languages, developer tools, web, data, devops, open source, and AI engineering work whose deliverable is a runnable artifact
+    keywords: [代码, 编程, 开发, Python, TypeScript, Rust, API, 框架, 数据库, Git, Docker, 开源, 上下文工程, MCP]
+    children: [ai, languages, tools, web, data, devops, open-source]
+
+  - slug: business
+    label: 商业与产业
+    description: Companies, markets, startups, industry analysis, business models
+    keywords: [公司, 市场, 融资, 财报, 收购, 创业, 商业模式, 产业, 供应链, IPO, 上市, 估值, 并购]
+    children: [companies, markets, startups, industry]
+
+  - slug: work
+    label: 工作与成长
+    description: Working methods, management, communication, career development, learning methods
+    keywords: [方法, 管理, 沟通, 职场, 职业, 学习, 效率, 团队, 复盘]
+    children: [methods, management, communication, career, learning]
+
+  - slug: society
+    label: 社会与公共
+    description: Policy, media, education, cities, law, and public issues
+    keywords: [政策, 监管, 媒体, 教育, 城市, 法律, 公共, 社会]
+    children: [policy, media, education, cities, law]
+
+  - slug: culture
+    label: 文化与阅读
+    description: Books, film, art, history, writing, and language
+    keywords: [书, 阅读, 电影, 影视, 艺术, 历史, 写作, 语言, 文化]
+    children: [books, film, art, history, writing]
+
+  - slug: life
+    label: 生活与健康
+    description: Health, psychology, relationships, travel, food, home
+    keywords: [健康, 心理, 关系, 旅行, 饮食, 家居, 生活, 运动, 睡眠]
+    children: [health, psychology, relationships, travel, food, home]
+
+  - slug: other
+    label: 其他
+    description: Content that does not fit the categories above; not a dumping ground for undecided items
+    keywords: []
+    children: []
+
+contexts:
+  - slug: work
+    label: 工作
+  - slug: life
+    label: 生活
+  - slug: learning
+    label: 学习
+  - slug: reference
+    label: 参考资料
+
+# Classification is keyword rules plus model judgment. The toolkit has no inbox
+# router and no confidence threshold: an uncertain item keeps its best-supported
+# category, and the uncertainty is reported in the reply. The entry's `confidence`
+# field is diagnostic only.

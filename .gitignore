@@ -1,0 +1,30 @@
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Private archive and runtime state
+/library/
+/.state/
+/trash/
+/publish.yaml
+/compose.yaml
+
+# Local session handoffs
+/.handoff/
+
+# Build and release output
+/build/
+/dist/

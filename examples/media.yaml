@@ -1,0 +1,16 @@
+# media.yaml — example configuration for a new archive instance.
+#
+# Default image-preservation budget. Per-article overrides are passed on the
+# command line (`bin/ca add`); this file sets the instance default.
+#
+# MiB = 1024 × 1024 bytes. Video bodies are not downloaded; a video's poster
+# image counts against the image budget.
+#
+# The four limits are independent: an article can stay under the count limit and
+# still lose one image to the per-file cap. Record the reason in the entry's
+# `image_note` and keep the remote URL as a plain link instead of marking the
+# article partial.
+max_images: 100
+max_single_image_mib: 10
+max_total_image_mib: 50
+max_download_seconds: 180

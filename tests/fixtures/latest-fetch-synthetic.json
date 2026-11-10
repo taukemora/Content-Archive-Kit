@@ -1,0 +1,95 @@
+{
+  "generated_at": "2026-01-15T09:00:00+08:00",
+  "window_hours": 36,
+  "candidates": [
+    {
+      "title": "Alpha ships an open-source inference engine",
+      "url": "https://alpha.example.com/blog/open-inference-engine",
+      "published": "2026-01-15T08:00:00+08:00",
+      "source": "Vendor Alpha",
+      "summary": "Synthetic candidate used to exercise digest numbering.",
+      "extractor": "web_extract",
+      "language": "en",
+      "source_type": "vendor_blog",
+      "source_id": "alpha"
+    },
+    {
+      "title": "Alpha explains the licence of its inference engine",
+      "url": "https://alpha.example.com/blog/inference-engine-licence",
+      "published": "2026-01-15T07:00:00+08:00",
+      "source": "Vendor Alpha",
+      "summary": "Synthetic candidate used to exercise digest numbering.",
+      "extractor": "web_extract",
+      "language": "en",
+      "source_type": "vendor_blog",
+      "source_id": "alpha"
+    },
+    {
+      "title": "Beta releases a model evaluation benchmark",
+      "url": "https://beta.example.com/news/model-benchmark",
+      "published": "2026-01-15T06:00:00+08:00",
+      "source": "Vendor Beta",
+      "summary": "Synthetic candidate used to exercise digest numbering.",
+      "extractor": "direct",
+      "language": "en",
+      "source_type": "vendor_blog",
+      "source_id": "beta"
+    },
+    {
+      "title": "Beta documents how to reproduce the benchmark",
+      "url": "https://beta.example.com/news/benchmark-reproducibility",
+      "published": "2026-01-15T05:00:00+08:00",
+      "source": "Vendor Beta",
+      "summary": "Synthetic candidate used to exercise digest numbering.",
+      "extractor": "direct",
+      "language": "en",
+      "source_type": "vendor_blog",
+      "source_id": "beta"
+    },
+    {
+      "title": "Gamma previews a code assistant",
+      "url": "https://gamma.example.com/blog/code-assistant-preview",
+      "published": "2026-01-15T04:00:00+08:00",
+      "source": "Vendor Gamma",
+      "summary": "Synthetic candidate used to exercise digest numbering.",
+      "extractor": "web_extract",
+      "language": "en",
+      "source_type": "vendor_blog",
+      "source_id": "gamma"
+    },
+    {
+      "title": "Gamma publishes the privacy note for its assistant",
+      "url": "https://gamma.example.com/blog/code-assistant-privacy",
+      "published": "2026-01-15T03:00:00+08:00",
+      "source": "Vendor Gamma",
+      "summary": "Synthetic candidate used to exercise digest numbering.",
+      "extractor": "web_extract",
+      "language": "en",
+      "source_type": "vendor_blog",
+      "source_id": "gamma"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "alpha",
+      "name": "Vendor Alpha",
+      "status": "ok",
+      "skipped": 1,
+      "found": 2
+    },
+    {
+      "source_id": "beta",
+      "name": "Vendor Beta",
+      "status": "ok",
+      "skipped": 0,
+      "found": 2
+    },
+    {
+      "source_id": "gamma",
+      "name": "Vendor Gamma",
+      "status": "ok",
+      "skipped": 0,
+      "found": 2
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+# sources.yaml — example configuration for a new archive instance.
+#
+# Copy this file into the archive root and replace the example entries. Every
+# entry here is disabled: nothing is fetched until you probe a real source,
+# record what the probe found in `notes`, register a matching adapter, and set
+# `enabled: true`.
+#
+# Discovery order: RSS feed, then an official HTML listing, then a docs release
+# page, then manual. `adapter` must name an adapter registered in the source
+# fetcher (`ADAPTERS`); `extractor` chooses how the article body is obtained
+# (`direct` fetch vs. a server-side extractor).
+version: 1
+
+defaults:
+  window_hours: 36          # guard window when a source has no archived watermark
+  max_items_per_source: 8   # per-run cap per source
+  backfill_items: 2         # first-run / explicit backfill depth
+
+sources:
+  # Feed-backed source: the one generic adapter that ships with the toolkit.
+  # Probe before enabling — a feed counts only when it yields items with a sane
+  # newest date, and check whether it carries full content or only a summary.
+  - id: example_rss
+    label: Example RSS Source
+    homepage: https://example.com/blog/
+    feed: https://example.com/blog/rss.xml
+    type: rss
+    adapter: rss_feed
+    extractor: direct
+    language: en
+    category_hint: tech
+    context_hint: work
+    enabled: false
+    notes: "Placeholder. Record the probe: item count, newest date, whether content:encoded is present, and the extraction decision."
+
+  # HTML listing without a usable feed. Titles and dates come from the listing
+  # page; the article body is fetched directly. No generic listing adapter ships:
+  # the bundled HTML adapters target specific vendor layouts, so a new source of
+  # this shape needs its own adapter before it can be enabled.
+  - id: example_html
+    label: Example HTML Listing
+    homepage: https://example.com/news
+    list_url: https://example.com/news
+    type: html
+    extractor: direct
+    language: en
+    category_hint: tech
+    context_hint: work
+    enabled: false
+    notes: "Placeholder. Needs a listing adapter; record the selector behaviour, the date source (list|page), and whether article pages are directly fetchable."
+
+  # Documentation / release-notes source: one page with dated sections. Keep the
+  # real DOM id in the URL; a section without an id is rejected, never guessed.
+  - id: example_docs
+    label: Example Release Notes
+    homepage: https://example.com/docs/
+    list_url: https://example.com/docs/changelog
+    type: docs
+    extractor: direct
+    language: en
+    category_hint: tech
+    context_hint: work
+    enabled: false
+    notes: "Placeholder. Needs a section adapter; record how dated sections are identified, whether whole-page raw snapshots are saved, and the expected section granularity."
+
+# Rules that apply to every source:
+# - Advance a source watermark only after an entry is archived.
+# - A zero-item response is `empty`, never `ok`, and never advances the watermark.
+# - Keep per-run caps round-robin across sources and report dropped candidates.
+# - Undated items are kept with date_source: fetched and published_unknown: true.
+# - The same article from two sources is one entry recording both labels.
+# - Disabled sources are skipped before adapter dispatch, so a placeholder entry
+#   cannot break a run.

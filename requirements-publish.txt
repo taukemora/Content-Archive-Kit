@@ -1,0 +1,6 @@
+# Standalone dependencies for the optional ciphertext-only Pages publisher.
+# Install with .venv/bin/python -m pip install -r requirements-publish.txt
+-r requirements-web.txt
+cryptography==50.0.2
+PyYAML==6.0.3
+requests==2.33.0

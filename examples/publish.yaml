@@ -1,0 +1,46 @@
+# publish.yaml — EXAMPLE ONLY. Optional encrypted publication, disabled.
+#
+# The shipped publication adapter exports an encrypted reader to a GitHub Pages
+# repository. It is never the archive: the archive stays the fact source, and
+# nothing is exported, encrypted, or uploaded while `enabled` is false.
+#
+# Copy this file into an archive root and replace every placeholder only after
+# the owner has explicitly asked to publish and confirmed the exact repository,
+# its visibility, and the credential locations. Never commit a filled-in copy,
+# and never place credentials or workspace paths inside the archive.
+#
+# The loader is strict: unknown keys are rejected, and every key below is
+# required even while disabled, which is why the placeholders are schema-shaped
+# rather than empty. A placeholder repository cannot publish anything; it is
+# there so the file documents the real shape.
+enabled: false
+
+# Publication target: a dedicated repository that holds only the exported reader
+# program and the encrypted objects. `site_url` must be exactly the Pages URL
+# derived from `repository` (owner lowercased).
+repository: "OWNER/REPOSITORY"
+branch: "main"
+site_url: "https://owner.github.io/REPOSITORY/"
+
+# Credential and workspace paths: absolute, outside the archive, and specific to
+# the machine that publishes. They are intentionally non-functional placeholders.
+key_file: "/absolute/path/outside/archive/content-key.json"
+ssh_key_file: "/absolute/path/outside/archive/github-ed25519"
+known_hosts_file: "/absolute/path/outside/archive/github-known-hosts"
+workspace: "/absolute/path/outside/archive/publish-workspace"
+
+# Commit identity used inside the publication workspace. These are the toolkit's
+# neutral defaults, not a person.
+git_name: "archive-publisher"
+git_email: "archive-publisher@users.noreply.github.com"
+
+# Optional: network timeout in seconds for the deployed-site verification step.
+# pages_timeout_seconds: 20
+
+# Rules that apply once enabled:
+# - Export only the allowlisted reader files plus encrypted objects; never the
+#   archive root, .state, raw snapshots, trash, or configuration.
+# - Publish at completed-work boundaries, not on every intermediate write.
+# - Persist local success before any network step, and record the outcome as
+#   skipped, failed, pushed-but-unverified, or verified-online.
+# - Verify the deployed artifact, not merely a successful push.
