@@ -55,9 +55,19 @@ class TestFinalizeInputs(unittest.TestCase):
         self.assertEqual(self.entry_path.read_bytes(), self.before)
 
     def test_summary_file_outside_allowlist_rejected(self):
-        res = self._run("--path", str(self.entry_path), "--summary-file", "/etc/hostname")
+        # A real, existing file inside the sandbox project but outside .state/:
+        # the allowlist must reject it, unlike a nonexistent path which fails
+        # earlier on the "not found" branch. Platform-independent by design.
+        forbidden = self.scratch / "forbidden-summary.txt"
+        forbidden.write_text("这是一段不允许读取的合成摘要文件。", encoding="utf-8")
+        self.assertTrue(forbidden.exists())
+        forbidden_before = forbidden.read_bytes()
+
+        res = self._run("--path", str(self.entry_path), "--summary-file", str(forbidden))
         self.assertEqual(res.returncode, 1)
         self.assertIn("summary-file path not allowed", res.stdout)
+        self.assertNotIn("summary-file not found", res.stdout)
+        self.assertEqual(forbidden.read_bytes(), forbidden_before)
         self.assertEqual(self.entry_path.read_bytes(), self.before)
 
     def test_subcategory_traversal_rejected(self):

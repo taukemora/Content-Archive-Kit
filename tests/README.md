@@ -199,6 +199,13 @@ rejection of project configuration and unrelated paths. Python commands clear
   via `getattr` fallbacks.
 - Never copy an article, image, or raw snapshot into this repository. Fixtures
   are invented text such as `example.com`, `Vendor Alpha`, and `archive@example.com`.
+- File-input refusal tests must create an existing synthetic forbidden file;
+  do not depend on an operating-system file such as `/etc/hostname` existing.
+  Otherwise a missing-file error can mask the path-validation branch. A file
+  in a copied project's root, outside `.state/`, is forbidden even when that
+  project lives under scratch. Invoke the copied CLI and verify both the
+  refusal diagnostic and unchanged fixture bytes; do not widen the allowlist
+  or skip an operating system to make these tests pass.
 - New repository-check tests build a synthetic tree under `CA_TEST_SCRATCH` and
   invoke `tools/check_repository.py --root <tree>`; they must not rewrite the
   real manifest or touch the checkout's files.

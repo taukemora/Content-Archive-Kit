@@ -195,17 +195,28 @@ class TestPathVerification(unittest.TestCase):
         self.assertFalse(is_allowed_file_path(ROOT / "sources.yaml"))
 
     def test_content_file_outside_allowed_roots_rejected(self):
+        # The forbidden file is synthetic and exists: a project file outside
+        # .state/ in an isolated copied project. Relying on a host system file
+        # (e.g. /etc/hostname) makes the refusal unreachable on hosts where that
+        # file is absent, because the CLI reports "not found" first.
+        sandbox = _support.archive_project("p3b_test_cf_forbidden_", state=True)
+        self.addCleanup(shutil.rmtree, sandbox, ignore_errors=True)
+        forbidden = sandbox / "forbidden-content.txt"
+        forbidden_text = "Project file outside .state must never be accepted."
+        forbidden.write_text(forbidden_text, encoding="utf-8")
+        self.assertTrue(forbidden.is_file())
         py = sys.executable
         cmd = [
             py,
-            str(ROOT / "scripts" / "archive_url.py"),
+            str(sandbox / "scripts" / "archive_url.py"),
             "https://example.com/post",
             "--content-file",
-            "/etc/hostname",
+            str(forbidden),
         ]
         res = subprocess.run(cmd, capture_output=True, text=True)
         self.assertEqual(res.returncode, 1)
         self.assertIn("content-file path not allowed", res.stdout)
+        self.assertEqual(forbidden.read_text(encoding="utf-8"), forbidden_text)
 
     def test_content_file_not_found(self):
         py = sys.executable
@@ -251,21 +262,31 @@ class TestPathVerification(unittest.TestCase):
         self.assertIn("UTF-8 decode failed", res.stdout)
 
     def test_raw_file_outside_allowed_roots_rejected(self):
+        # Same rationale as the content-file case: the forbidden raw snapshot is
+        # a synthetic project file outside .state/, so the refusal is exercised
+        # on every host instead of depending on a system file being present.
+        sandbox = _support.archive_project("p3b_test_raw_forbidden_", state=True)
+        self.addCleanup(shutil.rmtree, sandbox, ignore_errors=True)
+        forbidden = sandbox / "forbidden-raw.html"
+        forbidden_text = "<html><body>forbidden raw snapshot</body></html>"
+        forbidden.write_text(forbidden_text, encoding="utf-8")
+        self.assertTrue(forbidden.is_file())
         valid_cf = self.scratch / "content.txt"
         valid_cf.write_text("Valid markdown content for test article.", encoding="utf-8")
         py = sys.executable
         cmd = [
             py,
-            str(ROOT / "scripts" / "archive_url.py"),
+            str(sandbox / "scripts" / "archive_url.py"),
             "https://example.com/post",
             "--content-file",
             str(valid_cf),
             "--raw-file",
-            "/etc/hostname",
+            str(forbidden),
         ]
         res = subprocess.run(cmd, capture_output=True, text=True)
         self.assertEqual(res.returncode, 1)
         self.assertIn("raw-file path not allowed", res.stdout)
+        self.assertEqual(forbidden.read_text(encoding="utf-8"), forbidden_text)
 
     def test_raw_file_exceeds_5mb_rejected(self):
         valid_cf = self.scratch / "content.txt"

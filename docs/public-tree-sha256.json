@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-10T08:48:01.471165+00:00",
+  "captured_at": "2026-11-10T09:18:09.015226+00:00",
   "manifest_role": "accepted_public_tree_ci_readiness",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/ci-acceptance.md",
@@ -52,8 +52,8 @@
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
     "docs/ci-acceptance.md": {
-      "bytes": 9546,
-      "sha256": "5f4ff67d0137667dae4d190041f873e857a820905e7afa44a61116195c541154"
+      "bytes": 12132,
+      "sha256": "a734cdabc5453ba6efb1b6cc9f0a6c2f70702df8af410182db8a3d48ca2d809b"
     },
     "docs/migration-baseline.json": {
       "bytes": 13529,
@@ -240,8 +240,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 10620,
-      "sha256": "7ef4ec0f8bcc36e5259190103a2aed075a9966f557dd3a209ebc67e7081b5bb6"
+      "bytes": 11135,
+      "sha256": "f33eeb41b2a313128d09ed2aba7dc5488192f90fa49333b6e786f3edb86612bf"
     },
     "tests/_support.py": {
       "bytes": 4129,
@@ -324,12 +324,12 @@
       "sha256": "d32d3a80780398bc57ef5a63e9719ab8147b9bcd5f42abf03ac28b613294403f"
     },
     "tests/test_phase3b.py": {
-      "bytes": 30792,
-      "sha256": "9290f75ab47bbc1c570f680d73eef07d3169ce7bed9ef518e6f799cefdd92f2d"
+      "bytes": 32275,
+      "sha256": "96514b8c75523f40e1e743792fca20937f4df38135e0783b7aa7d84ed54c4a65"
     },
     "tests/test_phase3c.py": {
-      "bytes": 3306,
-      "sha256": "0f1beed6413437cb2b91859445d12f1b04f77b1aaa6c49c452db53260e219eb7"
+      "bytes": 3926,
+      "sha256": "10f78b6c084a7f677bd6f352d8ba2080711988e9f9a36f266d20e8489b19c99e"
     },
     "tests/test_phase5_delivery.py": {
       "bytes": 48600,
