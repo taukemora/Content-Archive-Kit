@@ -27,7 +27,7 @@ Content Archive Kit separates reusable source code and skills from private artic
 
 ## Requirements
 
-- Linux or macOS (POSIX); native Windows requires WSL.
+- Linux (CI runs on Ubuntu). Native Windows is unsupported; use a Linux environment such as WSL instead. macOS is outside the supported platform and CI scope; compatibility is not guaranteed.
 - Python 3.13.
 - Bash and the dependencies declared in `requirements.txt`.
 
@@ -61,7 +61,7 @@ The test suite uses synthetic fixtures only. Browser acceptance and real-instanc
 
 ## Release readiness
 
-The first planned release is **v0.1.0**, not yet released. See the [changelog](CHANGELOG.md), [bilingual release-notes draft](docs/releases/v0.1.0.md), and [release procedure](docs/releasing.md). The workflow validates Ubuntu/macOS with Python 3.13; its presence is not proof of a successful run. [CI readiness acceptance](docs/ci-acceptance.md) distinguishes local results from exact-commit GitHub CI and future artifact verification. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
+The first planned release is **v0.1.0**, not yet released. See the [changelog](CHANGELOG.md), [bilingual release-notes draft](docs/releases/v0.1.0.md), and [release procedure](docs/releasing.md). The workflow validates Ubuntu with Python 3.13; its presence is not proof of a successful run. [CI readiness acceptance](docs/ci-acceptance.md) distinguishes local results from exact-commit GitHub CI and future artifact verification, and preserves the earlier macOS failures and subsequent Linux-only scope decision. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
 
 ## Hermes skill
 

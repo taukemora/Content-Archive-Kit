@@ -2,7 +2,7 @@
 
 ## Scope and status
 
-Pre-commit acceptance record for the CI/release-preparation unit based on `db4b50150c4dcde0780660e171298b030f400153`. **Local integration accepted by the parent; hosted CI is a separate post-push gate.** This record does not approve a tag, GitHub Release, release asset, private-instance upgrade, notification, or deployment.
+Pre-commit acceptance record for the CI/release-preparation unit based on `db4b50150c4dcde0780660e171298b030f400153`. **Local integration accepted by the parent; the current hosted gate is successful exact-commit Ubuntu CI under the approved Linux-only support scope.** Earlier macOS failures remain historical evidence, not passes. This record does not approve a tag, GitHub Release, release asset, private-instance upgrade, notification, or deployment.
 
 The user authorized this unit's implementation, commit, and push after verification, then separately approved the launcher-mode repair. `bin/ca` has Git mode `100755`; its Git blob remains `a6c9a28ddf40d46b588070857e885eaf74d462d8`, unchanged from the baseline. No runtime source contents or dependency versions were changed.
 
@@ -25,7 +25,7 @@ The user authorized this unit's implementation, commit, and push after verificat
 - The independent review used GLM-5.3-Flash, distinct from the DeepSeek-V4.1-Flash implementation and GPT-6-Astra parent. Its original verdict was **CONDITIONAL**, not PASS. The parent closed its reproducible required findings using the repaired code, regression tests and direct probes above; this is parent acceptance, not a fabricated second reviewer verdict.
 - The checker validates reviewed public code; it is not an untrusted-code sandbox. It imports real example loaders only after earlier integrity/safety/syntax checks pass. Private-key findings omit matched bytes, but syntax and loader diagnostics may include values. The inventory and content screens do not prove authenticity or absence of all private content.
 - Finalize only documentation/evidence and manifest after the integrated run, then repeat the affected checks and validate the final staged-tree export before the authorized commit/push. CI must never regenerate the manifest or apply a temporary launcher chmod to hide drift.
-- After push, require successful Ubuntu **and** macOS jobs for the exact immutable commit. This in-tree pre-commit record intentionally contains no claim of a future hosted pass; the final SHA and run URL are read back from GitHub and reported separately. Editing this record later creates a new candidate that requires its own CI.
+- After push, require the successful Ubuntu job for the exact immutable commit. The original dual-platform gate was superseded by the explicit Linux-only decision recorded below. This in-tree pre-commit record intentionally contains no claim of a future hosted pass; the final SHA and run URL are read back from GitHub and reported separately. Editing this record later creates a new candidate that requires its own CI.
 
 ## Hosted failure and CI-environment follow-up
 
@@ -35,9 +35,9 @@ The follow-up changes only CI wiring, its regression coverage and documentation/
 
 The parent reproduced the failure in two existing tests with disjoint platform and runner directories; both failed before the mapping and passed with it. A new workflow-driven regression reads the actual YAML environment, exercises the real input/output path validators in a subprocess, accepts fixtures, and still rejects project configuration and an unrelated path. It failed before the workflow repair and passed afterward. The checker/workflow module now has **48 passing tests**.
 
-A fresh staged-tree export was installed into a new environment and tested using the workflow's actual environment mapping, with platform temp deliberately separate from runner temp: **615 total, 613 passed, 2 skipped, 0 failures/errors**. Dependencies, imports and the repository gate also passed. Only documentation and its manifest are finalized after that run; the final staged export must pass repository/syntax checks and preserve the tested workflow, runtime and test bytes. The corrected commit still requires its own successful Ubuntu and macOS jobs; this record does not predict that result.
+A fresh staged-tree export was installed into a new environment and tested using the workflow's actual environment mapping, with platform temp deliberately separate from runner temp: **615 total, 613 passed, 2 skipped, 0 failures/errors**. Dependencies, imports and the repository gate also passed. Only documentation and its manifest were finalized after that run; the final staged export passed repository/syntax checks and preserved the tested workflow, runtime and test bytes. At that stage the candidate still required both Ubuntu and macOS jobs; the observed results and later scope decision follow below.
 
-## macOS fixture follow-up and unresolved hosted gate
+## macOS fixture follow-up and historical failures
 
 The scratch-mapping commit `581e3250ca08dc42d41a9c383d1c3515d408318a` has a [successful Ubuntu job](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42785505233/job/129725574872). Its [macOS job](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42785505233/job/129725575503) was cancelled; the check annotation states that it exceeded the 25-minute execution limit. The log continued through later tests, so the earlier streaming log line was not evidence of a streaming deadlock. No complete macOS suite summary is available.
 
@@ -45,7 +45,15 @@ Four failing test names were observed before cancellation. Three depend on `/etc
 
 The user separately approved repairing those two test files. The tests now create existing synthetic forbidden files in copied project roots outside `.state/`, invoke copied CLIs, preserve refusal assertions and check unchanged fixtures (and the original entry for finalize). The parent reran both modules: **36 tests passed**. Independent subprocess probes confirmed **3 control passes** and **3 expected failures when only the path validator was deliberately bypassed inside the scratch subprocesses**. Thus the tests still detect loss of path enforcement rather than merely testing file existence. A newly installed staged-tree export passed the complete local suite: **615 total, 613 passed, 2 skipped, 0 failures/errors**. Runtime and dependency bytes remain unchanged.
 
-The fourth observed failure is `test_phase5_delivery.TestNoCrossFallback.test_weixin_session_not_ready_fails_fast_without_second_email`. Its exact failing assertion was not printed before cancellation. A wall-clock assertion exists in that test, but source inspection alone does not prove that it caused the hosted failure. This failure and the job timeout remain unresolved; the fixture repair is not a claim of green macOS CI. Further diagnosis must not silently raise a threshold, skip tests, weaken a safety check, or change runtime behavior.
+The fourth observed failure is `test_phase5_delivery.TestNoCrossFallback.test_weixin_session_not_ready_fails_fast_without_second_email`. Its exact failing assertion was not printed before cancellation. A wall-clock assertion exists in that test, but source inspection alone does not prove that it caused the hosted failure. This failure and the job timeout remained unresolved when the support scope was narrowed; the fixture repair is not a claim of green macOS CI. No threshold was raised, test skipped, safety check weakened, or runtime behavior changed to hide this result.
+
+## Approved Linux-only support scope
+
+The maintainer explicitly approved limiting supported platforms and CI to Linux, with Ubuntu as the hosted runner. macOS is no longer a release gate and has no compatibility guarantee. This is a support-scope decision, not a repair or a passing result for the historical macOS jobs. No additional macOS diagnostic step was introduced.
+
+The workflow removes only `macos-latest` from its runner matrix; Python 3.13, Node 22, the full unittest command, disabled optional suites, read-only permissions, pinned actions and the 25-minute job timeout remain unchanged. The synthetic file-input repairs are retained as general test isolation improvements. Delivery and path-safety tests remain in the Ubuntu suite, including the test that failed on macOS.
+
+The current READMEs, release procedure/draft, test instructions and canonical in-repository skill now state the same Linux-only scope. Only the skill's platform metadata and platform guidance changed; no installed skill was updated. The older platform statement in `docs/acceptance.md` is preserved as migration history and is superseded by this decision. The final candidate must pass its own complete local checks and exact-commit Ubuntu CI; neither an earlier Ubuntu pass nor removal of a failing platform establishes that result.
 
 ## Preserved boundaries
 

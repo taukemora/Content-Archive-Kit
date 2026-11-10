@@ -24,7 +24,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
         python-version:
           - "3.13"
     env:

@@ -38,7 +38,7 @@ If a fact is missing from the README, ask instead of inventing it. When you lear
 ## Platform requirements
 
 - POSIX shell and bash: the wrapper uses `set -euo pipefail` and `BASH_SOURCE`.
-- Linux or macOS: state locking uses `fcntl.flock` (advisory locks), and it is imported unconditionally by the daily gate and the source fetcher. Native Windows lacks it; Windows must run under WSL.
+- Linux is the supported platform, with CI on Ubuntu. State locking uses `fcntl.flock` (advisory locks), imported unconditionally by the daily gate and source fetcher. Native Windows requires a Linux environment such as WSL. macOS is outside the maintained support and CI scope; POSIX compatibility alone is not an acceptance result.
 - Python from the instance virtualenv. Verify the interpreter version against the installed wheels rather than using a system Python that happens to be newer; a too-new interpreter can install an `lxml` build that fails to import.
 - Optional components add their own requirements: reader generation (Markdown→HTML) and encryption/publication (`cryptography`). Declare them in separate requirements files so standalone archiving does not pull publication dependencies.
 

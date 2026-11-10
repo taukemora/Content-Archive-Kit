@@ -133,7 +133,7 @@ tests skip themselves when `node` is absent.
 ## Continuous integration
 
 `.github/workflows/test.yml` runs on pushes to `main`, pull requests, and manual
-dispatch. It uses Ubuntu and macOS with Python 3.13, installs Node.js 22 for the
+dispatch. It uses Ubuntu with Python 3.13, installs Node.js 22 for the
 Node interop and checker syntax steps, installs both `requirements.txt` and
 `requirements-publish.txt`, runs `pip check`, then `tools/check_repository.py`,
 then the complete suite from `tests/`.
@@ -151,6 +151,12 @@ the existing explicit scratch option, not a weaker path check. The workflow
 environment regression exercises both acceptance of fixture input/output and
 rejection of project configuration and unrelated paths. Python commands clear
 `PYTHONPATH` with `env -u`.
+
+Linux is the supported platform. macOS was removed from the matrix by an
+explicit scope decision, not accepted as passing; the earlier failures remain
+in `docs/ci-acceptance.md`. No test was removed or newly skipped for that
+decision: the complete suite, including path refusal and delivery failure
+checks, still runs on Ubuntu. The existing job timeout is unchanged.
 
 ## Layout the tests expect
 

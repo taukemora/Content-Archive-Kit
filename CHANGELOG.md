@@ -22,12 +22,14 @@ The first planned release is **v0.1.0**. No release date, final release commit, 
 
 ### CI and release preparation / CI 与发布准备
 
-- Python 3.13 validation workflow for Ubuntu and macOS, with explicit Node setup, read-only repository permissions, and no release/deployment step.
+- Python 3.13 validation workflow for Ubuntu, with explicit Node setup, read-only repository permissions, and no release/deployment step.
+- Support and release acceptance narrowed to Linux by maintainer decision; historical macOS failures remain recorded, not relabeled as passes. All tests remain in the Ubuntu suite.
 - Shared syntax, example-configuration, and public-tree integrity checks, with synthetic failure-path tests.
 - Recorded the CLI launcher's executable Git mode so clean checkouts and source exports retain a runnable `bin/ca`; launcher contents are unchanged.
 - Documented exact-commit CI gate, artifact export/installation verification, and separate tag, Release, asset, and deployment approvals.
 
-- Ubuntu/macOS 上的 Python 3.13 验证工作流，显式配置 Node，仓库权限只读，不含发布或部署步骤。
+- Ubuntu 上的 Python 3.13 验证工作流，显式配置 Node，仓库权限只读，不含发布或部署步骤。
+- 经维护者确认，将支持与发布验收范围收敛为 Linux；保留历史 macOS 失败记录，不改写为通过，全部测试仍在 Ubuntu 套件中运行。
 - 本地与 CI 共用的语法、示例配置、公开树完整性检查，以及合成失败路径测试。
 - 修正命令行入口的 Git 执行权限，确保新克隆和源码导出保留可运行的 `bin/ca`；入口内容不变。
 - 明确精确提交的 CI 门槛、工具包导出与安装验证，以及标签、Release、附件和部署的独立授权。

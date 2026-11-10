@@ -27,7 +27,7 @@ Content Archive Kit 将可复用的代码和技能与私人文章、运行状态
 
 ## 环境要求
 
-- Linux 或 macOS（POSIX）；原生 Windows 需要使用 WSL。
+- Linux（CI 使用 Ubuntu）。不支持原生 Windows；Windows 用户须使用 WSL 等 Linux 环境。macOS 不在支持平台和 CI 范围内，不承诺兼容。
 - Python 3.13。
 - Bash，以及 `requirements.txt` 中声明的依赖。
 
@@ -61,7 +61,7 @@ cd tests
 
 ## 发布准备
 
-首个计划版本为 **v0.1.0**，目前尚未发布。详见[更新记录](CHANGELOG.md)、[双语发布说明草稿](docs/releases/v0.1.0.md)和[发布流程](docs/releasing.md)。工作流在 Ubuntu/macOS 上验证 Python 3.13，但存在工作流不等于已经通过。[CI 准备验收](docs/ci-acceptance.md)区分本地结果、精确提交的 GitHub CI 与后续工具包验收。标签、Release、附件上传及私人实例升级均须另行授权。
+首个计划版本为 **v0.1.0**，目前尚未发布。详见[更新记录](CHANGELOG.md)、[双语发布说明草稿](docs/releases/v0.1.0.md)和[发布流程](docs/releasing.md)。工作流在 Ubuntu 上验证 Python 3.13，但存在工作流不等于已经通过。[CI 准备验收](docs/ci-acceptance.md)区分本地结果、精确提交的 GitHub CI 与后续工具包验收，并保留此前 macOS 失败和随后收敛为 Linux-only 的范围决定。标签、Release、附件上传及私人实例升级均须另行授权。
 
 ## Hermes 技能
 

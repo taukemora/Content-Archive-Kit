@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-10T09:18:09.015226+00:00",
+  "captured_at": "2026-11-10T09:25:41.029170+00:00",
   "manifest_role": "accepted_public_tree_ci_readiness",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/ci-acceptance.md",
@@ -8,8 +8,8 @@
   "self_excluded": true,
   "files": {
     ".github/workflows/test.yml": {
-      "bytes": 1839,
-      "sha256": "5a899215d7ac55d219c7d3684f86e41919575b17053c353b1f25de6ee1c45db9"
+      "bytes": 1814,
+      "sha256": "aeecde440733edbe715051a4edbdeed809ec7cbb5bf6b3469ff1c0025c5f1b4d"
     },
     ".gitignore": {
       "bytes": 398,
@@ -20,8 +20,8 @@
       "sha256": "becb2da77bb47e103ea25d2bd1bae960faa6daa8c640cc6cc3d113aa8136bc55"
     },
     "CHANGELOG.md": {
-      "bytes": 3269,
-      "sha256": "e6c35be36e1949b2366126074f6e295076d2a00260a12b402fe7042b65dadaaa"
+      "bytes": 3605,
+      "sha256": "ac9ccbabbc730213794efa752d22c54212275a6a8115d51305a7a3f0d4e996d8"
     },
     "IDEA.md": {
       "bytes": 8385,
@@ -32,12 +32,12 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 5736,
-      "sha256": "3a78706a86798b92f0cf9cd5aad5f08d1272fdd1788ccc2408889f94c693de9a"
+      "bytes": 5950,
+      "sha256": "10970d7c7f1c07e3530f78b0e1a1c5cb6b3bdcb803105a6d978ce0f73e847418"
     },
     "README.zh-CN.md": {
-      "bytes": 5207,
-      "sha256": "3aafa752559353e331221ba353f3b16526e0a8845bbc264965fcd487786458b9"
+      "bytes": 5378,
+      "sha256": "135c8c0eb4275f3fad483d270d109da1f823fe0874d0759a54cb7d98bb503795"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -52,20 +52,20 @@
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
     "docs/ci-acceptance.md": {
-      "bytes": 12132,
-      "sha256": "a734cdabc5453ba6efb1b6cc9f0a6c2f70702df8af410182db8a3d48ca2d809b"
+      "bytes": 13709,
+      "sha256": "4fab86f5fdac68bd906f0821a91c2571dd56e7547fd4a4e95d1f9eefdfd14f2d"
     },
     "docs/migration-baseline.json": {
       "bytes": 13529,
       "sha256": "71c21b0caca122071dad19339614c26fd153cad88e9fff31aa5245ea938b01b0"
     },
     "docs/releases/v0.1.0.md": {
-      "bytes": 5564,
-      "sha256": "722e430313c31f8da20dbf4269b7aef889137777cca75ba5e86568a7cff1aa4c"
+      "bytes": 5750,
+      "sha256": "721b62832d05718d80f5866d0bc7e8e2d151152322369f8c576a9aa8f5a19c07"
     },
     "docs/releasing.md": {
-      "bytes": 7502,
-      "sha256": "e8f7c33fa1c9d378976270e4cc7433359e33e993ac26a1b15defc97373b8d6e5"
+      "bytes": 7560,
+      "sha256": "f811ea3a59b52f2fb362fe83d98c0544387dd888c5432cc71a27edf30693b0fa"
     },
     "examples/README.md": {
       "bytes": 1497,
@@ -192,12 +192,12 @@
       "sha256": "916e478cf4c555924f6d4bf1c01bec2cce2bbb90856f0a8edd94c99c1258a109"
     },
     "skills/content-archive/SKILL.md": {
-      "bytes": 25328,
-      "sha256": "92821a2df046d4be186af2ebfea06d3480daae32a3848fbadaf30077c728cc3f"
+      "bytes": 25477,
+      "sha256": "4ebcb43aa62464d8834ef656b65222489fd8fef2e65453aced0cef5ab046df05"
     },
     "skills/content-archive/references/deployment.md": {
-      "bytes": 8635,
-      "sha256": "53aae457d8289fde6b6dd296abc4116fd02e68f14170c3a0cf5941fe584cfa7d"
+      "bytes": 8770,
+      "sha256": "cb47d70ca509d12f75a9f57b71947e05f663e370b1a2ba99853f5876b236e37b"
     },
     "skills/content-archive/references/messaging-channels.md": {
       "bytes": 5596,
@@ -240,8 +240,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 11135,
-      "sha256": "f33eeb41b2a313128d09ed2aba7dc5488192f90fa49333b6e786f3edb86612bf"
+      "bytes": 11494,
+      "sha256": "579a86fe3db68982f7d381e5ddebe56660f98f4eef916ed3a7065e3072a71f88"
     },
     "tests/_support.py": {
       "bytes": 4129,

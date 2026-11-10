@@ -4,7 +4,7 @@ description: "Use when saving links or maintaining a content archive."
 version: 2.0.0
 author: taukemora, Hermes Agent
 license: MIT
-platforms: [linux, macos]
+platforms: [linux]
 metadata:
   hermes:
     tags: [content-archive, read-it-later, rss, wechat, summarization, knowledge-management, taxonomy, messaging]
@@ -41,7 +41,7 @@ This skill is installed into many archives. It must never assume one machine's l
 2. **Read `<archive>/README.md` before applying any rule.** It is the instance fact source: taxonomy slugs, summary length, category/context policy, directory conventions, schedule and timezone, delivery targets, publication state, and any local hard bans. Where the instance README and this skill disagree, the instance wins — then report the drift instead of silently following either.
 3. **Configuration lives in the instance:** `taxonomy.yaml`, `sources.yaml`, `media.yaml`, and an optional `publish.yaml`. Example shapes ship in this repository's `examples/`; copy and adapt them per instance rather than editing the examples.
 4. **Loading this skill authorizes nothing.** A write needs a current explicit instruction (see Execution Gate). Reading this file, opening the archive, or seeing a link in a feed is not authorization.
-5. **Runtime requirements (why `platforms` is POSIX-only):** the CLI wrapper is a bash script (`#!/usr/bin/env bash`, `set -euo pipefail`), and the locking code imports `fcntl` for advisory `flock`. Use Linux or macOS; native Windows has neither, so it must run under WSL. The wrapper picks an interpreter in the order `CA_PYTHON` → `<archive>/.venv/bin/python` → `python3`; verify the toolkit's imports (notably `lxml.etree` for `trafilatura`) in the interpreter that will actually run rather than trusting a system default.
+5. **Runtime requirements and support scope:** use Linux; the maintained CI runs on Ubuntu. The CLI wrapper requires Bash (`#!/usr/bin/env bash`, `set -euo pipefail`), and the locking code imports `fcntl` for advisory `flock`. Native Windows requires a Linux environment such as WSL. POSIX prerequisites do not establish macOS acceptance: macOS is outside the maintained support and CI scope, so `platforms` is limited to Linux. The wrapper picks an interpreter in the order `CA_PYTHON` → `<archive>/.venv/bin/python` → `python3`; verify the toolkit's imports (notably `lxml.etree` for `trafilatura`) in the interpreter that will actually run rather than trusting a system default.
 
 ## Non-negotiables
 
