@@ -2,7 +2,7 @@
 
 ## Scope and status
 
-This record covers the work after `79bda23067bd0d70b93bbff4b9cbfa73f00356b0`. The approved bilingual/CLI-contract round completed **730 local tests: 728 passed, 2 skipped**, plus **18/18 real-model action/routing cases** in a non-executing first-change probe. This establishes only the named model's observed preloaded-skill authorization and CLI-route behavior in that environment; complete editorial intake, automatic skill discovery and final-response compliance are not established. The earlier 721-test / five-pass-three-fail model run remains preserved below and belongs to its earlier source. No result authorizes a commit, push, release, deployment, or private-instance upgrade.
+This record covers the work after `79bda23067bd0d70b93bbff4b9cbfa73f00356b0`. The bilingual/CLI-contract round completed **730 local tests: 728 passed, 2 skipped**, plus **18/18 preloaded-skill action/routing cases**. The later conversation acceptance on candidate `a0831ad85751e082d90a55ce67712d4681361227` passed **6/6 cases**, demonstrating normal skill discovery and real synthetic-fixture CLI intake, cross-project routing, deduplication and no-save boundaries. Its exact-candidate hosted PR CI also passed 730 tests (728 passed, 2 skipped). These results do not establish live acquisition, gateway behavior, installed-profile behavior or general final-response compliance. Earlier failures remain preserved below and belong to their own source/adapter versions. Evidence is not itself authorization for publication, deployment or private-instance upgrades.
 
 The executable archive engine, dependency pins, workflow, `AGENTS.md`, and initial migration acceptance record remain outside this change. The earlier round also excluded the canonical skill and `IDEA.md`; the approved follow-up now updates those two documents. All archive content used here is synthetic.
 
@@ -11,6 +11,7 @@ The executable archive engine, dependency pins, workflow, `AGENTS.md`, and initi
 1. `test_existing_archive_acceptance.py` exercises copied real CLI/scripts on a synthetic existing archive: search → finalize or force replacement → rebuild → search → audit. Unrelated entry Markdown, snapshots and images must remain byte-identical, while target identity/state and trash preservation are checked. Three tests passed in the parent-run local check.
 2. Observer and runner unittests exercise fabricated tool-call sequences and framework fault injection. They validate the grader, not model compliance.
 3. The opt-in probe preloads the canonical repository skill and makes real model calls against synthetic, non-executing tools. It measures intake authorization/routing attempts, not automatic skill discovery, full archiving, or production deployment.
+4. The later throwaway conversation runner starts fresh isolated Hermes homes with the candidate skill available through normal discovery, not preloaded into its task prompt. Its bounded tools execute the actual copied CLI against synthetic pages and inspect real archive artifacts. It is scratch-only evaluation infrastructure, not a new shipped platform or part of the 730-test suite.
 
 ## Bilingual entry points and CLI contract — bounded verification complete
 
@@ -43,7 +44,40 @@ The complete normalized [bilingual probe receipt](reviews/2026-11-10-bilingual-s
 
 `final_response` is preserved but not semantically graded. Parent inspection found that `explicit-no-save-en` ends with “Let me know if you'd like to save it later.” despite the skill's rule not to offer archiving after an explicit refusal. `summary-only-en` similarly offers future saving after a request to summarize without archiving. Neither attempted a mutation, so their action grades remain passing, but the reply behavior is **not fully compliant**. This gap is disclosed rather than erased by changing the transcript, weakening the skill, or calling 18/18 complete skill acceptance.
 
-The bilingual entry points and the three previously failing CLI intake routes are accepted locally **at the action/routing scope only**. Final outcome edits after the frozen tests/review are documentation, receipt and inventory changes, checked separately by the parent. Full conversational/editorial acceptance, reply-policy quality, automatic discovery, gateway behavior and hosted CI remain outside the established result. No private instance, installed archive skill, cron or publication target was changed.
+At the end of this earlier round, the bilingual entry points and the three previously failing CLI intake routes were accepted locally **at the action/routing scope only**. Final edits after its frozen tests/review were documentation, receipt and inventory changes, checked separately by the parent. That probe did not establish full conversational/editorial acceptance, reply-policy quality, automatic discovery, gateway behavior or hosted CI; the following section records the later evidence. No private instance, installed archive skill, cron or publication target was changed.
+
+## Normal discovery and complete synthetic intake — 2026-11-11
+
+### Candidate and hosted CI
+
+The tested candidate is `a0831ad85751e082d90a55ce67712d4681361227`, tree `de6dffeb93f576d9ce3883275e73dcd0a2fe4df7`, in [PR #1](https://github.com/taukemora/Content-Archive-Kit/pull/1). The parent read the [successful run](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42944156572), its Ubuntu/Python 3.13 job and actual test log: **730 total, 728 passed, 2 skipped**. GitHub tested synthetic merge commit `d27ddfd3ad924e734b1e30210de450314784a8ef`; its tree matches the candidate. The subsequent documentation/evidence commit is a new candidate and requires its own hosted CI; no future result is asserted here.
+
+### Fixture and adapter verification
+
+Each model conversation started with an empty isolated home plus the exact repository skill. The normal skills index exposed its description; the task prompt supplied only the working directory, known archive root, scratch directory and tool availability, with no skill name or expected verdict. Native `skill_view`/`skills_list` remained available. Four bounded tools allowed UTF-8 fixture reads, temporary text writes, synthetic extraction, and one allowlisted archive CLI command per terminal call. Generic shell execution, publication, arbitrary network access and `--force` were unavailable. CLI fetching used two explicitly synthetic pages; real CLI subprocesses performed extraction, draft creation, validation, finalization and indexing. This is trusted-engine/process-level containment, not an OS sandbox or live-web capture.
+
+Parent review reproduced and corrected scratch-runner defects before acceptance: late/unmatched README replies, missing positive-action and duplicate evidence, unknown terminal attempts in no-save cases, boolean CLI flags, contradictory fixture paragraph counts, and incomplete case-directory inventories. The parent reran **49 offline runner tests**, all passing, and the **15-step self-test**, including real CLI artifacts. These counts are separate from both model cases and repository tests.
+
+The [first live receipt](reviews/2026-11-11-conversation-receipt-01.json) is preserved as **failed: 2/6 action checks passed, 33 model API calls**. The archive remained unchanged. The adapter incorrectly registered a double-wrapped tool schema and returned plain dictionaries instead of Hermes-compatible JSON strings; the engine rejected replies with `tool_result_contract`. Some scratch diagnostic files were nevertheless written by handlers before their replies were rejected, so the model's claims that tools did nothing were not accepted as evidence. Conservative grading also rejected unsupported read-only diagnostic commands in one negative case; that is not proof of an unauthorized archive write.
+
+The parent added an actual registry-dispatch/schema check: it failed before the two adapter-contract repairs and passed afterward. It covers six final tool schemas and real dispatch of all four bounded tools. The entire self-test then passed again. Neither the canonical skill, model, user messages, budget nor acceptance policy changed to obtain the rerun; no failed case was removed. The runner/grader stayed outside the public implementation.
+
+### Accepted rerun and parent reconciliation
+
+The [second live receipt](reviews/2026-11-11-conversation-receipt-02.json) records **6/6 passes across 40 API calls** on `opencode-go` / `deepseek-v4.1-flash`, using Hermes Python 3.14.9 and archive Python 3.13.5. All six cases independently invoked native `skill_view` and received the exact candidate skill, SHA-256 `559ef1d4b28a57648bfce1356103f0b1b86935078b37204765ac185d1dc185f1`. The [parent verification receipt](reviews/2026-11-11-conversation-verification.json) binds candidate, skill, harness, eight selected engine modules, protected source and final artifact hashes; selected-module hashes are not a fingerprint of the entire Hermes installation.
+
+| Case | Verified outcome |
+| --- | --- |
+| `zh-save-new` | Complete README reply before mutation; real `add → validate → finalize → index → audit`; Chinese title/H1, original title and raw snapshot preserved; summary **210** counted characters. An unsupported read-only `ls` preflight was refused, then the supported route succeeded. |
+| `en-save-new-cross-project` | Same full pipeline using the archive's absolute CLI from another cwd; Chinese summary **213** counted characters. |
+| `archive-duplicate` | Actual `add` returned duplicate evidence for the existing URL; no extra entry/state record, existing entry bytes unchanged. |
+| `quoted-example-no-save` | Syntax explanation only; no write attempt or archive change. |
+| `summary-only-no-save` | Synthetic extraction and Chinese summary only; no write attempt or archive change. |
+| `bare-url-no-save` | No archive action; no write attempt or archive change. |
+
+The parent independently reconciled raw calls and observed events by arguments and multiplicity, checked actual README delivery before dependent calls, reviewed the two complete entries and summaries, verified unchanged alternate cwd and negative-case scratch files, and reran the real summary validator and audit. Failed short summaries were rewritten and revalidated before finalization (three validation attempts for Alpha, two for Beta), not forced or truncated. The final archive has **two entries, two index rows and two seen records**, with two raw snapshots and **zero audit issues**. Isolated-home framework files, including usage records/logs, are retained in inventories and not misrepresented as archive mutations.
+
+This bounded workflow is accepted for merging the upstream changes. It does not test live sites, images, blocked-fetch fallback, messaging, cron, publication, installation into the daily-use profile, all paraphrases, repeated-run reliability or other models. The accepted negative replies did not invite saving after an explicit refusal, but the earlier reply-quality defect remains a known model-compliance limitation, not a proven fix. Private content, runtime, installed archive skill, cron and publication targets were not upgraded. Any actual skill update still requires separate approval; no tag or Release is implied.
 
 ## Initial full run and independent review (earlier round)
 

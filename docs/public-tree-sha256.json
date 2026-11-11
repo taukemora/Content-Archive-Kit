@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-10T12:50:48.542916+00:00",
+  "captured_at": "2026-11-11T03:03:20.848373+00:00",
   "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/behavior-acceptance.md",
@@ -32,12 +32,12 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 8713,
-      "sha256": "b2581865ef18c3387102d391c0b05ce3717335a71e395b97aba3ae58dc36ad37"
+      "bytes": 9267,
+      "sha256": "b64ba10b18a7a3d7f14f94bbf9060275b27123f09185038663901d55e0e62f1d"
     },
     "README.zh-CN.md": {
-      "bytes": 7771,
-      "sha256": "6a618595009b6f8dd95f702108a2b0ea3da42cb7ec217297ca65ea9d02aa239c"
+      "bytes": 8228,
+      "sha256": "c70df0a9530829bb848fe0b70a0a3abb1e4ccd0202b5edad1e5c61fffaf62f3e"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -52,8 +52,8 @@
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
     "docs/behavior-acceptance.md": {
-      "bytes": 19611,
-      "sha256": "20264d6d2de5b12d505a436eb6679875c3cefbe22b1be9fd743ba97a9dbe9947"
+      "bytes": 26481,
+      "sha256": "c5d199a599bad142fd47c2ba9e2fe6575aad4ba74c6efc6a2f7830905c740359"
     },
     "docs/ci-acceptance.md": {
       "bytes": 13709,
@@ -86,6 +86,18 @@
     "docs/reviews/2026-11-10-skill-probe-receipt-03.json": {
       "bytes": 100361,
       "sha256": "754853f79d56f10238708fea3ea7de7e234dde5d057630e1dc8ffb57eab83f0d"
+    },
+    "docs/reviews/2026-11-11-conversation-receipt-01.json": {
+      "bytes": 428107,
+      "sha256": "9895f2afcef5e921d881d6f8004bcadef65c8d1bfc85e3def6bead571324d606"
+    },
+    "docs/reviews/2026-11-11-conversation-receipt-02.json": {
+      "bytes": 592669,
+      "sha256": "cf7d566e50479f0d3282880c5f4e215e85e61c1b986a3a63e65408d483dc82a6"
+    },
+    "docs/reviews/2026-11-11-conversation-verification.json": {
+      "bytes": 11686,
+      "sha256": "3df7c7cf03a4ae18ce458145432a821c5c15f1603a18658aca82b73da88ee0b7"
     },
     "examples/README.md": {
       "bytes": 1497,
