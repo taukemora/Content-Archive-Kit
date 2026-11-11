@@ -148,6 +148,43 @@ In the bilingual run, all eighteen action/routing checks passed, yet the explici
 no-save response still invited the user to save later, contrary to the skill.
 Do not interpret a passing action grade as complete response-policy compliance.
 
+## Reader media scheduling
+
+`test_reader_media_scheduler.py` runs the production scheduler through Node and
+checks its integration/security contract. `reader_media_scheduler.mjs` contains
+15 behavior cases with controlled geometry and load promises; those nested cases
+are not 15 additional unittest tests. Run directly from the checkout root:
+
+```bash
+node tests/reader_media_scheduler.mjs
+```
+
+The opt-in real-browser fixture includes mixed image aspect ratios, a repeated
+image/attachment object, a slow first image, distant media, and a genuinely hidden
+mobile pane. It counts requests when they start, including unfinished transfers,
+and requires decoded pixels while the next image is still below the fold. A bad
+geometry precondition fails rather than skipping the assertion. Native `src`
+assignment is observed to catch transient placeholder collapse before decoding.
+The existing normal/tamper browser test now tests authenticated invalid PNG bytes
+as a separate decode-error case, then uses a valid generated PNG for normal
+acceptance. An error placeholder cannot satisfy the happy path.
+
+Install Playwright and Chromium in an optional test environment outside this
+checkout. Set `CA_PLAYWRIGHT_PYTHON` to that environment's interpreter; optionally
+set `CA_PLAYWRIGHT_BROWSER` to an existing Chromium executable instead of using
+Playwright's installed browser. From `tests/`:
+
+```bash
+env -u PYTHONPATH CA_RUN_BROWSER_TESTS=1 \
+  CA_PLAYWRIGHT_PYTHON="$CA_PLAYWRIGHT_PYTHON" \
+  ../.venv/bin/python -B -m unittest \
+  test_reader_media_scheduler test_encrypted_site.TestBrowserAcceptance -v
+```
+
+The default suite/hosted CI does not run Chromium. Current source-bound local
+results and extra parent-run lifecycle/upgrade probes are documented in
+[reader media acceptance](../docs/reader-media-acceptance.md).
+
 ## Repository checks
 
 `tools/check_repository.py` is the public-tree gate used locally and in CI:
@@ -236,11 +273,13 @@ step run outside the GitHub workflow; the workflow itself does not invoke it.
 | `CA_TEST_SCRATCH` | Parent directory for throwaway project trees. Defaults to `content-archive-kit-tests` under the platform temp dir (`TMPDIR`). |
 | `CA_TEST_PYTHON` | Interpreter used for subprocess-level tests. Defaults to `<checkout>/.venv/bin/python` when present, else the running interpreter. |
 | `CA_RUN_INSTANCE_TESTS=1` | Enables the read-only dry run that needs a real, configured archive (skipped in a public checkout). |
-| `CA_RUN_BROWSER_TESTS=1` | Enables the real-Chromium reader test. |
+| `CA_RUN_BROWSER_TESTS=1` | Enables both real-Chromium reader acceptance tests. |
 | `CA_PLAYWRIGHT_PYTHON` | Interpreter that has Playwright installed (only used with `CA_RUN_BROWSER_TESTS=1`). |
+| `CA_PLAYWRIGHT_BROWSER` | Optional existing Chromium executable; otherwise use Playwright's installed Chromium. |
 
-Two tests are skipped by default: the instance dry run (no archive in a public
-checkout) and the browser acceptance test (needs Chromium + Playwright). The
+Three tests are skipped by default: the instance dry run (no archive in a public
+checkout) and the normal/tamper and media-scheduling browser acceptance tests
+(need Chromium + Playwright). The
 Node interop test runs whenever `node` is on `PATH`. The repository checker
 needs `node` whenever the tree contains JavaScript, and the JavaScript syntax
 tests skip themselves when `node` is absent.

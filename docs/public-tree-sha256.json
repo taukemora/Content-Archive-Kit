@@ -1,8 +1,8 @@
 {
-  "captured_at": "2026-11-11T03:03:20.848373+00:00",
+  "captured_at": "2026-11-11T05:15:20.526960+00:00",
   "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
-  "acceptance_record": "docs/behavior-acceptance.md",
+  "acceptance_record": "docs/reader-media-acceptance.md",
   "license": "MIT",
   "skill_author": "taukemora, Hermes Agent",
   "self_excluded": true,
@@ -20,8 +20,8 @@
       "sha256": "becb2da77bb47e103ea25d2bd1bae960faa6daa8c640cc6cc3d113aa8136bc55"
     },
     "CHANGELOG.md": {
-      "bytes": 3605,
-      "sha256": "ac9ccbabbc730213794efa752d22c54212275a6a8115d51305a7a3f0d4e996d8"
+      "bytes": 4739,
+      "sha256": "40871603d80dd441b34d6ce867d1cec113ddbf2a62159f54e4200c6229e7b465"
     },
     "IDEA.md": {
       "bytes": 9396,
@@ -32,12 +32,12 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 9267,
-      "sha256": "b64ba10b18a7a3d7f14f94bbf9060275b27123f09185038663901d55e0e62f1d"
+      "bytes": 10001,
+      "sha256": "c7d1d0394a854ed6c00a97bbbf8c13c2d950b42c857bf3a4df27ab0f8b09fe7b"
     },
     "README.zh-CN.md": {
-      "bytes": 8228,
-      "sha256": "c70df0a9530829bb848fe0b70a0a3abb1e4ccd0202b5edad1e5c61fffaf62f3e"
+      "bytes": 8763,
+      "sha256": "c4a18b5a04a06ebba892434e5dccd69e93cdbe4b6f2951d6eed41438d02fa7b9"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -62,6 +62,10 @@
     "docs/migration-baseline.json": {
       "bytes": 13529,
       "sha256": "71c21b0caca122071dad19339614c26fd153cad88e9fff31aa5245ea938b01b0"
+    },
+    "docs/reader-media-acceptance.md": {
+      "bytes": 8290,
+      "sha256": "da4071ec86dda3fa7cffb191afe2e47e9d8e969b704e2c6b1ccd4f8e2743b654"
     },
     "docs/releases/v0.1.0.md": {
       "bytes": 6347,
@@ -99,6 +103,10 @@
       "bytes": 11686,
       "sha256": "3df7c7cf03a4ae18ce458145432a821c5c15f1603a18658aca82b73da88ee0b7"
     },
+    "docs/reviews/2026-11-11-reader-media-prefetch.json": {
+      "bytes": 11998,
+      "sha256": "148ef48fa8a9d3a8bd71abe11542d42d2d0a53113039984aeb2f40785cba3ad9"
+    },
     "examples/README.md": {
       "bytes": 1497,
       "sha256": "ec375409c3b20ce3a78bff0352ba2b034f0dbf108e3bffbd8f621d3397153baa"
@@ -132,8 +140,8 @@
       "sha256": "4dc0e028766484859b355c328f209268d7eacb361806d6e226185acd3d7cbf4f"
     },
     "scripts/archive_page.html": {
-      "bytes": 45757,
-      "sha256": "d5786bdd30f89285e65237456ac91e324f403a33d7e1ccf4a38543e5d1671961"
+      "bytes": 46185,
+      "sha256": "0f60819c3587a67dddcf2f5b054a1c9f870e5003e2925885e8048c8629472008"
     },
     "scripts/archive_url.py": {
       "bytes": 52915,
@@ -168,8 +176,8 @@
       "sha256": "a09d38d1ec60cd650f54a0722defeff27c5fdc0ff6ba0c8307a342f2e60244c9"
     },
     "scripts/encrypted_reader.js": {
-      "bytes": 21714,
-      "sha256": "7ecd203323a2f590d1403c7cadfe3d421cdf0ebb9f23acc1be52a6272c75323d"
+      "bytes": 35585,
+      "sha256": "c19ae210ace58e96c758510dfb61b5c43c1d248696301b75635a3133a1ac1fb6"
     },
     "scripts/encrypted_site.py": {
       "bytes": 34983,
@@ -272,8 +280,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 18682,
-      "sha256": "fdd69b0866ec0583a2074ace535aaf770f63235f46f0c0f326e1ea28b563667b"
+      "bytes": 20668,
+      "sha256": "6fd99bd26ea8cde06dbec525b864f5795862f681b5aa7148f7ffef3c22c2159b"
     },
     "tests/_support.py": {
       "bytes": 4129,
@@ -284,8 +292,8 @@
       "sha256": "6ad07996542e2220c39b1e75f3d2189de7c6c43ec134211ce665e26de32e6655"
     },
     "tests/browser_encrypted_reader.py": {
-      "bytes": 11880,
-      "sha256": "436241b07d608c4b86ad6e25872ffeccfd180f61d4c40fe34df040635a34c4b6"
+      "bytes": 35153,
+      "sha256": "a002cf72a909df826b286d3c5d056cf8f8052bc09e9636dc832c49f53150ba02"
     },
     "tests/check_nas_web.py": {
       "bytes": 10922,
@@ -294,6 +302,10 @@
     "tests/fixtures/latest-fetch-synthetic.json": {
       "bytes": 3011,
       "sha256": "1b4cbec9785ffab605d0608414785f94bb4046c860ce117e4937b3b098963c30"
+    },
+    "tests/reader_media_scheduler.mjs": {
+      "bytes": 16887,
+      "sha256": "b6377e477a819a5a5bd8def9f9141f896b27dc2cf8c326396d371783725a6a8b"
     },
     "tests/run_skill_intake_probe.py": {
       "bytes": 19498,
@@ -312,8 +324,8 @@
       "sha256": "9a6ee22e32648e28bce076f0351651e5d9b393beb3e8727d2e11a5dec26ae9ae"
     },
     "tests/test_encrypted_site.py": {
-      "bytes": 40473,
-      "sha256": "8975b36624b2eda26a8c0944658e2959e72efe37ac41883c5f3bfa4661e15771"
+      "bytes": 41039,
+      "sha256": "7c90265eeb61612ecf6cbfee6b57bdac2608dd4dc48b47136f25f17e3e40b32c"
     },
     "tests/test_existing_archive_acceptance.py": {
       "bytes": 29140,
@@ -398,6 +410,10 @@
     "tests/test_reader_boundaries.py": {
       "bytes": 8366,
       "sha256": "cb8fcfbf982923201d0df2b0398ed69b02c91bf069da14f6d775e6eb48284158"
+    },
+    "tests/test_reader_media_scheduler.py": {
+      "bytes": 9597,
+      "sha256": "b2adae7b2847ada1b0fe268fab6cf3e30e9053c362d50792cd786659bf985fb2"
     },
     "tests/test_reliability_repair.py": {
       "bytes": 50357,

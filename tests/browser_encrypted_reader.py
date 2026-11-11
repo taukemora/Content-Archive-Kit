@@ -14,9 +14,12 @@ import argparse
 import functools
 import http.server
 import json
+import os
 import socket
 import sys
 import threading
+import time
+import urllib.parse
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright, expect
@@ -32,8 +35,8 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def serve(directory: Path):
-    handler = functools.partial(QuietHandler, directory=str(directory))
+def serve(directory: Path, handler_cls=QuietHandler):
+    handler = functools.partial(handler_cls, directory=str(directory))
     sock = socket.socket()
     sock.bind(("127.0.0.1", 0))
     port = sock.getsockname()[1]
@@ -44,16 +47,98 @@ def serve(directory: Path):
     return server, f"http://127.0.0.1:{port}"
 
 
+MEDIA_SIZE_SCRIPT = """
+(() => {
+  const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  if (!original || !original.set) return;
+  window.__caMediaSizes = [];
+  Object.defineProperty(HTMLImageElement.prototype, 'src', {
+    configurable: original.configurable,
+    enumerable: original.enumerable,
+    get: original.get,
+    set(value) {
+      const before = this.getBoundingClientRect().height;
+      original.set.call(this, value);
+      if (String(value).startsWith('blob:')) {
+        window.__caMediaSizes.push({
+          before,
+          after: this.getBoundingClientRect().height,
+          naturalWidth: this.naturalWidth,
+          complete: this.complete,
+        });
+      }
+    },
+  });
+})();
+"""
+
+
+def make_media_handler(events, state, lock, slow_ms: int, delay_ms: int):
+    """Delay known media objects during the measured page load.
+
+    The first pass only discovers object paths, so the probe knows exactly
+    which requests are media. The measured second pass sets ``phase`` to
+    ``delayed`` and ``media`` to that path set; the first such request gets the
+    long delay and the rest a short one. Index and article body requests are
+    never delayed, and no request-order guessing is involved.
+    """
+
+    class MediaHandler(QuietHandler):
+        def do_GET(self):
+            path = self.path.split("?", 1)[0]
+            rel = path.lstrip("/")
+            entry = None
+            delay = 0.0
+            if "/objects/" in path:
+                with lock:
+                    if state.get("phase") == "delayed" and rel in state.get("media", set()):
+                        state["seq"] += 1
+                        delay = slow_ms / 1000.0 if state["seq"] == 1 else delay_ms / 1000.0
+                    entry = {
+                        "path": rel,
+                        "start": time.monotonic(),
+                        "end": None,
+                        "delay": delay,
+                        "phase": state.get("phase", "boot"),
+                        "label": state.get("label", "boot"),
+                        "seq": state.get("seq", 0),
+                    }
+                    events.append(entry)
+                if delay:
+                    time.sleep(delay)
+            try:
+                super().do_GET()
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            finally:
+                if entry is not None:
+                    entry["end"] = time.monotonic()
+
+    return MediaHandler
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", required=True)
     parser.add_argument("--passphrase", required=True)
     parser.add_argument(
         "--mode",
-        choices=("normal", "tamper", "tamper-site", "tamper-article", "tamper-image"),
+        choices=("normal", "tamper", "tamper-site", "tamper-article", "tamper-image", "decode-error", "media"),
         default="normal",
     )
     parser.add_argument("--tamper-rel", default="")
+    parser.add_argument(
+        "--article-title",
+        default="",
+        help="card title to open in media mode (default: the first card)",
+    )
+    parser.add_argument("--slow-first-ms", type=int, default=1500)
+    parser.add_argument("--image-delay-ms", type=int, default=120)
+    parser.add_argument(
+        "--browser",
+        default=os.environ.get("CA_PLAYWRIGHT_BROWSER", ""),
+        help="optional Chromium executable (generic override for a mismatched Playwright cache)",
+    )
     args = parser.parse_args()
 
     site_dir = Path(args.dir).resolve()
@@ -72,17 +157,37 @@ def main() -> int:
         blob[-1] ^= 0x01
         target.write_bytes(bytes(blob))
 
-    server, base = serve(site_dir)
+    media_events: list[dict] = []
+    media_state = {"phase": "boot", "seq": 0, "media": set(), "label": "boot"}
+    media_lock = threading.Lock()
+    media_rels: list[str] = []
+    requested: set[str] = set()
+    pane = None
+    geometry: list[dict] = []
+    decoded: list[dict] = []
+    handler_cls = (
+        make_media_handler(media_events, media_state, media_lock, args.slow_first_ms, args.image_delay_ms)
+        if args.mode == "media"
+        else QuietHandler
+    )
+    server, base = serve(site_dir, handler_cls)
     failures: list[str] = []
     requests: list[str] = []
     console_errors: list[str] = []
+    runtime_errors: list[str] = []
 
     try:
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
+            launch_options = {"headless": True}
+            if args.browser:
+                launch_options["executable_path"] = args.browser
+            browser = pw.chromium.launch(**launch_options)
             page = browser.new_page(viewport={"width": 1280, "height": 900})
             page.on("request", lambda req: requests.append(req.url))
             page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
+            page.on("pageerror", lambda err: runtime_errors.append(str(err)))
+            if args.mode == "media":
+                page.add_init_script(MEDIA_SIZE_SCRIPT)
 
             page.goto(base + "/index.html", wait_until="load")
             expect(page.locator("#ca-unlock")).to_be_visible()
@@ -103,7 +208,7 @@ def main() -> int:
                     failures.append("tampered site rendered cards")
                 if NEEDLE_A in page.locator("body").inner_text():
                     failures.append("tampered site leaked body")
-            elif args.mode in ("tamper-article", "tamper-image"):
+            elif args.mode in ("tamper-article", "tamper-image", "decode-error"):
                 page.fill("#ca-passphrase", args.passphrase)
                 page.click("#ca-unlock-submit")
                 expect(page.locator(".article-card")).to_have_count(2, timeout=30000)
@@ -115,11 +220,346 @@ def main() -> int:
                 else:
                     expect(page.locator(".article-body .img-missing")).to_be_visible(timeout=30000)
                     if NEEDLE_A not in page.locator(".article-body").inner_text():
-                        failures.append("image tamper broke the rest of the article")
+                        failures.append("image failure broke the rest of the article")
                     if page.locator(".article-body img[data-ca-src]").count():
                         src = page.locator(".article-body img[data-ca-src]").first.get_attribute("src")
                         if src and src.startswith("blob:"):
-                            failures.append("tampered image was hydrated")
+                            failures.append("failed image retained a blob URL")
+            elif args.mode == "media":
+                page.fill("#ca-passphrase", args.passphrase)
+                page.click("#ca-unlock-submit")
+                page.wait_for_function(
+                    "() => document.querySelectorAll('.article-card').length >= 1",
+                    timeout=30000,
+                )
+                if args.article_title:
+                    card = page.locator(".article-card", has_text=args.article_title).first
+                else:
+                    card = page.locator(".article-card").first
+                if card.count() == 0:
+                    failures.append(f"article card not found: {args.article_title!r}")
+                else:
+                    # Discovery pass: learn the article id and every media
+                    # occurrence (images and attachment links share objects).
+                    card.click()
+                    page.wait_for_function(
+                        "() => document.querySelectorAll('.article-body img[data-ca-src]').length >= 1",
+                        timeout=30000,
+                    )
+                    media_rels = page.eval_on_selector_all(
+                        ".article-body img[data-ca-src], .article-body a[data-ca-href]",
+                        "els => els.map(e => e.getAttribute('data-ca-src')"
+                        " || e.getAttribute('data-ca-href'))",
+                    )
+                    article_id = page.evaluate(
+                        "() => { const c = document.querySelector('.article-card.active');"
+                        " return c ? c.getAttribute('data-id') : null; }"
+                    )
+                    if len(set(media_rels)) < 6:
+                        failures.append(f"media fixture has only {len(set(media_rels))} objects")
+                    if len(media_rels) < len(set(media_rels)) + 2:
+                        failures.append("media fixture does not repeat an object")
+                    if not article_id:
+                        failures.append("could not resolve the open article id")
+                    else:
+                        # Measured pass: reload the same article with known
+                        # media objects, so the server delays those exact
+                        # requests instead of guessing from arrival order.
+                        page.goto("about:blank")
+                        page.goto(
+                            base + "/index.html#" + urllib.parse.quote(article_id, safe=""),
+                            wait_until="load",
+                        )
+                        with media_lock:
+                            media_state["media"] = set(media_rels)
+                            media_state["phase"] = "delayed"
+                            media_state["label"] = "media-desktop"
+                            media_state["seq"] = 0
+                        page.fill("#ca-passphrase", args.passphrase)
+                        page.click("#ca-unlock-submit")
+                        page.wait_for_function(
+                            "() => document.querySelectorAll('.article-body img[data-ca-src]').length >= 6",
+                            timeout=30000,
+                        )
+                pane = page.evaluate(
+                    "() => { const r = document.getElementById('reader-pane')"
+                    ".getBoundingClientRect(); return { x: r.x, y: r.y,"
+                    " width: r.width, height: r.height }; }"
+                )
+                img_refs = page.eval_on_selector_all(
+                    ".article-body img[data-ca-src]",
+                    "els => els.map(e => e.getAttribute('data-ca-src'))",
+                )
+                geometry = page.eval_on_selector_all(
+                    ".article-body img[data-ca-src]",
+                    "els => els.map(e => { const r = e.getBoundingClientRect();"
+                    " return { top: r.top, bottom: r.bottom }; })",
+                )
+                # Wait for real decoded pixels, not merely a blob URL.
+                page.wait_for_function(
+                    "() => { const imgs = [...document.querySelectorAll("
+                    "'.article-body img[data-ca-src]')];"
+                    " return imgs.filter(i => i.src.startsWith('blob:')"
+                    " && i.complete && i.naturalWidth > 0).length >= 2; }",
+                    timeout=20000,
+                )
+                # Let the deliberately slow first image finish so its request
+                # interval is recorded; a serial implementation still shows the
+                # second start after the first end.
+                page.wait_for_timeout(args.slow_first_ms + 500)
+                decoded = page.eval_on_selector_all(
+                    ".article-body img[data-ca-src]",
+                    "els => els.map(e => ({ rel: e.getAttribute('data-ca-src'),"
+                    " src: e.getAttribute('src'), ready: e.complete && e.naturalWidth > 0,"
+                    " width: e.naturalWidth }))",
+                )
+                final_geometry = page.eval_on_selector_all(
+                    ".article-body img[data-ca-src]",
+                    "els => els.map(e => { const r = e.getBoundingClientRect();"
+                    " return { top: r.top, bottom: r.bottom }; })",
+                )
+                media_sizes = page.evaluate("window.__caMediaSizes || []")
+                with media_lock:
+                    snapshot_time = time.monotonic()
+                    snapshot = [dict(event) for event in media_events]
+                rel_set = set(media_rels)
+                hits = []
+                for event in snapshot:
+                    if (
+                        event["path"] in rel_set
+                        and event.get("phase") == "delayed"
+                        and event.get("label") == "media-desktop"
+                    ):
+                        # A request that is still in flight at snapshot time was
+                        # started and must be sealed, not treated as absent.
+                        if event["end"] is None:
+                            event["end"] = snapshot_time
+                        hits.append(event)
+                hits.sort(key=lambda event: event["start"])
+                requested = {event["path"] for event in hits}
+                fold_top = pane["y"] if pane else 0
+                fold_bottom = pane["y"] + pane["height"] if pane else 0
+                if len(hits) < 2:
+                    failures.append(f"expected several media requests, saw {len(hits)}")
+                else:
+                    slow_hits = [event for event in hits if event["delay"] >= args.slow_first_ms / 2000.0]
+                    if not slow_hits:
+                        failures.append("the deliberately slow media request was not delayed")
+                    else:
+                        slow = slow_hits[0]
+                        others = [event for event in hits if event is not slow]
+                        if not any(event["start"] < slow["end"] for event in others):
+                            failures.append("other images waited for the slow image to finish")
+                    # Peak concurrent image requests.
+                    points = []
+                    for event in hits:
+                        points.append((event["start"], 1))
+                        points.append((event["end"], -1))
+                    points.sort(key=lambda point: (point[0], point[1]))
+                    peak = 0
+                    current = 0
+                    for _, delta in points:
+                        current += delta
+                        peak = max(peak, current)
+                    if peak > 3:
+                        failures.append(f"more than three concurrent media requests: {peak}")
+                    if peak < 2:
+                        failures.append(f"media requests were effectively serial: peak {peak}")
+                    # The image intersecting the pane belongs to the first wave.
+                    visible = [
+                        rel
+                        for rel, rect in zip(img_refs, geometry)
+                        if rect["bottom"] >= fold_top and rect["top"] <= fold_bottom
+                    ]
+                    earliest = min(event["start"] for event in hits)
+                    first_wave = {
+                        event["path"]
+                        for event in hits
+                        if event["start"] <= earliest + 0.15 and event.get("phase") == "delayed"
+                    }
+                    if visible and not set(visible) <= first_wave:
+                        failures.append(
+                            "the visible image was not in the first request wave: "
+                            f"visible={len(visible)} first={len(first_wave & set(visible))}"
+                        )
+                # No blob src assignment may pass through a zero-height window
+                # between setting the URL and decoding it.
+                if not media_sizes:
+                    failures.append("no blob src assignment was observed")
+                collapsed = [
+                    size
+                    for size in media_sizes
+                    if size["before"] >= 120 and size["after"] < 120 and not size["naturalWidth"]
+                ]
+                if collapsed:
+                    failures.append(
+                        f"pending image collapsed to zero height before decoding: {len(collapsed)}"
+                    )
+                # Distant objects (outside the two-screen prefetch window) must
+                # not be started before scrolling. Duplicate occurrences are
+                # ranked by their best node, not by a spanning bounding box.
+                if not pane:
+                    failures.append("reader pane was not measurable")
+                else:
+                    window_top = fold_top - 2 * pane["height"]
+                    window_bottom = fold_bottom + 2 * pane["height"]
+                    near = {
+                        rel
+                        for rel, rect in zip(img_refs, geometry)
+                        if rect["bottom"] >= window_top and rect["top"] <= window_bottom
+                    }
+                    far = set(media_rels) - near
+                    if requested & far:
+                        failures.append(
+                            f"far objects were fetched before scrolling: {sorted(requested & far)}"
+                        )
+                    if media_rels[-1] not in far:
+                        failures.append("fixture did not place the repeated object beyond the prefetch window")
+                    if (
+                        not final_geometry
+                        or final_geometry[0]["bottom"] <= fold_top
+                        or final_geometry[0]["top"] >= fold_bottom
+                    ):
+                        failures.append("the first image is not visible at rest")
+                    if len(final_geometry) < 2:
+                        failures.append("fixture has no second image")
+                    else:
+                        target = final_geometry[1]
+                        if target["top"] <= fold_bottom:
+                            failures.append(
+                                "fixture did not place the second image below the fold: "
+                                f"top={target['top']:.0f} fold={fold_bottom:.0f}"
+                            )
+                        elif target["top"] > fold_bottom + 2 * pane["height"]:
+                            failures.append("the second image is outside the two-screen prefetch window")
+                        elif not decoded[1]["ready"]:
+                            failures.append("the below-fold prefetched image was not decoded")
+                if any(item["ready"] and not item["width"] for item in decoded):
+                    failures.append("a hydrated image has zero naturalWidth")
+                if decoded and decoded[-1]["ready"]:
+                    failures.append("a far image was decoded before scrolling")
+
+                page.eval_on_selector(
+                    "#reader-pane", "el => { el.scrollTop = el.scrollHeight; }"
+                )
+                page.wait_for_function(
+                    "(rel) => { const imgs = [...document.querySelectorAll("
+                    "'.article-body img[data-ca-src]')];"
+                    " const same = imgs.filter(img => img.getAttribute('data-ca-src') === rel);"
+                    " return same.length >= 2 && same.every(img => img.src.startsWith('blob:')"
+                    " && img.complete && img.naturalWidth > 0); }",
+                    arg=media_rels[-1],
+                    timeout=30000,
+                )
+                attachment = page.locator(".article-body a", has_text="重复图4附件")
+                if attachment.count() != 1:
+                    failures.append("the shared attachment link was not found")
+                else:
+                    href = attachment.first.get_attribute("href") or ""
+                    if not href.startswith("blob:"):
+                        failures.append("the attachment link was not hydrated to a blob URL")
+                    if attachment.first.get_attribute("data-ca-href") is not None:
+                        failures.append("the hydrated attachment kept its encrypted marker")
+                with media_lock:
+                    after_scroll = [dict(event) for event in media_events]
+                duplicate_events = [
+                    event
+                    for event in after_scroll
+                    if event.get("phase") == "delayed"
+                    and event.get("label") == "media-desktop"
+                    and event["path"] == media_rels[-1]
+                ]
+                if not duplicate_events:
+                    failures.append("scrolling did not request the last image")
+                elif len(duplicate_events) != 1:
+                    failures.append(
+                        f"the repeated object was requested {len(duplicate_events)} times"
+                    )
+
+                # Stop the desktop scheduler before measuring the mobile page,
+                # so its trailing requests cannot be mistaken for mobile work.
+                page.close()
+
+                # Mobile: hiding the pane (real 390x844 layout) must pause new
+                # downloads, and showing it again must resume the same
+                # scheduler without a remount.
+                with media_lock:
+                    media_state["label"] = "media-mobile"
+                    media_state["seq"] = 0
+                mobile = browser.new_page(viewport={"width": 390, "height": 844})
+                mobile.add_init_script(MEDIA_SIZE_SCRIPT)
+                mobile.on("pageerror", lambda err: runtime_errors.append(str(err)))
+                mobile.goto(base + "/index.html", wait_until="load")
+                mobile.fill("#ca-passphrase", args.passphrase)
+                mobile.click("#ca-unlock-submit")
+                expect(mobile.locator(".article-card")).to_have_count(2, timeout=30000)
+                mobile.locator(".article-card", has_text=TITLE_A).click()
+                expect(mobile.locator("#reader-pane")).to_be_visible(timeout=30000)
+                mobile.wait_for_function(
+                    "() => document.querySelectorAll('.article-body img[data-ca-src]').length >= 6",
+                    timeout=30000,
+                )
+                mobile.wait_for_timeout(80)
+                with media_lock:
+                    at_hide = {
+                        event["path"] for event in media_events
+                        if event.get("label") == "media-mobile"
+                    }
+                if not at_hide:
+                    failures.append("the mobile pane never started a media request")
+                # Use the real back-button handler, but invoke it synchronously
+                # so the measured "after hide" window starts at the actual
+                # display:none transition rather than after click actionability.
+                mobile.evaluate("() => document.getElementById('mobile-back-btn').click()")
+                with media_lock:
+                    hidden_at = time.monotonic()
+                expect(mobile.locator("#reader-pane")).to_be_hidden(timeout=30000)
+                mobile.wait_for_timeout(2200)
+                with media_lock:
+                    late = {
+                        event["path"]
+                        for event in media_events
+                        if event.get("label") == "media-mobile"
+                        and event["start"] > hidden_at
+                    }
+                if late:
+                    failures.append(f"a hidden mobile pane kept downloading: {len(late)} new objects")
+                # Re-show the existing mount instead of remounting, so this
+                # proves the scheduler observes the pane becoming measurable
+                # and resumes its pending queue.
+                mobile.evaluate(
+                    "() => document.getElementById('app-layout').classList.add('mobile-reading')"
+                )
+                expect(mobile.locator("#reader-pane")).to_be_visible(timeout=30000)
+                resumed = False
+                deadline = time.monotonic() + 8
+                while time.monotonic() < deadline:
+                    with media_lock:
+                        after_show = {
+                            event["path"]
+                            for event in media_events
+                            if event.get("label") == "media-mobile"
+                            and event["start"] > hidden_at
+                        }
+                    if after_show:
+                        resumed = True
+                        break
+                    mobile.wait_for_timeout(100)
+                if not resumed:
+                    failures.append("re-showing the mobile pane did not resume pending media")
+                mobile.wait_for_function(
+                    "() => [...document.querySelectorAll('.article-body img[data-ca-src]')]"
+                    " .some(img => img.src.startsWith('blob:') && img.complete"
+                    " && img.naturalWidth > 0);",
+                    timeout=20000,
+                )
+                mobile_sizes = mobile.evaluate("window.__caMediaSizes || []")
+                if any(
+                    size["before"] >= 120 and size["after"] < 120 and not size["naturalWidth"]
+                    for size in mobile_sizes
+                ):
+                    failures.append("a mobile pending image collapsed before decoding")
+                mobile.close()
             else:
                 # Wrong passphrase must fail closed and keep the overlay.
                 page.fill("#ca-passphrase", "wrong horse battery staple")
@@ -154,15 +594,15 @@ def main() -> int:
                 if NEEDLE_B in body_text:
                     failures.append("stale async body from the previous article was rendered")
 
-                # Image must be a decrypted same-origin blob, never library/.
+                # Normal acceptance requires decoded pixels from a valid PNG;
+                # an error placeholder must never make the happy path pass.
                 page.wait_for_function(
                     "() => { const i = document.querySelector('.article-body img[data-ca-src]');"
-                    " return i && i.src.startsWith('blob:'); }",
+                    " return i && i.src.startsWith('blob:') && i.complete && i.naturalWidth > 0; }",
                     timeout=30000,
                 )
-                img_src = page.locator(".article-body img[data-ca-src]").first.get_attribute("src")
-                if not img_src or not img_src.startswith("blob:"):
-                    failures.append("image was not hydrated to a blob URL")
+                if page.locator(".article-body .img-missing").count():
+                    failures.append("a valid image was replaced by an error placeholder")
 
                 storage = page.evaluate(
                     "() => ({local: localStorage.length, session: sessionStorage.length})"
@@ -235,8 +675,30 @@ def main() -> int:
     for message in console_errors:
         if "Content Security Policy" in message or "CSP" in message:
             failures.append(f"CSP violation: {message}")
+    for message in runtime_errors:
+        failures.append(f"page error: {message}")
 
-    print(json.dumps({"ok": not failures, "failures": failures}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "ok": not failures,
+                "failures": failures,
+                "media_events": media_events if args.mode == "media" else [],
+                "media_detail": (
+                    {
+                        "rels": media_rels,
+                        "requested": sorted(requested),
+                        "pane": pane,
+                        "geometry": geometry,
+                        "decoded": decoded,
+                    }
+                    if args.mode == "media"
+                    else {}
+                ),
+            },
+            ensure_ascii=False,
+        )
+    )
     return 0 if not failures else 1
 
 
