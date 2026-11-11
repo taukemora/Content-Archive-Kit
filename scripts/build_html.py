@@ -12,6 +12,7 @@ import re
 import sys
 import urllib.parse
 import xml.etree.ElementTree as ET
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,7 @@ SCRIPTS_DIR = Path(__file__).resolve().parent
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from common import iso, normalize_body_headings, now, read_entry, summary_section
+from common import TZ, iso, normalize_body_headings, now, read_entry, summary_section
 from markdown_it import MarkdownIt
 from media_markup import install_media_renderer
 
@@ -215,6 +216,124 @@ def _safe_json_embed(obj: Any) -> str:
     return s.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
 
 
+_DATE_ONLY_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
+_DATETIME_RE = re.compile(
+    r"^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?"
+    r"\s*(Z|[+-]\d{2}:?\d{2})?$"
+)
+_SORT_KEY_RE = re.compile(
+    r"^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?Z$"
+)
+_EPOCH_DATE = date(1970, 1, 1)
+
+
+def _parse_date_fields(raw: Any) -> tuple[str, str, bool]:
+    """Return ``(display_date, sort_key, valid)`` for a stored date value.
+
+    ``display_date`` is the calendar date as written by the source, so a
+    timestamp such as ``2026-01-09T23:30:00-05:00`` stays on 2026-01-09 and no
+    time of day is invented. ``sort_key`` is a UTC-normalised string so
+    catalogs written in different offsets compare correctly; a date-only value
+    keeps date-only precision (``2026-01-05``) instead of becoming midnight.
+    Naive timestamps are interpreted in the archive timezone (the same ``TZ``
+    that ``common.iso`` writes), and anything unparseable is reported invalid.
+
+    Malformed metadata must never abort a build: offsets outside ``00:00`` ..
+    ``23:59`` and UTC conversions that leave the representable year range are
+    rejected as invalid. Sub-second digits are kept (canonically padded to
+    nine) so ordering never collapses two values onto the same whole second.
+    """
+    text = str(raw or "").strip()
+    if not text:
+        return ("", "", False)
+    if _DATE_ONLY_RE.match(text):
+        try:
+            day = datetime.strptime(text, "%Y-%m-%d").date()
+        except ValueError:
+            return ("", "", False)
+        return (day.isoformat(), day.isoformat(), True)
+    match = _DATETIME_RE.match(text)
+    if not match:
+        return ("", "", False)
+    fraction = match.group(7) or ""
+    nanos = int(fraction.ljust(9, "0")) if fraction else 0
+    offset = match.group(8)
+    if offset in (None, ""):
+        tzinfo = TZ
+    elif offset == "Z":
+        tzinfo = timezone.utc
+    else:
+        sign = -1 if offset[0] == "-" else 1
+        digits = offset[1:].replace(":", "")
+        hours = int(digits[:2])
+        minutes = int(digits[2:4])
+        # ``+02:99`` is not 3h39m; only real UTC offsets are accepted.
+        if hours > 23 or minutes > 59:
+            return ("", "", False)
+        try:
+            tzinfo = timezone(sign * timedelta(hours=hours, minutes=minutes))
+        except ValueError:
+            return ("", "", False)
+    try:
+        moment = datetime(
+            int(match.group(1)),
+            int(match.group(2)),
+            int(match.group(3)),
+            int(match.group(4)),
+            int(match.group(5)),
+            int(match.group(6) or 0),
+            tzinfo=tzinfo,
+        )
+        utc_moment = moment.astimezone(timezone.utc)
+    except (ValueError, OverflowError, OSError):
+        # Includes years whose UTC conversion falls outside 0001..9999.
+        return ("", "", False)
+    if not 1 <= utc_moment.year <= 9999:
+        return ("", "", False)
+    sort_key = (
+        f"{utc_moment.year:04d}-{utc_moment.month:02d}-{utc_moment.day:02d}"
+        f"T{utc_moment.hour:02d}:{utc_moment.minute:02d}:{utc_moment.second:02d}"
+    )
+    if nanos:
+        sort_key += f".{nanos:09d}"
+    return (moment.date().isoformat(), sort_key + "Z", True)
+
+
+def _sort_compare_value(value: str) -> tuple[int, int, int, int]:
+    """Map an exported sort key to a comparable ``(known, seconds, nanos, rank)``.
+
+    The exported string keeps its compact whole-second shape, but comparisons
+    must not be plain string comparisons: ``"…:00Z"`` sorts after ``"…:00.1Z"``
+    byte-wise even though the whole second is earlier. Date-only values keep
+    lower rank than an equal-day timestamp, matching their historical
+    precision-first ordering.
+    """
+    if not value:
+        return (0, 0, 0, 0)
+    match = _SORT_KEY_RE.match(value)
+    if match:
+        try:
+            day = date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+        except ValueError:
+            return (0, 0, 0, 0)
+        seconds = (
+            (day - _EPOCH_DATE).days * 86400
+            + int(match.group(4)) * 3600
+            + int(match.group(5)) * 60
+            + int(match.group(6))
+        )
+        fraction = match.group(7) or ""
+        nanos = int(fraction.ljust(9, "0")) if fraction else 0
+        return (1, seconds, nanos, 1)
+    if _DATE_ONLY_RE.match(value):
+        try:
+            day = date.fromisoformat(value)
+        except ValueError:
+            return (0, 0, 0, 0)
+        return (1, (day - _EPOCH_DATE).days * 86400, 0, 0)
+    return (0, 0, 0, 0)
+
+
 def _create_markdown_renderer() -> MarkdownIt:
     """Initialize MarkdownIt with table, strikethrough, and secure media rules."""
     md = (
@@ -376,20 +495,9 @@ def build_html(root: Path, rows: list[dict], labels: dict[str, str]) -> str:
     library_dir = (root_path / "library").resolve()
     md_renderer = _create_markdown_renderer()
 
-    # Sort rows by archived descending, fallback to published and id
-    sorted_rows = sorted(
-        rows,
-        key=lambda r: (
-            str(r.get("archived") or ""),
-            str(r.get("published") or ""),
-            str(r.get("id") or ""),
-        ),
-        reverse=True,
-    )
-
     articles_data: list[dict[str, Any]] = []
 
-    for row in sorted_rows:
+    for row in rows:
         row_id = str(row.get("id") or "")
         row_path = row.get("path")
         if not row_path:
@@ -448,16 +556,26 @@ def build_html(root: Path, rows: list[dict], labels: dict[str, str]) -> str:
         else:
             collection = ""  # unlabeled
 
-        # Dates & Warnings
-        published_raw = str(row.get("published") or fm.get("published") or "")
-        published_date = published_raw[:10] if published_raw else ""
+        # Dates: the frontmatter keeps the full timestamp, while index.csv only
+        # carries a truncated date. Prefer the frontmatter, show the source's
+        # calendar date, and keep a separate UTC sort key.
+        published_raw = str(fm.get("published") or row.get("published") or "").strip()
+        published_date, published_sort, published_valid = _parse_date_fields(published_raw)
+        archived_raw = str(row.get("archived") or fm.get("archived") or "")
+        _, archived_sort, _ = _parse_date_fields(archived_raw)
         date_source = fm.get("date_source")
         pub_unknown = bool(
             row.get("published_unknown")
             or fm.get("published_unknown")
             or (date_source == "unknown")
-            or not published_date
+            # ``fetched`` marks a crawl-date fallback; older records may not
+            # carry ``published_unknown`` yet, so the source alone is enough.
+            or (date_source == "fetched")
+            or not published_valid
         )
+        # An unknown date has no trustworthy position: keep it out of the
+        # published ordering instead of sorting the placeholder value.
+        published_sort_key = "" if pub_unknown else published_sort
 
         status = str(row.get("status") or fm.get("status") or "archived")
         content_note = str(row.get("content_note") or fm.get("content_note") or "")
@@ -480,7 +598,9 @@ def build_html(root: Path, rows: list[dict], labels: dict[str, str]) -> str:
                 "original_title": orig_title,
                 "published": published_date,
                 "published_unknown": pub_unknown,
-                "archived": str(row.get("archived") or fm.get("archived") or ""),
+                "published_sort": published_sort_key,
+                "archived": archived_raw,
+                "archived_sort": archived_sort,
                 "source": str(row.get("source") or fm.get("source") or "其他"),
                 "source_type": str(row.get("source_type") or fm.get("source_type") or ""),
                 "category": cat_slug,
@@ -498,6 +618,18 @@ def build_html(root: Path, rows: list[dict], labels: dict[str, str]) -> str:
                 "search_text": search_text,
             }
         )
+
+    # Default exported order: archived instant descending, then published,
+    # then id ascending for deterministic ties. The reader re-sorts in the
+    # browser, but the embedded catalog stays stable for non-JS consumers.
+    articles_data.sort(key=lambda article: article["id"])
+    articles_data.sort(
+        key=lambda article: (
+            _sort_compare_value(article["archived_sort"]),
+            _sort_compare_value(article["published_sort"]),
+        ),
+        reverse=True,
+    )
 
     # Load HTML template
     template_text = TEMPLATE_PATH.read_text(encoding="utf-8")

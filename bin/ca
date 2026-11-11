@@ -39,6 +39,7 @@ case "$cmd" in
   audit) exec "$PY" "$ROOT/scripts/audit.py" "$@" ;;
   fix-headings) exec "$PY" "$ROOT/scripts/fix_headings.py" "$@" ;;
   cleanup-h1) exec "$PY" "$ROOT/scripts/cleanup_h1.py" "$@" ;;
+  format-backfill) exec "$PY" "$ROOT/scripts/format_backfill.py" "$@" ;;
   validate) exec "$PY" "$ROOT/scripts/validate_summary.py" "$@" ;;
   daily) exec "$PY" "$ROOT/scripts/daily_gate.py" "$@" ;;
   reconcile-seen) exec "$PY" "$ROOT/scripts/reconcile_seen.py" "$@" ;;
@@ -63,6 +64,8 @@ Commands:
   audit                   check titles/summaries/images/headings/seen parity
   fix-headings            sync each entry's H1 with its frontmatter title
   cleanup-h1              remove duplicate H1 headings from entries
+  format-backfill plan|prepare
+                          review source formatting and prepare isolated candidates (no apply)
   validate --file ...     validate summary length
   daily start|finish      run daily ingest start/finish checkpoints
   daily start --deliver-on-fail

@@ -20,6 +20,15 @@ The first planned release is **v0.1.0**. No release date, final release commit, 
 - 单一 `content-archive` Hermes 技能原件、通用禁用配置示例、依赖声明、合成测试、双语 README 和 MIT 许可证。
 - 公开源码、私人实例及发布目标相互分离；采用固定版本升级而非自动部署。
 
+### Reader-experience candidate / 阅读体验候选
+
+- Supported inline CSS emphasis and cross-block emphasis normalization, without guessing headings from short bold paragraphs.
+- Archived/published ordering with preserved timestamp precision, unknown-date handling and one validated preference-storage key.
+- Candidate-only `format-backfill plan|prepare` CLI; supported caption/heading recovery and marker-only punctuation-boundary repairs preserve source files, with per-entry handling of unreadable entries and damaged snapshots.
+- Validated current-export capacity reporting with 75%/90% warnings; existing publication safety limits remain unchanged.
+- Frozen local acceptance: 870 tests (869 passed, one production-instance skip), real-Chromium checks enabled; targeted fixes passed focused independent re-review. This is not hosted CI or deployment.
+- 边界、验收结果和使用方式见 [reader experience](docs/reader-experience.md)：源格式归一化、归档/发布时间排序、仅候选回填和体积报告；冻结候选完成 870 项测试（869 通过、1 项生产实例测试跳过），真实浏览器检查已启用，补修的异模型聚焦复审通过；不是已发布或已部署的更新。
+
 ### Encrypted-reader media prefetch / 加密阅读器图片预加载
 
 - Visible-first scheduling, two viewport-heights of nearby prefetch, and at most three concurrent fetch/decrypt jobs; distant media waits until it enters the window.
