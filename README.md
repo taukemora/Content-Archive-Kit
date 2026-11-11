@@ -23,6 +23,7 @@ Content Archive Kit separates reusable source code and skills from private artic
 - Full-text search, rebuildable indexes, audits, and soft deletion.
 - RSS-first watched-source collection with a generic RSS adapter and site-specific HTML/docs adapters, explicit retry state, and honest daily digests.
 - A local reader and optional, explicitly configured publication adapters.
+- Encrypted-reader media prefetch: visible first, up to two viewport-heights ahead/behind, with three concurrent fetch/decrypt jobs and cancellation on article switch or lock.
 - One Hermes skill defining English `Save: <article-url>` / `Archive: <article-url>` and Chinese `收藏：<article-url>` intake commands, with a no-archive policy for bare URLs, one-off summaries, and quoted examples. Model behavior must be verified separately from these written rules.
 
 ## Requirements
@@ -99,7 +100,9 @@ assets/                   public brand assets
 
 ## Current status
 
-The latest clean Python 3.13 local regression and the [hosted PR run for `a0831ad`](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42944156572) each completed **730 tests: 728 passed and 2 explicitly skipped**, with no failures or errors. The separate preloaded-skill probe passed **18/18 authorization and CLI-routing cases** on `opencode-go` / `deepseek-v4.1-flash`. A later isolated conversation run passed **6/6 cases** using normal skill discovery and real CLI execution against synthetic pages: Chinese intake, English cross-project intake, duplicate detection, a quoted example, explicit summary-only/no-save, and a bare URL. It produced two Chinese-titled entries with validated summaries, matching indexes/state and a clean audit.
+The reader-prefetch candidate passed clean Python 3.13 local regression: **737 tests: 734 passed and 3 explicitly skipped**, with no failures or errors. Separately enabled browser/scheduler checks passed **8/8**, covering real image decoding, hidden panes, repeated media, cancellation, and tamper handling. The independent code review returned **PASS**. These are local synthetic results, not hosted CI or a private-site upgrade; see [reader media acceptance](docs/reader-media-acceptance.md) for source hashes, incremental-upgrade evidence, and limits.
+
+The preceding bilingual-intake local regression and the [hosted PR run for `a0831ad`](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42944156572) each completed **730 tests: 728 passed and 2 explicitly skipped**, with no failures or errors. The separate preloaded-skill probe passed **18/18 authorization and CLI-routing cases** on `opencode-go` / `deepseek-v4.1-flash`. A later isolated conversation run passed **6/6 cases** using normal skill discovery and real CLI execution against synthetic pages: Chinese intake, English cross-project intake, duplicate detection, a quoted example, explicit summary-only/no-save, and a bare URL. It produced two Chinese-titled entries with validated summaries, matching indexes/state and a clean audit.
 
 These are bounded results, not live-web, messaging-gateway or production-installation acceptance. The earlier 18-case probe did not grade final-response compliance and exposed unwanted future-save offers; the later six-case run does not prove that general reply-quality issue fixed. See [behavior acceptance](docs/behavior-acceptance.md) for source-bound receipts, the preserved failed adapter run and limitations. The linked CI run covers `a0831ad`, not later documentation commits; each final candidate must pass its own CI before merge. [CI readiness acceptance](docs/ci-acceptance.md) retains the earlier CI-preparation history.
 

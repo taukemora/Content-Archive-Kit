@@ -1,0 +1,455 @@
+{
+  "scope": "local synthetic acceptance only; no hosted CI or deployment of this candidate",
+  "baseline_commit": "eb80703113d41e80a817c2fe5788400f180ef485",
+  "candidate_branch": "fix/reader-media-prefetch",
+  "source_bindings": {
+    "scripts/encrypted_reader.js": {
+      "sha256": "c19ae210ace58e96c758510dfb61b5c43c1d248696301b75635a3133a1ac1fb6",
+      "bytes": 35585
+    },
+    "scripts/archive_page.html": {
+      "sha256": "0f60819c3587a67dddcf2f5b054a1c9f870e5003e2925885e8048c8629472008",
+      "bytes": 46185
+    },
+    "tests/browser_encrypted_reader.py": {
+      "sha256": "a002cf72a909df826b286d3c5d056cf8f8052bc09e9636dc832c49f53150ba02",
+      "bytes": 35153
+    },
+    "tests/test_reader_media_scheduler.py": {
+      "sha256": "b2adae7b2847ada1b0fe268fab6cf3e30e9053c362d50792cd786659bf985fb2",
+      "bytes": 9597
+    },
+    "tests/reader_media_scheduler.mjs": {
+      "sha256": "b6377e477a819a5a5bd8def9f9141f896b27dc2cf8c326396d371783725a6a8b",
+      "bytes": 16887
+    },
+    "tests/test_encrypted_site.py": {
+      "sha256": "7c90265eeb61612ecf6cbfee6b57bdac2608dd4dc48b47136f25f17e3e40b32c",
+      "bytes": 41039
+    }
+  },
+  "environment": {
+    "python": "3.13.5",
+    "node": "26.12.1",
+    "chromium": "145.0.7632.6"
+  },
+  "parent_steps": [
+    {
+      "name": "create-venv",
+      "exit": 0
+    },
+    {
+      "name": "install",
+      "exit": 0
+    },
+    {
+      "name": "pip-check",
+      "exit": 0
+    },
+    {
+      "name": "export-manifest",
+      "exit": 0
+    },
+    {
+      "name": "export-check",
+      "exit": 0
+    },
+    {
+      "name": "default-suite",
+      "exit": 0,
+      "tests": 737,
+      "skipped": 3,
+      "passed": 734
+    },
+    {
+      "name": "browser-and-scheduler",
+      "exit": 0,
+      "tests": 8,
+      "skipped": 0,
+      "passed": 8
+    },
+    {
+      "name": "build-gallery",
+      "exit": 0
+    },
+    {
+      "name": "build-edge-gallery",
+      "exit": 0
+    },
+    {
+      "name": "original-probe",
+      "exit": 0
+    },
+    {
+      "name": "edge-probe",
+      "exit": 0
+    },
+    {
+      "name": "layout-probe",
+      "exit": 0
+    },
+    {
+      "name": "lifecycle-probe",
+      "exit": 0
+    },
+    {
+      "name": "incremental-upgrade",
+      "exit": 0
+    }
+  ],
+  "node_cases": {
+    "ok": true,
+    "total": 15,
+    "failed": 0,
+    "cases": [
+      {
+        "name": "concurrency is capped and the far image is not requested",
+        "ok": true
+      },
+      {
+        "name": "scrolling releases the far image",
+        "ok": true
+      },
+      {
+        "name": "a freed slot re-sorts pending jobs by current visibility",
+        "ok": true
+      },
+      {
+        "name": "completed jobs are never requested again",
+        "ok": true
+      },
+      {
+        "name": "one failed image does not block the others",
+        "ok": true
+      },
+      {
+        "name": "stop aborts in-flight loads and swallows late writes",
+        "ok": true
+      },
+      {
+        "name": "an epoch/token change discards a late decrypt",
+        "ok": true
+      },
+      {
+        "name": "a hidden pane pauses scheduling until it is measurable again",
+        "ok": true
+      },
+      {
+        "name": "a missing viewport still falls back to the window height",
+        "ok": true
+      },
+      {
+        "name": "zero-size nodes are never treated as visible",
+        "ok": true
+      },
+      {
+        "name": "a hidden pane pauses new downloads but keeps in-flight work",
+        "ok": true
+      },
+      {
+        "name": "a job with one visible occurrence outranks its distant first node",
+        "ok": true
+      },
+      {
+        "name": "a job whose occurrences are all far is not scheduled",
+        "ok": true
+      },
+      {
+        "name": "duplicate occurrences share one request and hydrate every node",
+        "ok": true
+      },
+      {
+        "name": "scroll and resize listeners are registered and removed",
+        "ok": true
+      }
+    ]
+  },
+  "negative_controls": [
+    {
+      "case": "hidden-pane-mutant",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "report": {
+        "ok": false,
+        "total": 15,
+        "failed": 1,
+        "cases": [
+          {
+            "name": "concurrency is capped and the far image is not requested",
+            "ok": true
+          },
+          {
+            "name": "scrolling releases the far image",
+            "ok": true
+          },
+          {
+            "name": "a freed slot re-sorts pending jobs by current visibility",
+            "ok": true
+          },
+          {
+            "name": "completed jobs are never requested again",
+            "ok": true
+          },
+          {
+            "name": "one failed image does not block the others",
+            "ok": true
+          },
+          {
+            "name": "stop aborts in-flight loads and swallows late writes",
+            "ok": true
+          },
+          {
+            "name": "an epoch/token change discards a late decrypt",
+            "ok": true
+          },
+          {
+            "name": "a hidden pane pauses scheduling until it is measurable again",
+            "ok": false,
+            "error": "hidden pane still requested 0"
+          },
+          {
+            "name": "a missing viewport still falls back to the window height",
+            "ok": true
+          },
+          {
+            "name": "zero-size nodes are never treated as visible",
+            "ok": true
+          },
+          {
+            "name": "a hidden pane pauses new downloads but keeps in-flight work",
+            "ok": true
+          },
+          {
+            "name": "a job with one visible occurrence outranks its distant first node",
+            "ok": true
+          },
+          {
+            "name": "a job whose occurrences are all far is not scheduled",
+            "ok": true
+          },
+          {
+            "name": "duplicate occurrences share one request and hydrate every node",
+            "ok": true
+          },
+          {
+            "name": "scroll and resize listeners are registered and removed",
+            "ok": true
+          }
+        ]
+      }
+    },
+    {
+      "case": "bounding-box-mutant",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "report": {
+        "ok": false,
+        "total": 15,
+        "failed": 1,
+        "cases": [
+          {
+            "name": "concurrency is capped and the far image is not requested",
+            "ok": true
+          },
+          {
+            "name": "scrolling releases the far image",
+            "ok": true
+          },
+          {
+            "name": "a freed slot re-sorts pending jobs by current visibility",
+            "ok": true
+          },
+          {
+            "name": "completed jobs are never requested again",
+            "ok": true
+          },
+          {
+            "name": "one failed image does not block the others",
+            "ok": true
+          },
+          {
+            "name": "stop aborts in-flight loads and swallows late writes",
+            "ok": true
+          },
+          {
+            "name": "an epoch/token change discards a late decrypt",
+            "ok": true
+          },
+          {
+            "name": "a hidden pane pauses scheduling until it is measurable again",
+            "ok": true
+          },
+          {
+            "name": "a missing viewport still falls back to the window height",
+            "ok": true
+          },
+          {
+            "name": "zero-size nodes are never treated as visible",
+            "ok": true
+          },
+          {
+            "name": "a hidden pane pauses new downloads but keeps in-flight work",
+            "ok": true
+          },
+          {
+            "name": "a job with one visible occurrence outranks its distant first node",
+            "ok": true
+          },
+          {
+            "name": "a job whose occurrences are all far is not scheduled",
+            "ok": false,
+            "error": "a bounding box spanning the pane was mistaken for a visible node"
+          },
+          {
+            "name": "duplicate occurrences share one request and hydrate every node",
+            "ok": true
+          },
+          {
+            "name": "scroll and resize listeners are registered and removed",
+            "ok": true
+          }
+        ]
+      }
+    }
+  ],
+  "original_probe_checks": {
+    "second_image_not_blocked_by_first": true,
+    "far_image_not_fetched_without_scroll": true,
+    "second_image_decoded_while_still_below_fold": true,
+    "no_page_errors": true
+  },
+  "hidden_mobile": {
+    "requested_at_hide": 1,
+    "requested_after_hide": 1,
+    "late_new_objects": 0,
+    "far_requested": false
+  },
+  "edge_checks": {
+    "visible_duplicate_loads": true,
+    "hidden_mobile_does_not_fetch_whole_article": true,
+    "mobile_reopen": true,
+    "lock_clears": true
+  },
+  "placeholder_checks": {
+    "no_transient_collapsed_pending_images": true,
+    "observed": [
+      {
+        "alt": "synthetic-image-0",
+        "before": 405,
+        "after": 405,
+        "naturalWidth": 0,
+        "complete": false
+      },
+      {
+        "alt": "synthetic-image-1",
+        "before": 405,
+        "after": 405,
+        "naturalWidth": 0,
+        "complete": false
+      },
+      {
+        "alt": "synthetic-image-2",
+        "before": 405,
+        "after": 405,
+        "naturalWidth": 0,
+        "complete": false
+      }
+    ],
+    "collapsed": []
+  },
+  "lifecycle": {
+    "ok": true,
+    "cases": [
+      {
+        "case": "desktop",
+        "decoded_first_last": true,
+        "errors": [],
+        "ok": true
+      },
+      {
+        "case": "focus",
+        "decoded_first_last": true,
+        "errors": [],
+        "ok": true
+      },
+      {
+        "case": "mobile",
+        "decoded_first_last": true,
+        "errors": [],
+        "ok": true
+      },
+      {
+        "case": "narrow",
+        "decoded_first_last": true,
+        "errors": [],
+        "ok": true
+      },
+      {
+        "case": "blob-url-revocation",
+        "counts": {
+          "created": 3,
+          "revoked": 3,
+          "active": 0
+        },
+        "ok": true
+      },
+      {
+        "case": "late-decrypt-lock",
+        "before": 3,
+        "after": 3,
+        "old_images": 0,
+        "ok": true
+      },
+      {
+        "case": "late-decrypt-switch",
+        "before": 3,
+        "after": 3,
+        "old_images": 0,
+        "ok": true
+      }
+    ]
+  },
+  "incremental_upgrade": {
+    "checks": {
+      "exact_reader_public_delta": true,
+      "no_ciphertext_reencryption": true,
+      "all_ciphertext_reused": true,
+      "version_changed": true,
+      "repeat_is_noop": true,
+      "synthetic_archive_unchanged": true
+    },
+    "public_delta": [
+      "index.html",
+      "reader.js",
+      "site.json"
+    ],
+    "objects_written": 0,
+    "objects_reused": 4,
+    "repeat_changed": false
+  },
+  "independent_review": {
+    "verdict": "PASS",
+    "model": "z-ai/glm-5.3-flash",
+    "provider": "commandcode",
+    "runtime_author_model": "deepseek-v4.1-flash",
+    "runtime_author_provider": "opencode-go",
+    "parent_test_author_model": "gpt-6-astra",
+    "parent_test_author_provider": "openai-codex",
+    "coverage": [
+      "scripts/encrypted_reader.js",
+      "scripts/archive_page.html",
+      "tests/browser_encrypted_reader.py",
+      "tests/test_reader_media_scheduler.py",
+      "tests/reader_media_scheduler.mjs",
+      "tests/test_encrypted_site.py"
+    ],
+    "note": "Reviewer count prose is not used as test evidence; totals above are parsed from parent executions."
+  },
+  "limitations": [
+    "No private archive or installed skill was upgraded.",
+    "No push, hosted CI, release, or online deployment for this candidate.",
+    "Chromium localhost and injected delays do not establish mobile-device or Internet speed guarantees.",
+    "The three default skips are the real-instance dry run and two opt-in browser tests; the two browser tests were exercised separately.",
+    "Other browsers, browser heap reclamation, and production concurrency were not measured."
+  ]
+}

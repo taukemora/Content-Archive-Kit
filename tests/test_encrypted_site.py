@@ -951,6 +951,16 @@ class TestBrowserAcceptance(EncryptedSiteBase):
             self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
             self.assertTrue(json.loads(proc.stdout.strip().splitlines()[-1])["ok"], proc.stdout)
 
+        # The shared protocol fixture deliberately contains invalid PNG bytes.
+        # Test its decode-error path explicitly, then use real pixels for the
+        # normal and ciphertext-tamper cases instead of accepting either result.
+        run(self.output, "decode-error")
+        image_path = self.root / "library/coding/2026-01-01-alpha/images/cover.png"
+        image_path.write_bytes(base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGOQS2kC"
+            "AAGoAQVqBVcuAAAAAElFTkSuQmCC"
+        ))
+        self.build()
         run(self.output, "normal")
 
         payload = self.article_payloads()["加密标题甲"]["html"]

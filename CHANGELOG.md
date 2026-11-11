@@ -20,6 +20,16 @@ The first planned release is **v0.1.0**. No release date, final release commit, 
 - 单一 `content-archive` Hermes 技能原件、通用禁用配置示例、依赖声明、合成测试、双语 README 和 MIT 许可证。
 - 公开源码、私人实例及发布目标相互分离；采用固定版本升级而非自动部署。
 
+### Encrypted-reader media prefetch / 加密阅读器图片预加载
+
+- Visible-first scheduling, two viewport-heights of nearby prefetch, and at most three concurrent fetch/decrypt jobs; distant media waits until it enters the window.
+- Shared requests for repeated media, paused new downloads in hidden panes, measurable placeholders until decoding completes, and stale-completion protection on switch/lock.
+- Synthetic real-Chromium checks cover actual decoded pixels and decode failures separately. Local acceptance and the two-file incremental-upgrade rehearsal are recorded in [reader media acceptance](docs/reader-media-acceptance.md); this is not a deployed update.
+
+- 可见图片优先，邻近上下两屏预加载，最多三路并发抓取与解密；远处媒体进入窗口后再请求。
+- 重复媒体共用请求，隐藏阅读区暂停新下载，解码前保留占位，切文或锁定阻止迟到写回。
+- 合成真实浏览器测试分别验证像素解码成功与解码失败；[图片验收记录](docs/reader-media-acceptance.md)保留本地验证及双文件增量升级演练，不代表已经部署。
+
 ### CI and release preparation / CI 与发布准备
 
 - Python 3.13 validation workflow for Ubuntu, with explicit Node setup, read-only repository permissions, and no release/deployment step.
