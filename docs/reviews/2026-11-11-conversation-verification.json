@@ -1,0 +1,262 @@
+{
+  "passed": true,
+  "candidate_commit": "a0831ad85751e082d90a55ce67712d4681361227",
+  "candidate_tree": "de6dffeb93f576d9ce3883275e73dcd0a2fe4df7",
+  "total_cases": 6,
+  "api_calls": 40,
+  "source_bindings": {
+    "candidate_commit": "a0831ad85751e082d90a55ce67712d4681361227",
+    "candidate_tree": "de6dffeb93f576d9ce3883275e73dcd0a2fe4df7",
+    "protected": {
+      ".github/workflows/test.yml": "aeecde440733edbe715051a4edbdeed809ec7cbb5bf6b3469ff1c0025c5f1b4d",
+      "AGENTS.md": "becb2da77bb47e103ea25d2bd1bae960faa6daa8c640cc6cc3d113aa8136bc55",
+      "bin/ca": "ab28e01217d864687faee7af03efec855a2b54c606e41f2033c3dc0f08f8e38b",
+      "requirements-publish.txt": "ae469ef68095b0a7aeb11de25d5e5262c9bbee2ddeb46c9cf5371449fc155fe7",
+      "requirements.txt": "4dc0e028766484859b355c328f209268d7eacb361806d6e226185acd3d7cbf4f",
+      "scripts/archive_page.html": "d5786bdd30f89285e65237456ac91e324f403a33d7e1ccf4a38543e5d1671961",
+      "scripts/archive_url.py": "16b2f695580dd236c7ca2cb35995ca572be855a2f6d3dae00d74822bb823b281",
+      "scripts/audit.py": "e270ece97466122d19e880933748418fc65b6e75b0f2484128cb14bd42b7f725",
+      "scripts/build_digest.py": "96a6c52417d86b1f8311658e8261993f068285d84fc7a42fa1fcd701c3eea493",
+      "scripts/build_html.py": "0e270ac90a0ca1b16278df53e24f5233ff9d11602995e803cd4f42a7eccfe178",
+      "scripts/cleanup_h1.py": "dfab7f9bf3aa28f39068c9f4282258bd1865f47761c98f14dafb8674d385b598",
+      "scripts/common.py": "19a90d4403bd54e65879ee80c3653300c9a2dd65ed1959fc4c70b23fff7eb2cb",
+      "scripts/daily_gate.py": "1947c26c53511f82b6a98f1e3634a3e6f7d4767257ffe2903f7125b463f890bd",
+      "scripts/deliver_daily.py": "a09d38d1ec60cd650f54a0722defeff27c5fdc0ff6ba0c8307a342f2e60244c9",
+      "scripts/encrypted_reader.js": "7ecd203323a2f590d1403c7cadfe3d421cdf0ebb9f23acc1be52a6272c75323d",
+      "scripts/encrypted_site.py": "39d9a027c7007636c256f9319da86b84a53e2fc562f57fd5baa98ac0f1130bed",
+      "scripts/extract_remote.py": "d3f2fb5b9d834935c57b446856fc4979929b4bea60d201f726c5bd775ac780d2",
+      "scripts/fetch_sources.py": "863e17df79ad3864812eb3b74a7c11c6eb38bb3a30fcd68490480810e76aba04",
+      "scripts/finalize_entry.py": "f18d03a2105fcc86d42dec0fc0b01ca9cd03a3c0fe8af57147282f315b0fe357",
+      "scripts/fix_headings.py": "874f4d93d25967c4ea99d87f8c958bd8c6eceedb9d1d82c191b3b446893d892b",
+      "scripts/media_markup.py": "6aa73038bcb1daff449f244eee60f10561503942aa35a7912e26b769df7ee918",
+      "scripts/media_policy.py": "12d268b8e69a8aa9019167527fdb04f52915218c110124ecd8cd7f9fe0d52dd4",
+      "scripts/media_preservation.py": "1344cb36b3d7d7a32dd9353033844c0a0c9f42f230d2b1cb43ab17f26de70e43",
+      "scripts/publish_site.py": "96a24aa0513e9726ad17ad96fb742429d9f3c6020c11d5841d30582c37b9d83a",
+      "scripts/rebuild_index.py": "aad47cf4c1630a6662555a2b83c41c367acee67305d5a73f0ff51c2e27209aae",
+      "scripts/reconcile_seen.py": "9c84046370e65e92872e118e08fb216ab26b8d5e2ae23688d5ed593af1b69b78",
+      "scripts/search.py": "3539f842799f032e3f24f13873e39654ead031d58bd5f06c6872ee74ac827452",
+      "scripts/validate_summary.py": "916e478cf4c555924f6d4bf1c01bec2cce2bbb90856f0a8edd94c99c1258a109"
+    },
+    "harness": {
+      "run_conversation_acceptance.py": "a0bb3b2491a896b6e9304f241d427fd4ee0c8863032384557e5c336c45086220",
+      "cak_sandbox.py": "a62b2db89d61baabcc3e967be0a8f075b2d16d3a90b137264e9eac508bb55725",
+      "cak_fixture_pages.py": "7e23052ef2125679ee40a07ad5a5342a7b8f265099514480cf4535fe83d69c07",
+      "fixture_transport/sitecustomize.py": "7d12d7a44cc4ae0b012ba6a3346bbaa2fdfffdc2496fb244ec6581a785cd1cac"
+    },
+    "engine_modules": {
+      "run_agent.py": "8f8df32b0a027516c11ec58221d266048d0b76157599aa3934b4348add52a643",
+      "hermes_constants.py": "74d849629c176703d48f9aa43a245fd8819545ac908c805e347db7d691976510",
+      "model_tools.py": "24850d5ce74f7bcf17e58638fc787d6b955bfb89f4980e74b361d7927de74581",
+      "agent/system_prompt.py": "8bdab617accd5ae04335c6588638336d377174a468f6ff5d7100cc8098c68b20",
+      "agent/agent_init.py": "6d3deb12e5b60dd432e474fff4bcd54393d723aaf9b4102ddf99d0e5a25b7109",
+      "agent/inline_tool_executors.py": "f495e5a8aea4c90e4c088358883e18531d31528577fb8db7cece7124413a7fa8",
+      "agent/skill_utils.py": "9b643866caf9b0db3b568045e2b49bf2903f89197497c815a492afec89b33722",
+      "tools/skills_tool.py": "0b6fbd304a6fff74c3e1afee3e959985b2205dc1926c7474ca5cc7a8bd8ea107"
+    },
+    "skill_sha256": "559ef1d4b28a57648bfce1356103f0b1b86935078b37204765ac185d1dc185f1"
+  },
+  "cases": [
+    {
+      "id": "zh-save-new",
+      "passed": true,
+      "api_calls": 15,
+      "raw_tool_calls": 16,
+      "cli_sequence": [
+        "add",
+        "validate",
+        "validate",
+        "validate",
+        "finalize",
+        "index",
+        "audit"
+      ],
+      "archive_checks": {
+        "counts_match": true,
+        "exactly_one_new_entry": true,
+        "title_is_chinese": true,
+        "h1_equals_title": true,
+        "summary_is_chinese": true,
+        "raw_snapshot_present": true,
+        "status_final": true,
+        "url_matches": true,
+        "summary_length_valid": true,
+        "summary_chars_match": true,
+        "index_row_present": true,
+        "seen_path_present": true,
+        "audit_clean": true,
+        "details": {
+          "entry_count": 1,
+          "index_rows": 1,
+          "seen_entries": 1,
+          "ids": [
+            "2026-10-01-synthetic-test-note-alpha"
+          ],
+          "entry": "library/tech/2026-10-01-synthetic-test-note-alpha/entry.md",
+          "title": "合成测试笔记 Alpha",
+          "h1": "合成测试笔记 Alpha",
+          "summary": "这是一篇仅用于离线验收的夹具文章，并非真实出版物，其中每句判断都能在正文内直接核对。文章记录了三项具体事实：标记 CAK-ALPHA-2026 唯一对应此页，正文共 8 段生成的示例段落，发布日期取自页面元数据。其余段落仅作为填充内容凑足八百字符以上，以便适用默认摘要长度区间，并顺带提到 AI 归档这一上下文。文章署名 Fixture Author，来源站点为 Example Fixture Site，抓取正文约 2501 字符且没有配图。除上述内容外，填充段落不提出任何超出样本自身的事实主张。其价值在于为归档流程提供可复现的校验样本，而非传达任何真实信息。",
+          "summary_chars": "210",
+          "validate_output": "210 chars (target 200-250) OK",
+          "audit": {
+            "entries": 1,
+            "pending_titles": [],
+            "issues": [],
+            "ok": true
+          }
+        },
+        "pipeline_add_validate_finalize": true,
+        "cli_sequence": [
+          "add",
+          "validate",
+          "finalize",
+          "index",
+          "audit"
+        ]
+      }
+    },
+    {
+      "id": "en-save-new-cross-project",
+      "passed": true,
+      "api_calls": 14,
+      "raw_tool_calls": 13,
+      "cli_sequence": [
+        "add",
+        "validate",
+        "validate",
+        "finalize",
+        "index",
+        "audit"
+      ],
+      "archive_checks": {
+        "counts_match": true,
+        "exactly_one_new_entry": true,
+        "title_is_chinese": true,
+        "h1_equals_title": true,
+        "summary_is_chinese": true,
+        "raw_snapshot_present": true,
+        "status_final": true,
+        "url_matches": true,
+        "summary_length_valid": true,
+        "summary_chars_match": true,
+        "index_row_present": true,
+        "seen_path_present": true,
+        "audit_clean": true,
+        "details": {
+          "entry_count": 2,
+          "index_rows": 2,
+          "seen_entries": 2,
+          "ids": [
+            "2026-10-01-synthetic-test-note-alpha",
+            "2026-10-02-synthetic-test-note-beta"
+          ],
+          "entry": "library/tech/2026-10-02-synthetic-test-note-beta/entry.md",
+          "title": "合成测试笔记 Beta",
+          "h1": "合成测试笔记 Beta",
+          "summary": "这是离线验收用的第二篇合成测试文章，并非真实发表内容，只有少量具体事实可供核对。页面用标记 CAK-BETA-2026 标识自身，正文由 8 段生成的示例段落组成，每段都说明这些文字只为把抽取正文撑到八百字符以上，以便按默认摘要区间处理，其中提到的 AI 归档仅作填充，不对本站之外作出任何断言。文章的发布日期取自页面元数据，作者与站点信息同样由这份测试材料给出。它的价值在于提供一个可重复校验的固定样本，用来检查归档流程的抽取、摘要长度与元数据落地是否一致，并可作为后续同类保存的对照基线。",
+          "summary_chars": "213",
+          "validate_output": "213 chars (target 200-250) OK",
+          "audit": {
+            "entries": 2,
+            "pending_titles": [],
+            "issues": [],
+            "ok": true
+          }
+        },
+        "pipeline_add_validate_finalize": true,
+        "cli_sequence": [
+          "add",
+          "validate",
+          "finalize",
+          "index",
+          "audit"
+        ],
+        "cross_project_absolute_cli": true
+      }
+    },
+    {
+      "id": "archive-duplicate",
+      "passed": true,
+      "api_calls": 5,
+      "raw_tool_calls": 4,
+      "cli_sequence": [
+        "add"
+      ],
+      "archive_checks": {
+        "counts_match": true,
+        "no_new_entry": true,
+        "no_new_seen": true,
+        "audit_clean": true,
+        "details": {
+          "entry_count": 2,
+          "index_rows": 2,
+          "seen_entries": 2,
+          "ids": [
+            "2026-10-01-synthetic-test-note-alpha",
+            "2026-10-02-synthetic-test-note-beta"
+          ],
+          "audit": {
+            "entries": 2,
+            "pending_titles": [],
+            "issues": [],
+            "ok": true
+          }
+        },
+        "duplicate_existing_nonempty": true,
+        "duplicate_entry_bytes_unchanged": true,
+        "duplicate_evidence": true
+      }
+    },
+    {
+      "id": "quoted-example-no-save",
+      "passed": true,
+      "api_calls": 2,
+      "raw_tool_calls": 1,
+      "cli_sequence": [],
+      "archive_checks": {
+        "archive_bytes_unchanged": true,
+        "no_write_attempts": true,
+        "changed_files": [],
+        "write_attempts": []
+      }
+    },
+    {
+      "id": "summary-only-no-save",
+      "passed": true,
+      "api_calls": 2,
+      "raw_tool_calls": 2,
+      "cli_sequence": [],
+      "archive_checks": {
+        "archive_bytes_unchanged": true,
+        "no_write_attempts": true,
+        "changed_files": [],
+        "write_attempts": []
+      }
+    },
+    {
+      "id": "bare-url-no-save",
+      "passed": true,
+      "api_calls": 2,
+      "raw_tool_calls": 1,
+      "cli_sequence": [],
+      "archive_checks": {
+        "archive_bytes_unchanged": true,
+        "no_write_attempts": true,
+        "changed_files": [],
+        "write_attempts": []
+      }
+    }
+  ],
+  "final_audit": {
+    "entries": 2,
+    "pending_titles": [],
+    "issues": [],
+    "ok": true
+  },
+  "artifact_sha256": {
+    "library/tech/2026-10-01-synthetic-test-note-alpha/entry.md": "50a5707eb319cf83fba81c5aecf23794b7e076c4f1ad222ee33d1f7d32398be4",
+    "library/tech/2026-10-01-synthetic-test-note-alpha/raw.html.gz": "38a460bcaf9be652ebafa165facd90fc9ef090086053e24a21f2c55f7e9293f6",
+    "library/tech/2026-10-02-synthetic-test-note-beta/entry.md": "ccbafce8291d8df1def99534032ce782d5ca514f62448015c70d09bd19b6681d",
+    "library/tech/2026-10-02-synthetic-test-note-beta/raw.html.gz": "968df22d6fe8eb72fafe1e8b91398fe3f234008757e03777a57fdbf1b0d1d4d1"
+  },
+  "raw_receipt_sha256": "cf7d566e50479f0d3282880c5f4e215e85e61c1b986a3a63e65408d483dc82a6"
+}

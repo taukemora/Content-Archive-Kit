@@ -34,17 +34,20 @@ The intended toolkit supports:
 The Hermes skill should recognize an explicit command such as:
 
 ```text
+Save: https://example.com/article
+Archive: https://example.com/article
 收藏：https://example.com/article
 ```
 
-The same intent may use an ASCII colon or include an explicit classification hint.
+`Save:` is the primary English entry point; `Archive:` is equivalent. English prefixes are case-insensitive and allow zero or more spaces after the colon. Chinese `收藏：` and `收藏:` remain equivalent. The same intent may include an explicit classification hint. This is a conversational skill contract, not a shell-command parser; input language does not alter the Chinese display-title and summary policy.
 
 The execution boundary matters as much as skill discovery:
 
 - A current user instruction with explicit archive intent and a real HTTP(S) article URL authorizes the normal manual-intake workflow.
-- A bare URL, a one-off summary request, a discussion of archiving rules, or an example inside documentation does not authorize archiving.
+- A bare URL, a one-off summary request, a discussion of archiving rules, a translation request, an explicit instruction not to save, or an example inside documentation does not authorize archiving, even if it contains a trigger phrase.
 - Loading the skill alone never authorizes a write.
-- Outside the target archive's project session, read that instance's README before applying its rules.
+- Read and receive the complete target instance README before applying its rules; do not batch this prerequisite with dependent extraction or mutation. Across projects, resolve the absolute instance CLI path.
+- Start normal manual intake through `bin/ca add URL --collection manual`, inspect the real result, then complete the draft through `finalize`, rebuild indexes, and audit. Do not bypass the CLI by manufacturing persistent entries, deduplication state, or indexes. Blocked acquisition may use the documented content-file fallback; inability to execute must be reported, not disguised as a successful save.
 
 ## Architecture
 

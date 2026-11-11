@@ -1,8 +1,10 @@
 # Tests
 
 Unit, integration, and acceptance tests for Content Archive Kit. Everything here
-is synthetic: no article, image, state file, credential, recipient, or
-machine-local path from a real archive is used.
+uses synthetic archive content: no article, image, state file, credential,
+recipient, or machine-local path from a real archive is used. The default suite
+does not require model credentials. The separately invoked model probe below
+uses a configured model provider, not an archive's credentials.
 
 ## Running
 
@@ -32,6 +34,119 @@ skipped test is not a passing test. Only quote a pass count when the summary is
 `OK`; quote failures, errors, and skips from the same summary line. CI fails on
 any non-zero exit, so a green workflow already means no failures or errors, but
 the skip count still has to be read separately.
+
+## Existing-archive and skill behavior
+
+```bash
+cd tests
+env -u PYTHONPATH ../.venv/bin/python -B -m unittest \
+  test_existing_archive_acceptance test_skill_intake_harness test_skill_probe_runner -v
+```
+
+- `test_existing_archive_acceptance.py` copies a synthetic existing archive and
+  the real CLI/scripts. It searches, updates through `finalize` or `add --force`,
+  rebuilds indexes, searches again, and audits. Unrelated entry directories
+  (Markdown, raw snapshot, images) remain byte-identical; identity/path/first-seen
+  state remains stable; force replacement retains the old directory in trash.
+  Negative controls verify that skipped updates and unrelated-file/state damage
+  are detected. This is not a migration of a real private archive.
+- `skill_intake_harness.py` retains the original eight inputs: Chinese full-width
+  and ASCII-colon save triggers, a Chinese cross-project save, a bare URL,
+  summary-only, quoted-example, rule-discussion, and translation-only requests.
+  Ten English inputs add `Save:`, `Archive:` without a space, lower/upper-case
+  variants, an English cross-project save, and summary, quoted-example,
+  rule-discussion, translation, and explicit-no-save negatives: eighteen in all.
+  `save-ascii` is a Chinese command with an ASCII colon, not an English test.
+  The observer records attempts
+  without executing shell commands, writing files, or fetching articles.
+- `test_skill_intake_harness.py` and `test_skill_probe_runner.py` test the observer
+  and evidence checks with synthetic call sequences. **Passing these offline
+  tests is not evidence that a model follows the skill.** They run in normal CI
+  without Hermes or an API key.
+
+### Opt-in real-model probe
+
+Run `run_skill_intake_probe.py` explicitly with a Hermes-capable Python, a trusted
+Hermes source directory, and an already configured API provider. This makes real
+model API calls and consumes its allowance. It is not part of unittest discovery
+or public CI; no new dependency or credential is required by the toolkit.
+
+```bash
+env -u PYTHONPATH "$HERMES_PYTHON" -B tests/run_skill_intake_probe.py \
+  --hermes-root "$HERMES_SOURCE" \
+  --provider "$PROBE_PROVIDER" --model "$PROBE_MODEL" \
+  --output "$SCRATCH/new-skill-probe"
+```
+
+Set these variables for the local environment; the output directory must be new
+and outside this checkout. `--case CASE_ID` selects a subset for diagnosis, not
+full eighteen-case acceptance. No credentials belong in command arguments. The
+adapter supports an explicit API-key `chat_completions` route; OAuth,
+external-process/plugin routes and fallback chains are outside its scope.
+
+The bootstrap resolves the selected provider through Hermes, then passes only
+that runtime's credential in memory to fresh child processes. Each child uses
+a scrubbed environment, scratch home/cwd, no session database, no imported user
+memory or context files, and no background review. The process-local tool
+registry and inline handlers are replaced with bounded synthetic tools before
+inference; tool names and handler identities are checked again after agent
+initialization. A Hermes source `.env` is refused. No installed skill, cron job,
+private archive, publication target, or Hermes configuration is edited.
+
+The repository's exact `skills/content-archive/SKILL.md` is preloaded. Positive
+and negative cases receive the same dry-run context: tools record intended
+operations without executing changes, and the assistant must not claim a real
+save. The shared context declares the first-change observation phase in advance:
+after the first change-intent tool reply, stop rather than continuing into
+editorial or derived operations. This phase instruction names no correct command
+or trigger; the canonical skill supplies the workflow. No expected verdict or
+case identifier is supplied to the model. Positive
+cases need a successful complete target README read, with the reply delivered
+in a prior model turn, before extraction or a correctly rooted intake attempt.
+Reading and requesting either operation in the same tool-call batch does not
+satisfy that prerequisite. Read-only completion order is not model-message
+causality; a later failed read does not revoke a prior complete successful reply.
+Negative cases fail on write attempts, including blocked attempts;
+unchanged files alone cannot make them pass. Raw model tool calls must match
+recorded dispatch counts and arguments exactly, allowing concurrent read calls
+to finish in a different order. Incomplete, failed, timed-out, mismatched-route
+or malformed-evidence runs fail rather than becoming skipped/passed cases.
+
+The positive route is deliberately narrow: `bin/ca add URL` with optional
+`--collection manual`, using the resolved absolute CLI path across projects.
+Direct `write_file` attempts, derived operations after that intake attempt, and
+unsupported commands fail this protocol even on an authorized save request.
+The full toolkit supports more operations than this observer. Such a failure
+does not by itself prove that the user withheld authorization or that a real
+archive was modified. Results and remaining gaps are recorded in
+[behavior acceptance](../docs/behavior-acceptance.md).
+
+`receipt.json` records individual results, observed calls and tool replies, model/provider,
+Hermes version/source hashes and skill/harness hashes. Scratch paths are
+normalized, credentials are not published, and each completed case is saved
+before the next one starts. Review the receipt before publishing it. The
+adapter depends on Hermes runtime interfaces, so a different engine version
+requires revalidation; this is process/tool-surface isolation, not an OS sandbox.
+The file-inventory check includes the isolated home and alternate working
+directory through agent shutdown, not only the archive directory. Idempotent
+framework logging/scratch setup runs before the baseline snapshot; its file
+hashes are retained as `bootstrap_files`, not ignored by later comparisons.
+It does not
+monitor arbitrary host paths or prove the absence of transient create/delete
+activity; safety still relies on the trusted engine and bounded handlers.
+
+This probe measures only the observed **loaded-skill authorization and
+instance-routing decisions in the explicit dry-run context** for the named
+model/environment. A failed or incomplete run establishes no passing acceptance. It does not test
+automatic skill discovery, complete intake/editorial correctness, live fetching,
+all possible paraphrases, or messaging gateway behavior. The separate CLI tests
+exercise actual archive writes. A single successful model run is not a universal
+guarantee, and its count must not be added to the unittest pass count.
+
+Final-response text is retained for human review but is not semantically graded.
+In the bilingual run, all eighteen action/routing checks passed, yet the explicit
+no-save response still invited the user to save later, contrary to the skill.
+Do not interpret a passing action grade as complete response-policy compliance.
 
 ## Repository checks
 

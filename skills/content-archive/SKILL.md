@@ -21,7 +21,8 @@ This skill is the umbrella procedure for intake, collection, maintenance, and op
 
 Use for:
 
-- **Explicit archive command:** a current user message `收藏：<article-url>` or `收藏:<article-url>`, optionally with a classification or context hint.
+- **Explicit archive command:** a current user message `收藏：<article-url>` or `收藏:<article-url>` — full-width and ASCII colons are equivalent, and zero or more spaces may follow the colon — optionally with a classification or context hint.
+- **Equivalent English archive command:** a current user message that starts with `Save:` (the primary English command) or `Archive:` (an accepted alias) followed by an HTTP(S) article URL. The two words are equivalent, matching is case-insensitive (`Save:`, `save:`, `ARCHIVE:`), and zero or more spaces may follow the colon.
 - An equivalent current instruction with explicit archive intent, such as "archive this article" plus a real HTTP(S) article URL.
 - Building a new archive, adding a watched source, running or repairing the daily digest.
 - Repairing an existing archive: missing summaries, duplicates, broken image links, stale index, state drift.
@@ -30,7 +31,7 @@ Do not use for:
 
 - A **bare URL** with no instruction — it establishes nothing.
 - A **one-off summary** request (`web_extract` is enough; nothing is written).
-- A **quoted example**, a rule discussion, a README/doc snippet, or a URL that appeared in a feed listing or an earlier assistant message.
+- A **quoted example**, a rule discussion, a README/doc snippet, a translation exercise, or a URL that appeared in a feed listing or an earlier assistant message.
 - Plain feed reading (`blogwatcher`) or materiality-scored competitor monitoring (`competitor-news-monitor`) — this skill archives every selected post, not only material events.
 
 ## Instance Contract
@@ -82,20 +83,41 @@ Why: `entry.md` is readable in any editor and greppable; the raw snapshot surviv
 
 ## Execution Gate
 
-**Authorizes a manual save:** a current user message that starts with `收藏：` or `收藏:` followed by an HTTP(S) article URL, and the same intent expressed as an explicit "save/archive this article" instruction with a real URL.
+**Authorizes a manual save:** a current user instruction whose command prefix is one of these forms, followed by a real HTTP(S) article URL:
 
-**Does not authorize anything:** a bare URL; a request to summarize, translate, or comment on an article; a URL inside a quotation, code block, README/skill example, or feed listing; a discussion of archiving rules ("what would you do if I sent…"); a URL mentioned by an assistant or a scheduled job; a link the user asks you to inspect. In those cases answer the actual request and, at most, offer to archive.
+- `收藏：<url>` or `收藏:<url>` — the Chinese command; the full-width and ASCII colons are equivalent, and zero or more spaces may follow the colon.
+- `Save:<url>` or `Archive:<url>` — the English command, where `Save:` is primary and `Archive:` is its alias; they are equivalent, the match is case-insensitive (`save:`, `ARCHIVE:`), and zero or more spaces may follow the colon.
+
+The same intent expressed as an explicit current "save/archive this article" instruction with a real URL also authorizes manual intake.
+
+**Does not authorize anything:** a bare URL; a request to summarize, translate, quote, explain, or comment on an article, or on the command itself; a `收藏`/`Save:`/`Archive:` string that is quoted, inside a code block or README/skill example, used as a translation exercise, or merely discussed ("what would you do if I wrote…"); a message that explicitly says not to save or archive; a URL inside a feed listing; a URL mentioned by an assistant or a scheduled job; a link the user asks you to inspect. In those cases answer the actual request; offer to archive only when that fits the request, and never after an explicit instruction not to save.
+
+Read the current instruction as a whole to decide whether it is a command. A literal `Save:` or `Archive:` token is not authorization by itself: quotation, example, discussion, translation, summary, or explicit negation of that token means no save. Do not replace this judgement with a keyword or regex rule.
 
 When the instruction arrives outside the archive's project session (messaging bot, another project, a cron context), read that instance's `README.md` first and call the CLI by resolved absolute path — the archive root, not the chat's working directory, decides where files land.
 
 ## Manual Intake
 
-1. **Normalize and dedupe.** Strip tracking parameters, fragment/image indices, and platform noise (`scene`, `from`); compare canonical URL and content hash against `.state/seen.json`. If the article is already archived, say so and offer to re-summarize or re-fetch instead of creating a duplicate. An explicit user save of an auto-collected entry promotes its `collection` origin to manual without duplicating it.
-2. **Fetch and extract.** WeChat links: `references/wechat-article-extraction.md`. X/Twitter: `references/x-article-extraction.md`. arXiv/PDF: `references/paper-archiving.md`. Otherwise extract the main article with `trafilatura`, save the raw HTML snapshot when direct fetching works, download images within the instance media budget, and rewrite image links to local relative paths. When a site blocks direct HTML (403/Cloudflare), fall back to `web_extract`, set `extraction: web_extract`, and strip its leading `H1`/`URL:`/`Published:` header block before storing.
-3. **Capture metadata.** Chinese display `title`, `original_title`, `title_status` (`original|translated|pending`), source/site, author, published timestamp, `date_source` (`feed|list|url|page|fetched`), `published_unknown`, archived timestamp, canonical URL, `source_type` (`wechat|vendor_blog|tech_blog|report|docs|other`), `category`, optional `subcategory`, `context` (`work|life|learning|reference`), optional short `relevance`, tags. Missing publish date: use the fetch date with `date_source: fetched` and `published_unknown: true`.
-4. **Write the Chinese summary.** Conclusion first, one or two concrete facts, significance last. For non-Chinese sources, translate the title first and keep the original in `original_title`. Validate the counted length with the toolkit (`validate_summary.py` / `count_summary_chars`); if out of range, rewrite — never cut mid-sentence, never `--force` past the validator, never estimate the count by eye.
-5. **Classify.** Apply `taxonomy.yaml` keyword rules first, then model judgment. Set `category` from the instance's broad taxonomy, `subcategory` only when a child is defined and confident, `context` by priority: user hint > vendor/tutorial/developer-tool default > `reference`. If uncertain, keep the best-supported category and report the uncertainty; do not force a category and do not promise an inbox route the code does not have.
-6. **Persist and reply.** Write `entry.md`, snapshot, images; keep the body's first H1 equal to the final Chinese title; rebuild the index; reply with title, date, source, category/context, character count, link, and the summary.
+Apply this only after the Execution Gate authorizes the current request. Read the instance `README.md` in full first, and wait until that reply has arrived before fetching or changing anything; never batch the README read with an extract or `bin/ca add` in the same turn.
+
+1. **Resolve the CLI.** Inside the archive's own project session use `bin/ca`. From another project use the absolute `<archive>/bin/ca`; the archive root, not the chat's working directory, decides where files land.
+2. **Create the draft with the CLI.** For a normal HTTP(S) article use `terminal` to run:
+
+   ```bash
+   bin/ca add "<article-url>" --collection manual
+   ```
+
+   The CLI owns URL normalization, deduplication, fetching, raw snapshots, image localization, draft creation, and state updates. Read its real JSON output before editing anything. `status: duplicate` means the article is already archived: report it and offer to re-summarize or re-fetch instead of writing a second entry; an explicit manual save may promote an auto-collected entry without duplicating it. `status: error` is a failure to report, never a success to describe. Do not add `--force` on your own. If the CLI cannot actually run, report the blocker or the non-executed state; do not simulate a created archive.
+3. **Blocked-source fallback stays inside the same route.** When the CLI returns `needs_web_extract` or direct HTML fetching is blocked (403/Cloudflare), use `web_extract`; keep the site-specific handling in `references/wechat-article-extraction.md`, `references/x-article-extraction.md`, or `references/paper-archiving.md`; use `write_file` for the extracted body in a legitimate temporary file under scratch or the archive's `.state`, then pass it to the same `bin/ca add` with `--content-file` (and `--extraction web_extract`). The CLI still creates the entry. Temporary summary and body files are legitimate scratch material; a hand-written `entry.md`, an edited `seen.json`, or a hand-edited index is not a substitute for `add`/`finalize`.
+4. **Verify metadata and classify.** Inspect the real draft's Chinese display `title`, `original_title`, `title_status` (`original|translated|pending`), source/site, author, published timestamp, `date_source` (`feed|list|url|page|fetched`), `published_unknown`, archived timestamp, canonical URL, `source_type` (`wechat|vendor_blog|tech_blog|report|docs|other`), `category`, optional `subcategory`, `context` (`work|life|learning|reference`), optional short `relevance`, and tags. Missing publication dates must remain identified as fetch-date fallbacks (`date_source: fetched`, `published_unknown: true`). Known source/author/date/original-title overrides belong on the initial `add` invocation (including a content-file fallback), not on `finalize`, which has no flags for those fields. Do not rerun plain `add` to edit an existing draft or invent unsupported flags; report metadata gaps that need separate repair. Apply the supported title/summary/classification fields through `finalize` rather than writing frontmatter by hand. Classify with `taxonomy.yaml` keyword rules first, then model judgment: `category` from the instance's broad taxonomy, `subcategory` only when a child is defined and confident, `context` by priority user hint > vendor/tutorial/developer-tool default > `reference`. If uncertain, keep the best-supported category and report the uncertainty; do not force a category or promise an inbox route the code does not have.
+5. **Write the Chinese summary from the real draft.** Wait until `add` has produced an entry id and draft. Conclusion first, one or two concrete facts, significance last. For non-Chinese sources, translate the title first and keep the original in `original_title`. Use `write_file` to draft the summary in a temporary file, then `terminal` to validate it with `bin/ca validate --file "<temp-summary-file>"` (add `--short` when the draft's article length is under 800 characters). Rewrite until it passes — never cut mid-sentence, never `--force` past the validator, never estimate the count by eye. Then use `terminal` to apply it with:
+
+   ```bash
+   bin/ca finalize --id "<entry-id>" --title-zh "<Chinese title>" --summary-file "<temp-summary-file>"
+   ```
+
+   The id and draft come from the `add` output; never invent them. Add category/context flags only when the draft needs them. Then rebuild and audit with `bin/ca index` followed by `bin/ca audit`, and fix discrepancies through the CLI rather than editing derived files.
+6. **Reply.** Keep the body's first H1 equal to the final Chinese title; after `finalize` and a clean index/audit, reply with title, date, source, category/context, character count, link, and the summary.
 7. **Screenshot provenance is part of the entry.** When the user sends a comment-section screenshot for an archived item and asks to add it, append a new section (`## 评论区（…原文照录）`) with the commenters' names, region, relative time, and like counts verbatim, mark author replies, store the screenshot under `images/`, recompute `content_hash`, bump `updated`, then rebuild the index and run the audit. Do not edit existing body text to fit new evidence.
 
 ## Titles, Summaries, Classification

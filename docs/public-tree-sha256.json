@@ -1,8 +1,8 @@
 {
-  "captured_at": "2026-11-10T09:25:41.029170+00:00",
-  "manifest_role": "accepted_public_tree_ci_readiness",
+  "captured_at": "2026-11-11T03:03:20.848373+00:00",
+  "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
-  "acceptance_record": "docs/ci-acceptance.md",
+  "acceptance_record": "docs/behavior-acceptance.md",
   "license": "MIT",
   "skill_author": "taukemora, Hermes Agent",
   "self_excluded": true,
@@ -24,20 +24,20 @@
       "sha256": "ac9ccbabbc730213794efa752d22c54212275a6a8115d51305a7a3f0d4e996d8"
     },
     "IDEA.md": {
-      "bytes": 8385,
-      "sha256": "0872eb6740564b98f502f21a5aa7c113bdc662bf66a5f107d48b6829232c9c7b"
+      "bytes": 9396,
+      "sha256": "f11d4725a83a118188f243d926aa339ec10a2c90313f85971063f113eb94876b"
     },
     "LICENSE": {
       "bytes": 1066,
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 5950,
-      "sha256": "10970d7c7f1c07e3530f78b0e1a1c5cb6b3bdcb803105a6d978ce0f73e847418"
+      "bytes": 9267,
+      "sha256": "b64ba10b18a7a3d7f14f94bbf9060275b27123f09185038663901d55e0e62f1d"
     },
     "README.zh-CN.md": {
-      "bytes": 5378,
-      "sha256": "135c8c0eb4275f3fad483d270d109da1f823fe0874d0759a54cb7d98bb503795"
+      "bytes": 8228,
+      "sha256": "c70df0a9530829bb848fe0b70a0a3abb1e4ccd0202b5edad1e5c61fffaf62f3e"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -51,6 +51,10 @@
       "bytes": 4582,
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
+    "docs/behavior-acceptance.md": {
+      "bytes": 26481,
+      "sha256": "c5d199a599bad142fd47c2ba9e2fe6575aad4ba74c6efc6a2f7830905c740359"
+    },
     "docs/ci-acceptance.md": {
       "bytes": 13709,
       "sha256": "4fab86f5fdac68bd906f0821a91c2571dd56e7547fd4a4e95d1f9eefdfd14f2d"
@@ -60,12 +64,40 @@
       "sha256": "71c21b0caca122071dad19339614c26fd153cad88e9fff31aa5245ea938b01b0"
     },
     "docs/releases/v0.1.0.md": {
-      "bytes": 5750,
-      "sha256": "721b62832d05718d80f5866d0bc7e8e2d151152322369f8c576a9aa8f5a19c07"
+      "bytes": 6347,
+      "sha256": "939910b100c3de619168b6097999e41066daca5ef229b2dd68e6a641e453839b"
     },
     "docs/releasing.md": {
       "bytes": 7560,
       "sha256": "f811ea3a59b52f2fb362fe83d98c0544387dd888c5432cc71a27edf30693b0fa"
+    },
+    "docs/reviews/2026-11-10-bilingual-skill-probe-receipt-01.json": {
+      "bytes": 85882,
+      "sha256": "ffcf5a0fab728e35d8027451205ef6dd94911a5fea85cbdda9d1b85a354649f0"
+    },
+    "docs/reviews/2026-11-10-direction-and-architecture-review.md": {
+      "bytes": 21890,
+      "sha256": "1e2c8cc4d3800370cd043efe52579fcc0841338c76572e7e788bf563b5b8a593"
+    },
+    "docs/reviews/2026-11-10-skill-probe-receipt-02.json": {
+      "bytes": 120368,
+      "sha256": "c21bbab96099597e5fa430a6aab1e73954a9a9433b183528a4a3875e710ff1c9"
+    },
+    "docs/reviews/2026-11-10-skill-probe-receipt-03.json": {
+      "bytes": 100361,
+      "sha256": "754853f79d56f10238708fea3ea7de7e234dde5d057630e1dc8ffb57eab83f0d"
+    },
+    "docs/reviews/2026-11-11-conversation-receipt-01.json": {
+      "bytes": 428107,
+      "sha256": "9895f2afcef5e921d881d6f8004bcadef65c8d1bfc85e3def6bead571324d606"
+    },
+    "docs/reviews/2026-11-11-conversation-receipt-02.json": {
+      "bytes": 592669,
+      "sha256": "cf7d566e50479f0d3282880c5f4e215e85e61c1b986a3a63e65408d483dc82a6"
+    },
+    "docs/reviews/2026-11-11-conversation-verification.json": {
+      "bytes": 11686,
+      "sha256": "3df7c7cf03a4ae18ce458145432a821c5c15f1603a18658aca82b73da88ee0b7"
     },
     "examples/README.md": {
       "bytes": 1497,
@@ -192,12 +224,12 @@
       "sha256": "916e478cf4c555924f6d4bf1c01bec2cce2bbb90856f0a8edd94c99c1258a109"
     },
     "skills/content-archive/SKILL.md": {
-      "bytes": 25477,
-      "sha256": "4ebcb43aa62464d8834ef656b65222489fd8fef2e65453aced0cef5ab046df05"
+      "bytes": 29011,
+      "sha256": "559ef1d4b28a57648bfce1356103f0b1b86935078b37204765ac185d1dc185f1"
     },
     "skills/content-archive/references/deployment.md": {
-      "bytes": 8770,
-      "sha256": "cb47d70ca509d12f75a9f57b71947e05f663e370b1a2ba99853f5876b236e37b"
+      "bytes": 9553,
+      "sha256": "d99ed0837e7c5a82d639531ae2f0265d3475cf03aa30cd89efee30638c377a60"
     },
     "skills/content-archive/references/messaging-channels.md": {
       "bytes": 5596,
@@ -240,8 +272,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 11494,
-      "sha256": "579a86fe3db68982f7d381e5ddebe56660f98f4eef916ed3a7065e3072a71f88"
+      "bytes": 18682,
+      "sha256": "fdd69b0866ec0583a2074ace535aaf770f63235f46f0c0f326e1ea28b563667b"
     },
     "tests/_support.py": {
       "bytes": 4129,
@@ -263,6 +295,14 @@
       "bytes": 3011,
       "sha256": "1b4cbec9785ffab605d0608414785f94bb4046c860ce117e4937b3b098963c30"
     },
+    "tests/run_skill_intake_probe.py": {
+      "bytes": 19498,
+      "sha256": "80f81ad78b5102e186332769362dcb1ccbd73183b606e733874a1a445ae31c25"
+    },
+    "tests/skill_intake_harness.py": {
+      "bytes": 41128,
+      "sha256": "821a6d6e4249f3f7f842479cf7622416eaa9c21ee08aca75346065206fecd233"
+    },
     "tests/test_collection.py": {
       "bytes": 21124,
       "sha256": "58debc8fa0433ea9dd1fd6620a403e2d23375bb2c2631a83202c67935696d57b"
@@ -274,6 +314,10 @@
     "tests/test_encrypted_site.py": {
       "bytes": 40473,
       "sha256": "8975b36624b2eda26a8c0944658e2959e72efe37ac41883c5f3bfa4661e15771"
+    },
+    "tests/test_existing_archive_acceptance.py": {
+      "bytes": 29140,
+      "sha256": "72956eaffe01ef42e1a05d43e7742f3b5bb3ca75ebb2c49956a987f01e17b1dc"
     },
     "tests/test_html_index.py": {
       "bytes": 21687,
@@ -362,6 +406,14 @@
     "tests/test_repository_checks.py": {
       "bytes": 28190,
       "sha256": "2b7cbda4c8ab40d375312fe19ee00a5b518b8e72ca3f2e95e9561550e106f3ac"
+    },
+    "tests/test_skill_intake_harness.py": {
+      "bytes": 53886,
+      "sha256": "0b0c118f55b70fdf9b86b749277c9118333d4db04bc5c1b0e87c41043cecb29a"
+    },
+    "tests/test_skill_probe_runner.py": {
+      "bytes": 20107,
+      "sha256": "1e6cfc15eadf94905582a9eade9fcb395bdc6da8dfaa43e08009800f8e192e40"
     },
     "tests/test_wave1_audit_search.py": {
       "bytes": 20699,

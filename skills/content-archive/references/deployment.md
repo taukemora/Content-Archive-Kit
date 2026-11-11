@@ -40,7 +40,7 @@ If a fact is missing from the README, ask instead of inventing it. When you lear
 - POSIX shell and bash: the wrapper uses `set -euo pipefail` and `BASH_SOURCE`.
 - Linux is the supported platform, with CI on Ubuntu. State locking uses `fcntl.flock` (advisory locks), imported unconditionally by the daily gate and source fetcher. Native Windows requires a Linux environment such as WSL. macOS is outside the maintained support and CI scope; POSIX compatibility alone is not an acceptance result.
 - Python from the instance virtualenv. Verify the interpreter version against the installed wheels rather than using a system Python that happens to be newer; a too-new interpreter can install an `lxml` build that fails to import.
-- Optional components add their own requirements: reader generation (Markdown→HTML) and encryption/publication (`cryptography`). Declare them in separate requirements files so standalone archiving does not pull publication dependencies.
+- Install the declared base requirements as shipped. They currently include `markdown-it-py` and `cryptography`, and `requirements-publish.txt` overlaps with them; separate files do not yet provide dependency isolation. Article media processing also imports `markdown-it-py`, so do not remove it merely because hosted publication is disabled. Publication behavior is optional; a minimal core-only dependency installation is not currently provided.
 
 ## Scheduled collection
 
@@ -64,10 +64,13 @@ Channel setup, scopes, and retry rules: `references/messaging-channels.md`.
 
 ## Indexes and readers
 
+- `bin/ca index` currently builds CSV, Markdown, and HTML together; there is no separate reader-generation switch. Using a reader service or hosted publication is optional, but generating the HTML is part of this command.
 - Rebuild derived artifacts after a batch, never inside every file write; the manifest CSV and any HTML reader are both derived from `library/`.
 - Keep Markdown authoritative; a reader that cannot be rebuilt from entries is a liability.
 - Keep reader assets inline or alongside the archive so a local `file://` open and a mounted copy both work, and reference only localized `library/` images.
 - Do not deliver an HTML file alone as a complete archive while images remain relative to `library/`; verify the actual opening method the user uses.
+
+Synthetic publication/delivery tests do not establish acceptance of a real browser, message recipient, NAS deployment, or hosted site. The opt-in instance dry run covers daily-delivery preview, not archive search/update. Keep unverified integrations disabled until their own target-environment checks pass; none is required for basic local archiving.
 
 ## Upgrade, backup, and rollback
 
