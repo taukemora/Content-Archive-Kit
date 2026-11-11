@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
 from markdownify import markdownify as md
 
+from article_formatting import normalize_formatting_html, normalize_formatting_tree
 from media_preservation import preserve_media
 from media_markup import (
     finalize_media_markdown,
@@ -556,6 +557,9 @@ def wechat_extract(html: str, url: str) -> tuple[dict, str, str]:
         img.attrs.pop("data-src", None)
         for attr in ("data-type", "data-fail", "data-ratio", "data-w", "data-copy", "data-src"):
             img.attrs.pop(attr, None)
+    # Normalise emphasis on the DOM: markdownify cannot see inline CSS and
+    # emits literal stars when one <strong> encloses several blocks.
+    normalize_formatting_tree(body)
     content = md(str(body), heading_style="ATX")
     content, _media_stats = finalize_media_markdown(content, videos)
     content = re.sub(r"\n{3,}", "\n\n", content).strip()
@@ -586,6 +590,7 @@ def generic_extract(html: str, url: str) -> tuple[dict, str]:
     except Exception:
         pass
     prepared_html, videos, _captions = prepare_generic_html(html, url)
+    prepared_html = normalize_formatting_html(prepared_html)
     content = trafilatura.extract(
         prepared_html,
         url=url,

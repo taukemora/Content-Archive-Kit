@@ -283,6 +283,7 @@ class TestArchiveUrlDateCLIAndGoogleDirect(unittest.TestCase):
         (self.scratch / "scripts").mkdir()
         shutil.copy(ROOT / "scripts" / "common.py", self.scratch / "scripts" / "common.py")
         shutil.copy(ROOT / "scripts" / "archive_url.py", self.scratch / "scripts" / "archive_url.py")
+        shutil.copy(ROOT / "scripts" / "article_formatting.py", self.scratch / "scripts" / "article_formatting.py")
         shutil.copy(ROOT / "scripts" / "media_preservation.py", self.scratch / "scripts" / "media_preservation.py")
         shutil.copy(ROOT / "scripts" / "media_markup.py", self.scratch / "scripts" / "media_markup.py")
         shutil.copy(ROOT / "scripts" / "media_policy.py", self.scratch / "scripts" / "media_policy.py")

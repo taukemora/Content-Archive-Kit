@@ -915,11 +915,31 @@ class TestReaderStaticSafety(unittest.TestCase):
             self.assertIn(needle, self.js)
         self.assertNotRegex(self.js, r"https?://[^'\"]+", "reader must not reference remote origins")
 
-    def test_offline_template_has_no_network_or_storage(self):
+    def test_offline_template_only_persists_the_sort_preference(self):
         template = (SCRIPTS / "archive_page.html").read_text(encoding="utf-8")
         self.assertNotIn("fetch(", template)
-        self.assertNotIn("localStorage", template)
-        self.assertNotIn("sessionStorage", template)
+        for forbidden in ("sessionStorage", "indexedDB", "serviceWorker", "document.cookie"):
+            self.assertNotIn(forbidden, template, forbidden)
+        # The approved exception is one isolated preference module, not
+        # permission for the article/decryption code to persist its payload.
+        modules = list(re.finditer(
+            r"/\* CA-SORT-MODULE-BEGIN \*/(.*?)/\* CA-SORT-MODULE-END \*/",
+            template, re.S,
+        ))
+        self.assertEqual(len(modules), 1)
+        module = modules[0]
+        source = module.group(1)
+        remaining = template[:module.start()] + template[module.end():]
+        self.assertNotIn("localStorage", remaining)
+        self.assertEqual(source.count("localStorage"), 1)
+        self.assertEqual(source.count("setItem("), 1)
+        self.assertIn("var STORAGE_KEY = 'ca.reader.sort';", source)
+        self.assertIn("var MODES = ['archived', 'published'];", source)
+        self.assertIn("store.setItem(STORAGE_KEY, clean)", source)
+        for forbidden in ("passphrase", "body_html", "search_text", "content_hash", "crypto"):
+            self.assertNotIn(forbidden, source.lower(), forbidden)
+        # Actual valid/invalid writes and unlocked browser storage contents
+        # are checked by test_reader_sort, not inferred from this source gate.
 
 
 class TestBrowserAcceptance(EncryptedSiteBase):

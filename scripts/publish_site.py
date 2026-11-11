@@ -121,6 +121,27 @@ MAX_FILE_BYTES = 64 * 1024 * 1024
 MAX_TOTAL_BYTES = 512 * 1024 * 1024
 MAX_FILES = 20000
 
+# Capacity reporting is read-only, derived exclusively from the validated
+# whitelist of the current export.  It never opens or decrypts an object.
+CAPACITY_METRIC_KEYS = (
+    "file_count",
+    "total_bytes",
+    "shell_bytes",
+    "object_bytes",
+    "largest_file_bytes",
+)
+CAPACITY_KEYS = CAPACITY_METRIC_KEYS + (
+    "status",
+    "message",
+    "local_limit_bytes",
+    "ratio",
+    "percent",
+    "warning_ratio",
+    "critical_ratio",
+)
+CAPACITY_WARNING_RATIO = 0.75
+CAPACITY_CRITICAL_RATIO = 0.90
+
 # The public payload is a closed set: the four static entry files plus opaque
 # AES-GCM objects whose names are content-addressed by the exporter.
 CORE_PUBLIC_FILES = {"index.html", "site.json", ".nojekyll", "reader.js"}
@@ -836,6 +857,167 @@ def validate_whitelist(output_dir: Path, files: Iterable[str]) -> list[str]:
     return sorted(clean)
 
 
+# ---------------------------------------------------------------------------
+# Capacity reporting
+# ---------------------------------------------------------------------------
+
+
+def _capacity_level(total: int, limit: int) -> str:
+    """Integer thresholds so 75%/90% cannot drift on float rounding."""
+    if total * 100 >= limit * int(round(CAPACITY_CRITICAL_RATIO * 100)):
+        return "critical"
+    if total * 100 >= limit * int(round(CAPACITY_WARNING_RATIO * 100)):
+        return "warning"
+    return "ok"
+
+
+def _capacity_message(level: str, total: int, percent: float, limit: int) -> str:
+    mib = total / (1024 * 1024)
+    limit_mib = limit / (1024 * 1024)
+    if total > 0 and percent < 0.1:
+        shown = "<0.1%"  # truncated percent cannot resolve a tiny export
+    elif percent < 1:
+        shown = f"{percent:.2f}%"
+    else:
+        shown = f"{percent:.1f}%"
+    detail = (
+        f"站点体积 {mib:.2f} MiB（{total} 字节），"
+        f"占本地上限 {shown}（硬上限 {limit_mib:.2f} MiB）"
+    )
+    if level == "critical":
+        return f"已达 {int(round(CAPACITY_CRITICAL_RATIO * 100))}% 预警线：" + detail
+    if level == "warning":
+        return f"已达 {int(round(CAPACITY_WARNING_RATIO * 100))}% 预警线：" + detail
+    return detail
+
+
+def _capacity_unavailable(reason: str) -> dict:
+    """Honest failure state: never a zero that could read as an empty site."""
+    return {
+        "status": "unavailable",
+        "reason": reason,
+        "local_limit_bytes": MAX_TOTAL_BYTES,
+    }
+
+
+def _capacity_report(output_dir: Path, files: Iterable[str]) -> dict:
+    """Quantify only the already-validated publish artifacts.
+
+    Sizes come from ``lstat`` on the exact whitelist paths: no object is opened
+    or decrypted, no unlisted file is counted, and sizes are never taken from
+    the builder's return value.
+    """
+    output = Path(output_dir)
+    shell_bytes = 0
+    object_bytes = 0
+    largest = 0
+    count = 0
+    total = 0
+    for relative in files:
+        _check_relative_path(relative)
+        candidate = output / relative
+        try:
+            st = candidate.lstat()
+        except OSError as exc:
+            raise SecurityError(f"无法统计发布文件：{relative}（{exc}）") from exc
+        if stat.S_ISLNK(st.st_mode):
+            raise SecurityError(f"发布白名单不允许符号链接：{relative}")
+        if not stat.S_ISREG(st.st_mode):
+            raise SecurityError(f"发布白名单只允许普通文件：{relative}")
+        size = st.st_size
+        if size > MAX_FILE_BYTES:
+            raise SecurityError(f"发布文件过大：{relative}")
+        total += size
+        if total > MAX_TOTAL_BYTES:
+            raise SecurityError("发布文件总大小超出上限")
+        if relative in PUBLIC_STATIC_FILES:
+            shell_bytes += size
+        elif OBJECT_FILE_RE.fullmatch(relative):
+            object_bytes += size
+        else:  # pragma: no cover - _check_relative_path already rejects
+            raise SecurityError(f"发布白名单含未授权路径：{relative}")
+        largest = max(largest, size)
+        count += 1
+
+    limit = MAX_TOTAL_BYTES
+    level = _capacity_level(total, limit)
+    ratio = total / limit if limit > 0 else 0.0
+    # Truncate rather than round: a displayed 90.0% must never belong to a site
+    # the integer check still classifies as merely "warning".
+    percent = (total * 1000 // limit) / 10 if limit > 0 else 0.0
+    return {
+        "status": level,
+        "message": _capacity_message(level, total, percent, limit),
+        "file_count": count,
+        "total_bytes": total,
+        "shell_bytes": shell_bytes,
+        "object_bytes": object_bytes,
+        "largest_file_bytes": largest,
+        "local_limit_bytes": limit,
+        "ratio": round(ratio, 6),
+        "percent": percent,
+        "warning_ratio": CAPACITY_WARNING_RATIO,
+        "critical_ratio": CAPACITY_CRITICAL_RATIO,
+    }
+
+
+def _capacity_summary(report: Mapping[str, Any]) -> dict:
+    """Allowlist projection for state records; unknown fields never escape."""
+    return {key: report[key] for key in CAPACITY_KEYS if key in report}
+
+
+def _export_files(output_dir: Path) -> list[str]:
+    """List allowlisted names present in an export without following links.
+
+    Only the build directory's closed surface is inspected: the four static
+    entry files and ``objects/*.bin``.  The archive, raw snapshots and ``.git``
+    are never scanned.
+    """
+    output = Path(output_dir)
+    try:
+        entries = list(os.scandir(output))
+    except OSError:
+        return []
+    names: list[str] = []
+    for entry in entries:
+        if entry.name in PUBLIC_STATIC_FILES:
+            names.append(entry.name)
+        elif entry.name == "objects":
+            if entry.is_symlink() or not entry.is_dir(follow_symlinks=False):
+                raise SecurityError("导出目录的 objects 必须是普通目录")
+            try:
+                children = list(os.scandir(entry.path))
+            except OSError as exc:
+                raise SecurityError(f"无法读取导出目录 objects：{exc}") from exc
+            for child in children:
+                relative = f"objects/{child.name}"
+                if OBJECT_FILE_RE.fullmatch(relative):
+                    names.append(relative)
+    return sorted(names)
+
+
+def _status_capacity(config: PublishConfig) -> dict:
+    """Read-only capacity of the current export for ``status``.
+
+    Never builds, publishes, runs git or touches the network; an absent,
+    partial or invalid export is reported as unavailable instead of zero.
+    """
+    output = config.workspace / "build"
+    if output.is_symlink():
+        return _capacity_unavailable("导出目录是符号链接，已拒绝统计")
+    if output.exists() and not output.is_dir():
+        return _capacity_unavailable("导出目录不是目录")
+    if not output.is_dir():
+        return _capacity_unavailable("尚未构建：build 目录不存在")
+    try:
+        files = _export_files(output)
+        if not files:
+            return _capacity_unavailable("导出目录没有可发布的加密站点文件")
+        return _capacity_report(output, validate_whitelist(output, files))
+    except (OSError, PublishError) as exc:
+        return _capacity_unavailable(str(exc))
+
+
 def _validate_build_result(output_dir: Path, result: Any) -> dict:
     if not isinstance(result, dict):
         raise PublishError("build_site 返回值必须是 dict")
@@ -867,6 +1049,7 @@ def _validate_build_result(output_dir: Path, result: Any) -> dict:
         "entries": result["entries"],
         "objects_written": result["objects_written"],
         "objects_reused": result["objects_reused"],
+        "capacity": _capacity_report(Path(output_dir), whitelist),
     }
 
 
@@ -1144,6 +1327,7 @@ def status(root: Path, config: PublishConfig) -> dict:
             "ready": build_site_json.is_file(),
             "path": str(build_site_json),
         },
+        "capacity": _status_capacity(config),
         "last_publish": state,
     }
 
@@ -1491,6 +1675,9 @@ def _record(config: PublishConfig, site: Mapping[str, Any] | None, *, status: st
                 "objects_reused": site["objects_reused"],
             }
         )
+        capacity = site.get("capacity")
+        if isinstance(capacity, Mapping):
+            record["capacity"] = _capacity_summary(capacity)
     return record
 
 
@@ -1765,6 +1952,7 @@ def main(argv: list[str] | None = None) -> int:
                     "configured": False,
                     "enabled": False,
                     "error": str(exc),
+                    "capacity": _capacity_unavailable(f"publish.yaml 不可用：{exc}"),
                 })
                 return 0
             raise

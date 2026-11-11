@@ -95,6 +95,16 @@ PY
 
 ## Regression-test maintenance
 
+### Format-only backfills
+
+- Trace source HTML through extraction, stored Markdown and the actual safe renderer. Cross-block emphasis and Unicode punctuation flanking can leave visible delimiters even when the Markdown looks plausible; a Markdown-string assertion alone cannot establish rendered emphasis.
+- Recover captions and reviewed section headings only from retained source structure and exact matching text. Preserve ambiguous neighboring prose, original media targets and raw bytes; never repair missing semantics with global star deletion or a CSS-only guess.
+- Bind a plan to source and candidate hashes, prepare only into a fresh isolated destination, then plan the candidate again with the same selections. Require byte-idempotence and unchanged source, summaries, media and snapshots; stop on lexical differences rather than silently broadening a format-only repair.
+- Test alignment fallbacks against literal/escaped stars, code and image-target masks. A stars-only diff must reconstruct the exact candidate, but does not by itself prove unchanged emphasis attribution; review the rendered result too.
+- Treat an unreadable entry or corrupt snapshot as an explicit per-entry refusal when the contract permits batch continuation. Keep unknown hashes unknown, verify other entries still run, and do not swallow unrelated programming errors.
+
+### General regression checks
+
 - Replace obsolete assertions only when an approved behaviour change explains them; preserve the original intent with stronger checks. When selected work becomes durable, assert both the awaiting-archive URL set and the quota-deferred set rather than merely changing a total.
 - Use isolated deterministic fixtures for exact digest counts. A test hard-coded to today's production count fails when the archive grows; updating the expected number to today's value is not a repair. Keep production dry runs read-only and assert invariants instead.
 - Match tests to the claimed boundary: readable retained files, accepted downstream paths, unchanged raw bytes, and state parity. A JSON field or a green aggregate count alone does not prove these properties.

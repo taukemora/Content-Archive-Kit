@@ -185,6 +185,35 @@ The default suite/hosted CI does not run Chromium. Current source-bound local
 results and extra parent-run lifecycle/upgrade probes are documented in
 [reader media acceptance](../docs/reader-media-acceptance.md).
 
+## Reader formatting, ordering and capacity
+
+From `tests/`, run the bounded synthetic regression:
+
+```bash
+env -u PYTHONPATH ../.venv/bin/python -B -m unittest \
+  test_article_formatting test_format_backfill test_format_backfill_cli \
+  test_reader_sort test_publish_capacity -v
+```
+
+Formatting checks exercise HTML extraction and rendered Markdown, not only
+source strings. Backfill fixtures and CLI candidates live in scratch; they must
+not read a private archive. Capacity fixtures verify actual allowlisted sizes,
+threshold boundaries and unavailable/unsafe exports without contacting hosting.
+
+Enable the real-Chromium sorting test separately. It covers the offline page,
+an older catalog without the new comparison fields, and a real encrypted export,
+including filtering, selection/scroll retention and preference storage:
+
+```bash
+env -u PYTHONPATH CA_RUN_BROWSER_TESTS=1 \
+  CA_PLAYWRIGHT_PYTHON="$CA_PLAYWRIGHT_PYTHON" \
+  ../.venv/bin/python -B -m unittest test_reader_sort.BrowserSortAcceptance -v
+```
+
+The Node harness's individual cases are nested assertions, not extra unittest
+tests. A passing selected module does not establish whole-candidate acceptance;
+see [reader-experience boundaries](../docs/reader-experience.md).
+
 ## Repository checks
 
 `tools/check_repository.py` is the public-tree gate used locally and in CI:
@@ -273,12 +302,12 @@ step run outside the GitHub workflow; the workflow itself does not invoke it.
 | `CA_TEST_SCRATCH` | Parent directory for throwaway project trees. Defaults to `content-archive-kit-tests` under the platform temp dir (`TMPDIR`). |
 | `CA_TEST_PYTHON` | Interpreter used for subprocess-level tests. Defaults to `<checkout>/.venv/bin/python` when present, else the running interpreter. |
 | `CA_RUN_INSTANCE_TESTS=1` | Enables the read-only dry run that needs a real, configured archive (skipped in a public checkout). |
-| `CA_RUN_BROWSER_TESTS=1` | Enables both real-Chromium reader acceptance tests. |
+| `CA_RUN_BROWSER_TESTS=1` | Enables real-Chromium unlock/tamper, media-scheduling and sorting acceptance tests. |
 | `CA_PLAYWRIGHT_PYTHON` | Interpreter that has Playwright installed (only used with `CA_RUN_BROWSER_TESTS=1`). |
 | `CA_PLAYWRIGHT_BROWSER` | Optional existing Chromium executable; otherwise use Playwright's installed Chromium. |
 
-Three tests are skipped by default: the instance dry run (no archive in a public
-checkout) and the normal/tamper and media-scheduling browser acceptance tests
+Four tests are skipped by default: the instance dry run (no archive in a public
+checkout) and the normal/tamper, media-scheduling and sorting browser acceptance tests
 (need Chromium + Playwright). The
 Node interop test runs whenever `node` is on `PATH`. The repository checker
 needs `node` whenever the tree contains JavaScript, and the JavaScript syntax
