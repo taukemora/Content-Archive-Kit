@@ -17,7 +17,7 @@ Content Archive Kit separates reusable source code and skills from private artic
 
 ## Features
 
-- Manual article intake with URL normalization, deduplication, full text, local media, raw snapshots when available, and source metadata.
+- Manual article intake with URL normalization, deduplication, full text, local images, raw snapshots when available, and source metadata. Optional PDF attachments are entry-level files added through the [paper workflow](skills/content-archive/references/paper-archiving.md), not automatic PDF intake through `add`.
 - Chinese display titles and validated Chinese summaries, with the original title preserved.
 - Stable categories, optional subcategories, collection context, and tags.
 - Full-text search, rebuildable indexes, audits, and soft deletion.
@@ -69,7 +69,7 @@ The test suite uses synthetic fixtures only. Browser acceptance and real-instanc
 
 ## Release readiness
 
-The first planned release, **v0.1.0**, is not yet released: there is no tag, GitHub Release, or published release asset. The [changelog](CHANGELOG.md), [bilingual release-notes draft](docs/releases/v0.1.0.md), and [release procedure](docs/releasing.md) describe the planned content. [CI readiness acceptance](docs/ci-acceptance.md) distinguishes local results from exact-commit GitHub CI and future artifact verification. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
+The first planned version, **v0.1.0**, is intended as an early GitHub **Pre-release**, not a stable release. It has not been published. [ROADMAP.md](ROADMAP.md) tracks its scope, remaining gates and completion criteria without promising dates. See the [bilingual notes draft](docs/releases/v0.1.0.md) for intended assets and limitations, and the [release procedure](docs/releasing.md) for exact-commit CI and clean-artifact verification. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
 
 ## Hermes skill
 
@@ -95,22 +95,25 @@ scripts/                  archiving, indexing, digest, audit, and publication co
 skills/content-archive/   canonical Hermes skill and references
 examples/                 disabled or generic instance configuration examples
 tests/                    synthetic tests and fixtures
-docs/                     migration and acceptance records
+docs/                     release guidance and historical acceptance evidence
 assets/                   public brand assets
 ```
 
 ## Current status
 
-Early-stage, pre-release toolkit under active development. The first planned
-release, **v0.1.0**, is not yet released; see the [changelog](CHANGELOG.md) for
-what is implemented and the documents below for what is verified.
+Early-stage toolkit under active development. See the [changelog](CHANGELOG.md)
+for implemented changes and the documents below for verification boundaries.
 
 - Tests: [tests/README.md](tests/README.md) documents the complete local/CI checks.
 - CI workflow: [.github/workflows/test.yml](.github/workflows/test.yml) runs the synthetic suite on Ubuntu with Python 3.13; the optional browser and real-instance suites stay off in CI.
 - Acceptance boundaries and known limitations: [reader experience](docs/reader-experience.md), [reader media acceptance](docs/reader-media-acceptance.md), and [behavior acceptance](docs/behavior-acceptance.md).
 - Current CI results are available in [GitHub Actions](https://github.com/taukemora/Content-Archive-Kit/actions/workflows/test.yml). Check the run for the commit you intend to use; historical acceptance records do not certify later changes.
 
-[IDEA.md](IDEA.md) describes the project vision and architecture. No production upgrade is implied by an upstream commit or push.
+[IDEA.md](IDEA.md) holds the stable vision and architecture; [ROADMAP.md](ROADMAP.md) holds release scope and remaining work. No production upgrade is implied by an upstream commit or push.
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for synthetic fixtures, checks and review expectations. Report potential vulnerabilities using [SECURITY.md](SECURITY.md); do not include private archive data or exploit details in public issues.
 
 ## Privacy and deployment boundary
 

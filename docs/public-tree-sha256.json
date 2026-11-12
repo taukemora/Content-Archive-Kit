@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-12T04:09:37.362553+00:00",
+  "captured_at": "2026-11-12T07:29:39.429454+00:00",
   "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/reader-media-acceptance.md",
@@ -23,21 +23,33 @@
       "bytes": 7166,
       "sha256": "71cbdb8eaacd20e79cd1cc4f3ea7756093a8f167adea4b2fcefd89eea9e95b0b"
     },
+    "CONTRIBUTING.md": {
+      "bytes": 5121,
+      "sha256": "ca11497e84312503c70f0346255bc131d654534206c671a4c15796d5f0b171ce"
+    },
     "IDEA.md": {
-      "bytes": 9396,
-      "sha256": "f11d4725a83a118188f243d926aa339ec10a2c90313f85971063f113eb94876b"
+      "bytes": 9069,
+      "sha256": "f846d1b816e6d595543e438f59162c2974197fba77fb8c3030b868d144eaa397"
     },
     "LICENSE": {
       "bytes": 1066,
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 8987,
-      "sha256": "788c5dde8c02d0b468027ee9349fc872bef626d1ca12ac1845b444649264b15e"
+      "bytes": 9460,
+      "sha256": "0c7eb086b22b357b93860916015075d7463fd26b2ce652323a730a7054e114d1"
     },
     "README.zh-CN.md": {
-      "bytes": 7823,
-      "sha256": "95b2c6907848d0e8a98e585995ea46f6d51c8f0da8fd20e192a257f0947bb60f"
+      "bytes": 8414,
+      "sha256": "5952d5645f5abc344ee81e04b89764222a9087d2fe413430f036d82258ba9282"
+    },
+    "ROADMAP.md": {
+      "bytes": 8047,
+      "sha256": "94aec207acf7c3c24b0d40da7ade8cc73d23854b2e2d7a09e680ca6d566023ec"
+    },
+    "SECURITY.md": {
+      "bytes": 4435,
+      "sha256": "3264ac84914549fd55882d5c24dc5f8672850f5fb6f9665bc4fa13c26f0ec677"
     },
     "assets/logo.svg": {
       "bytes": 444,
@@ -52,12 +64,12 @@
       "sha256": "1a1894d0895cc3cc7fa9e6eb586e99c89dfc89e1d22694b51b9a3a0367704dcd"
     },
     "docs/behavior-acceptance.md": {
-      "bytes": 26481,
-      "sha256": "c5d199a599bad142fd47c2ba9e2fe6575aad4ba74c6efc6a2f7830905c740359"
+      "bytes": 20194,
+      "sha256": "6ae0dc06a1d6882dd6daccca182b22e3852e3f182422613d4f21197c20dab819"
     },
     "docs/ci-acceptance.md": {
-      "bytes": 13709,
-      "sha256": "4fab86f5fdac68bd906f0821a91c2571dd56e7547fd4a4e95d1f9eefdfd14f2d"
+      "bytes": 12031,
+      "sha256": "2c6cda3b798b75682ae81428a55f8b536fe7eff477509732883054aab4115452"
     },
     "docs/migration-baseline.json": {
       "bytes": 13529,
@@ -68,16 +80,16 @@
       "sha256": "042aa663ebfbff58ae9b2af804e9b5d2526d5fc5199b3d38b4d72bf00b29fc53"
     },
     "docs/reader-media-acceptance.md": {
-      "bytes": 8290,
-      "sha256": "da4071ec86dda3fa7cffb191afe2e47e9d8e969b704e2c6b1ccd4f8e2743b654"
+      "bytes": 10148,
+      "sha256": "d9929575d8d8e2fadc14f1de1cde3b640f07bfe6e177771657055ce99b7c593f"
     },
     "docs/releases/v0.1.0.md": {
-      "bytes": 7256,
-      "sha256": "1f8672137a5ea6db3fa60f2cf6cddcd9ef52f8484475acb160a01dba716048b9"
+      "bytes": 9852,
+      "sha256": "e4df199ea30e96dde10a325bad2c2b3fe40a40060e97978cfaedf044c0a7e207"
     },
     "docs/releasing.md": {
-      "bytes": 7560,
-      "sha256": "f811ea3a59b52f2fb362fe83d98c0544387dd888c5432cc71a27edf30693b0fa"
+      "bytes": 7884,
+      "sha256": "d0acb42b9a6463847eecf4e0921675b7923550e5062c65fa14267bfd5a129595"
     },
     "docs/reviews/2026-11-10-bilingual-skill-probe-receipt-01.json": {
       "bytes": 85882,
@@ -292,8 +304,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 23423,
-      "sha256": "707bb21ac4e201299413964312ee555954e89d55d36fa9b341a6a35995e4be94"
+      "bytes": 23602,
+      "sha256": "758f301ddcb3c04f119c13eea6c3ac98520401e94c31aa551872b9132859b23f"
     },
     "tests/_support.py": {
       "bytes": 4129,
