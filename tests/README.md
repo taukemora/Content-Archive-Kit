@@ -190,9 +190,11 @@ env -u PYTHONPATH CA_RUN_BROWSER_TESTS=1 \
   test_reader_media_scheduler test_encrypted_site.TestBrowserAcceptance -v
 ```
 
-The default suite/hosted CI does not run Chromium. Current source-bound local
-results and extra parent-run lifecycle/upgrade probes are documented in
-[reader media acceptance](../docs/reader-media-acceptance.md).
+The default suite/hosted CI does not run Chromium. Historical source-bound local
+results and additional lifecycle/upgrade probes are documented in
+[reader media acceptance](../docs/reader-media-acceptance.md); later harness limits
+and reader changes are described in [reader experience](../docs/reader-experience.md).
+An older receipt does not certify a changed fixture or a later candidate.
 
 ## Reader formatting, ordering and capacity
 

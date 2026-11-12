@@ -1,16 +1,16 @@
 # Release procedure
 
-This is a maintainer checklist, not an automatic release pipeline. The first planned release is **v0.1.0**; preparing these files does not create a tag, GitHub Release, or published asset.
+This is a maintainer checklist, not an automatic release pipeline. The first planned version is **v0.1.0**, proposed as an early GitHub **Pre-release**, not a stable release; preparing these files does not create a tag, GitHub Release, or published asset. Scope and remaining gates live in [ROADMAP.md](../ROADMAP.md).
 
 ## Separate authorization gates
 
-Local edits and tests, commits, pushes, tags, GitHub Releases, asset uploads, and private-instance installation are distinct actions. Obtain explicit approval for each applicable action. Approval for this CI unit's commit and push does not authorize a release or deployment. Never force-push, rewrite published history, or weaken checks to publish.
+Local edits and tests, commits, pushes, tags, GitHub Releases, asset uploads, and private-instance installation are distinct actions. Obtain explicit approval for each applicable action. Approval for a commit and push does not authorize a release or deployment. Never force-push, rewrite published history, or weaken checks to publish.
 
 The `tests` workflow is validation only. It has no release, notification, installation, or deployment step and requires no repository secrets. An upstream push must not modify an archive, installed skill, cron job, NAS service, or publication target.
 
 ## 1. Select and verify the candidate
 
-1. Read `AGENTS.md`, both READMEs, `IDEA.md`, and the relevant acceptance record. Confirm that the changelog and release notes describe implemented, verified behavior rather than roadmap items.
+1. Read `AGENTS.md`, both READMEs, `IDEA.md`, `ROADMAP.md`, `SECURITY.md`, and the relevant acceptance record. Confirm that the changelog and release notes describe implemented, verified behavior rather than roadmap items.
 2. Review the complete intended diff, including new files. Audit private-content and configuration boundaries. The public-tree manifest is an integrity inventory, not proof that arbitrary content is safe or that its publisher is authentic.
 3. Follow [the test instructions](../tests/README.md) in a clean Python 3.13 environment with `PYTHONPATH` removed. Run dependency, syntax, example-configuration, public-tree, and complete unittest checks. Record actual failures and skips; optional browser and real-instance tests are not silently promoted to verified coverage.
 4. After the approved file set is staged, explicitly regenerate `docs/public-tree-sha256.json` with `tools/check_repository.py --update-manifest`, inspect its changes, stage it, and run the normal read-only checker again. CI must never regenerate the manifest to make itself green.
@@ -57,7 +57,7 @@ The source tree includes tests, examples, documentation, and the canonical umbre
 
 - Review [the v0.1.0 notes draft](releases/v0.1.0.md) and `CHANGELOG.md`; finalize only claims supported by the candidate's evidence.
 - With tag authorization, create the agreed tag at the exact accepted commit; pushing the tag is a remote operation that must also be authorized. Read back and compare the tag's peeled commit. Do not silently move an existing tag.
-- With GitHub Release authorization, create the Release for the approved existing tag. Draft Release creation is still an external write and needs approval.
+- With GitHub Release authorization, create the Release for the approved existing tag. For the proposed v0.1.0 early release, explicitly select **Pre-release** and do not mark it as the latest stable release; read back these fields rather than relying on defaults. Draft Release creation is still an external write and needs approval.
 - With asset-upload authorization, attach only the verified toolkit archive and its approved provenance/checksum sidecars. Read back the Release target and asset inventory; download and hash the uploaded archive before claiming delivery.
 - Do not describe the release as deployed to a private instance. Pinned installation, backup, copy rehearsal, preservation of instance configuration/state, and rollback are a later, separately approved task; see [deployment and upgrades](../skills/content-archive/references/deployment.md).
 

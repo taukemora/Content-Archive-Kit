@@ -17,12 +17,13 @@ Content Archive Kit 将可复用的代码和技能与私人文章、运行状态
 
 ## 功能
 
-- 手动收藏文章：URL 规范化、去重、全文、本地媒体（图片及可选 PDF 附件）、可用时的原始快照和来源元数据。
+- 手动收藏文章：URL 规范化、去重、全文、本地图片、可用时的原始快照和来源元数据。可选 PDF 附件须按[论文流程](skills/content-archive/references/paper-archiving.md)作为条目文件另行加入，不是通过 `add` 自动收藏 PDF。
 - 中文展示标题和经代码校验的中文摘要，同时保留原文标题。
 - 稳定的一级分类、可选二级分类、收藏场景和标签。
 - 全文检索、可重建索引、审计和软删除。
 - RSS 优先的监视来源采集，内置通用 RSS 适配器和特定站点的 HTML/文档适配器，保留明确的失败重试状态并如实呈现日报。
 - 本地阅读页，以及需要显式配置的可选发布适配器。
+- 加密阅读器图片预加载：可见图片优先，向前后最多预加载两个阅读区视口高度，最多三路并发抓取/解密，切换文章或锁定时取消调度。
 - 一个 Hermes 技能，定义中文 `收藏：<文章链接>` 和英文 `Save: <文章链接>` / `Archive: <文章链接>` 入口，以及裸链接、一次性摘要和引用示例不得触发归档的规则；模型实际行为须另行验证。
 - 阅读体验：行内强调源格式归一化、归档/发布时间排序、保守的白字灰底图注识别、仅生成候选副本的 `format-backfill plan|prepare` 回填 CLI，以及发布体积报告（既有发布上限不变）。
 
@@ -68,7 +69,7 @@ cd tests
 
 ## 发布准备
 
-首个计划版本为 **v0.1.0**，目前尚未发布：尚无标签、GitHub Release 或已公开的发布附件。计划内容详见[更新记录](CHANGELOG.md)、[双语发布说明草稿](docs/releases/v0.1.0.md)和[发布流程](docs/releasing.md)。[CI 准备验收](docs/ci-acceptance.md)区分本地结果、精确提交的 GitHub CI 与后续工具包验证。标签、Release、附件上传及私人实例升级均须另行授权。
+首个计划版本 **v0.1.0** 拟作为早期 GitHub **Pre-release**，不作为稳定版，目前尚未发布。[ROADMAP.md](ROADMAP.md)统一记录首版范围、剩余门槛和完成判据，不承诺日期。计划产物及限制见[双语发布说明草稿](docs/releases/v0.1.0.md)，精确提交的 CI 与干净发行包验收见[发布流程](docs/releasing.md)。标签、Release、附件上传及私人实例升级均须另行授权。
 
 ## Hermes 技能
 
@@ -94,20 +95,24 @@ scripts/                  抓取、索引、日报、审计和发布实现
 skills/content-archive/   Hermes 技能原件及参考文档
 examples/                 禁用或通用化的实例配置示例
 tests/                    合成测试与 fixtures
-docs/                     迁移和验收记录
+docs/                     发布指南与历史验收证据
 assets/                   公开品牌资源
 ```
 
 ## 当前状态
 
-处于早期、未发布的开发阶段。首个计划版本 **v0.1.0** 尚未发布；已实现内容见[更新记录](CHANGELOG.md)，验证边界见下列文档。
+处于早期、持续开发阶段。已实现的改动见[更新记录](CHANGELOG.md)，验证边界见下列文档。
 
 - 测试：完整本地/CI 检查见 [tests/README.md](tests/README.md)。
 - CI 工作流：[.github/workflows/test.yml](.github/workflows/test.yml) 在 Ubuntu + Python 3.13 上运行合成测试套件；浏览器与真实实例套件在 CI 中默认关闭。
 - 验收边界与已知限制：[阅读体验](docs/reader-experience.md)、[阅读器图片验收](docs/reader-media-acceptance.md)、[行为验收](docs/behavior-acceptance.md)。
 - 当前 CI 结果见 [GitHub Actions](https://github.com/taukemora/Content-Archive-Kit/actions/workflows/test.yml)。请核对拟使用提交对应的运行记录；历史验收记录不能证明后续改动已经通过。
 
-项目愿景与架构见 [IDEA.md](IDEA.md)。上游提交或推送不代表私人实例已自动升级。
+[IDEA.md](IDEA.md)记录稳定的项目愿景与架构；[ROADMAP.md](ROADMAP.md)记录版本范围与剩余工作。上游提交或推送不代表私人实例已自动升级。
+
+## 贡献与安全
+
+合成测试资料、检查命令和审阅要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。潜在漏洞请按 [SECURITY.md](SECURITY.md) 报告，不要在公开 issue 中附上私人收藏内容或漏洞利用细节。
 
 ## 隐私与部署边界
 

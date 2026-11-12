@@ -6,6 +6,11 @@ A personal article archive has been proven useful as a Markdown-first collection
 
 Content Archive Kit turns that proven workflow into a reusable toolkit. It is intended to help people create a new archive or maintain an existing one without copying private content or depending on one machine's Hermes profile.
 
+This document records the stable vision, principles, architecture, and
+non-goals. Release scope, current status, and remaining gaps live in
+[ROADMAP.md](ROADMAP.md); contribution rules and security guidance live in
+[CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+
 ## Vision
 
 Provide a portable article-archiving toolkit consisting of:
@@ -118,34 +123,20 @@ A private instance should record the installed upstream version and commit. Upgr
 - Automatically importing every upstream change into a private deployment.
 - Claiming that a skill document alone can reproduce the executable implementation.
 
-## Initial migration approach
+## Migration provenance
 
-The reference implementation must be copied only from a frozen, accepted source state. While that source is being modified, work on this repository should remain limited to vision, governance, public documentation, and migration rules.
+The public tree was created by exporting only allowlisted generic source,
+skill, template, and test files from a frozen, accepted reference state, with
+machine-local paths, personal recipients, real deployment settings, and private
+fixtures removed. The accepted source version, file hashes, and acceptance
+boundaries are recorded in [docs/migration-baseline.json](docs/migration-baseline.json)
+and [docs/acceptance.md](docs/acceptance.md). Ongoing work here keeps the same
+boundary: synthetic fixtures, no private material, and optional publication
+disabled until explicitly configured. Release criteria and current gaps are
+maintained in [ROADMAP.md](ROADMAP.md), not in this document.
 
-The first implementation migration should:
-
-1. Record the accepted source version and file hashes.
-2. Export only allowlisted generic source, skill, template, and test files.
-3. Remove machine-local paths, personal recipients, real deployment settings, and private fixtures.
-4. Provide complete dependencies and generic examples with optional publication disabled.
-5. Test both creation of a new archive and maintenance of a copied existing archive in isolation.
-6. Publish a release only after the public-source audit and behavioral acceptance pass.
-
-## Acceptance criteria
-
-The initial reusable release should demonstrate that:
-
-- a fresh archive can be initialized without private files;
-- a manually saved article follows the complete intake, editorial, index, and audit path;
-- a duplicate save does not create a second entry;
-- a copied existing archive can be searched and updated without rewriting unrelated entries;
-- the Hermes skill recognizes the explicit save command and rejects the documented counter-triggers;
-- failed acquisition remains visible and does not fabricate content;
-- the public tree and release contain no private articles, state, credentials, or machine-local configuration;
-- optional publication is disabled until explicitly configured.
-
-## Open decisions
+## Settled decisions
 
 - The repository license is **MIT**, explicitly selected by the maintainer. The same license applies to the executable code, tests, documentation, and skill.
-- Supported operating systems must follow actual executable behavior and tests rather than a broad metadata declaration.
-- Messaging, NAS, and hosted-publication adapters should be documented as optional capabilities only after their generic installation paths are verified.
+- **Linux** is the supported platform and CI target, following actual executable behavior and tests rather than a broad metadata declaration; macOS was removed from the support and CI scope by an explicit maintainer decision, and native Windows is unsupported.
+- Messaging, NAS, and hosted-publication adapters remain optional. Their documentation must distinguish implemented behavior from verified installation paths; further generalization is future direction, not a release promise.
