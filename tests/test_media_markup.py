@@ -167,6 +167,302 @@ class CaptionHeuristicTest(unittest.TestCase):
         self.assertNotIn("> 图注：", content)
 
 
+class BadgeCaptionTest(unittest.TestCase):
+    """Small white-on-grey badges next to an image (conservative branch)."""
+
+    IMAGE = '<section><img data-src="https://mmbiz.qpic.cn/badge.jpg"></section>'
+
+    def extract(self, caption_html: str, image: str | None = None) -> str:
+        html = (
+            '<html><body><div id="js_content"><p>前文。</p>'
+            + (self.IMAGE if image is None else image)
+            + caption_html
+            + "<p>后文。</p></div></body></html>"
+        )
+        _, content, _ = archive_url.wechat_extract(html, PAGE)
+        return content
+
+    def badge(self, style: str, text: str = "白字灰底图注") -> str:
+        return f"<p style=\"{style}\">{text}</p>"
+
+    def test_13px_white_on_grey_right_aligned_badge_is_a_caption(self):
+        content = self.extract(self.badge(
+            "text-align:right;font-size:13px;color:#ffffff;background-color:#8a8a8a"
+        ))
+        self.assertIn("> 图注：白字灰底图注", content)
+        self.assertRegex(
+            content,
+            r"!\[[^\]]*\]\(https://mmbiz\.qpic\.cn/badge\.jpg\)\n\n> 图注：白字灰底图注",
+        )
+        self.assertNotIn("\n白字灰底图注", content)
+
+    def test_14px_badge_boundary_is_accepted(self):
+        content = self.extract(self.badge(
+            "font-size:14px;color:#ffffff;background-color:#8a8a8a"
+        ))
+        self.assertIn("> 图注：白字灰底图注", content)
+
+    def test_supported_colour_spellings_are_accepted(self):
+        pairs = [
+            ("white", "#8a8a8a"),
+            ("#fff", "rgb(136,136,136)"),
+            ("#ffffff", "#888"),
+            ("rgb(255,255,255)", "rgb(136,136,136)"),
+            ("rgba(255,255,255,1)", "rgba(136,136,136,1)"),
+        ]
+        for colour, background in pairs:
+            with self.subTest(colour=colour, background=background):
+                content = self.extract(self.badge(
+                    f"font-size:13px;color:{colour};background-color:{background}"
+                ))
+                self.assertIn("> 图注：白字灰底图注", content)
+
+    def test_inline_inheritance_within_the_same_run_is_accepted(self):
+        content = self.extract(
+            '<p style="text-align:right;background-color:#8a8a8a;font-size:13px">'
+            '<span style="color:#ffffff">白字灰底图注</span></p>'
+        )
+        self.assertIn("> 图注：白字灰底图注", content)
+
+    def test_repeat_extraction_is_stable(self):
+        html = (
+            '<html><body><div id="js_content"><p>前文。</p>' + self.IMAGE
+            + self.badge("font-size:13px;color:#ffffff;background-color:#8a8a8a")
+            + "<p>后文。</p></div></body></html>"
+        )
+        first = archive_url.wechat_extract(html, PAGE)[1]
+        second = archive_url.wechat_extract(html, PAGE)[1]
+        self.assertEqual(first, second)
+        self.assertEqual(first.count("> 图注："), 1)
+
+    def test_right_aligned_small_plain_text_is_not_a_caption(self):
+        content = self.extract(self.badge("text-align:right;font-size:13px", "只是右对齐小字"))
+        self.assertNotIn("> 图注：", content)
+        self.assertIn("只是右对齐小字", content)
+
+    def test_grey_background_without_white_foreground_is_not_a_caption(self):
+        content = self.extract(self.badge(
+            "font-size:13px;color:#333333;background-color:#8a8a8a", "灰底深灰字"
+        ))
+        self.assertNotIn("> 图注：", content)
+
+    def test_white_foreground_and_grey_background_in_separate_runs_is_not_a_caption(self):
+        content = self.extract(
+            '<p style="text-align:right;font-size:13px">'
+            '<span style="color:#ffffff">白字</span>'
+            '<span style="background-color:#8a8a8a">灰底</span></p>'
+        )
+        self.assertNotIn("> 图注：", content)
+
+    def test_normal_sized_white_on_grey_text_is_not_a_caption(self):
+        content = self.extract(self.badge(
+            "text-align:right;font-size:16px;color:#ffffff;background-color:#8a8a8a"
+        ))
+        self.assertNotIn("> 图注：", content)
+
+    def test_mixed_text_sizes_are_not_a_caption(self):
+        content = self.extract(
+            '<p style="text-align:right;font-size:13px;color:#ffffff;background-color:#8a8a8a">'
+            '白字灰底<span style="font-size:18px">大字</span></p>'
+        )
+        self.assertNotIn("> 图注：", content)
+
+    def test_mixed_colours_are_not_a_caption(self):
+        content = self.extract(
+            '<p style="text-align:right;font-size:13px;color:#ffffff;background-color:#8a8a8a">'
+            '白字灰底<span style="color:#ff0000">红字</span></p>'
+        )
+        self.assertNotIn("> 图注：", content)
+
+    def test_translucent_or_transparent_styles_fail_closed(self):
+        styles = [
+            "font-size:13px;color:rgba(255,255,255,0.5);background-color:#8a8a8a",
+            "font-size:13px;color:transparent;background-color:#8a8a8a",
+            "font-size:13px;color:#ffffff;background-color:transparent",
+            "font-size:13px;color:#ffffff;background-color:rgba(136,136,136,0.4)",
+            "font-size:13px;color:#ffffff;background-color:#8888",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                self.assertNotIn("> 图注：", self.extract(self.badge(style)))
+
+    def test_unknown_colour_syntax_fails_closed(self):
+        content = self.extract(self.badge(
+            "font-size:13px;color:var(--badge-fg);background-color:#8a8a8a"
+        ))
+        self.assertNotIn("> 图注：", content)
+
+    def test_descendant_colour_override_fails_closed(self):
+        content = self.extract(
+            '<p style="text-align:right;font-size:13px;color:#ffffff;background-color:#8a8a8a">'
+            '白字灰底<span style="color:#333333">改写色</span></p>'
+        )
+        self.assertNotIn("> 图注：", content)
+
+    def test_later_declaration_wins_in_one_style_attribute(self):
+        content = self.extract(self.badge(
+            "font-size:13px;color:#333333;color:#ffffff;background-color:#8a8a8a"
+        ))
+        self.assertIn("> 图注：白字灰底图注", content)
+
+    def test_important_declaration_wins_over_normal_in_one_style_attribute(self):
+        content = self.extract(self.badge(
+            "font-size:13px;color:#333333 !important;color:#ffffff;background-color:#8a8a8a"
+        ))
+        self.assertNotIn("> 图注：", content)
+
+    def test_nested_spans_with_explicit_13px_style_are_supported(self):
+        # Synthetic equivalent of the real badge: p[right] > span > span[13px].
+        content = self.extract(
+            '<p style="text-align:right">'
+            '<span><span style="font-size:13px;'
+            'background-color:rgb(136,136,136);color:rgb(255,255,255)">'
+            "白字灰底图注</span></span></p>"
+        )
+        self.assertIn("> 图注：白字灰底图注", content)
+
+    def test_non_finite_colour_channels_fail_closed(self):
+        styles = [
+            "font-size:13px;color:rgb(nan,255,255);background-color:#888",
+            "font-size:13px;color:rgb(255,inf,255);background-color:#888",
+            "font-size:13px;color:white;background-color:rgb(136,nan,136)",
+            "font-size:13px;color:white;background-color:rgb(136,136,inf)",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                content = self.extract(self.badge(style))
+                self.assertNotIn("> 图注：", content)
+                self.assertIn("白字灰底图注", content)
+
+    def test_background_shorthand_override_fails_closed(self):
+        styles = [
+            "font-size:13px;color:white;background-color:#888;background:red",
+            "font-size:13px;color:white;background-color:#888;background:transparent",
+            "font-size:13px;color:white;background:#888",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                self.assertNotIn("> 图注：", self.extract(self.badge(style)))
+        # Control: the supported longhand spelling still qualifies.
+        self.assertIn(
+            "> 图注：",
+            self.extract(self.badge("font-size:13px;color:white;background-color:#888")),
+        )
+
+    def test_font_shorthand_override_fails_closed(self):
+        styles = [
+            "font-size:13px;font:20px serif;color:white;background-color:#888",
+            "font:13px serif;color:white;background-color:#888",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                self.assertNotIn("> 图注：", self.extract(self.badge(style)))
+
+    def test_all_reset_fails_closed(self):
+        styles = [
+            "font-size:13px;color:white;background-color:#888;all:initial",
+            "font-size:13px;color:white;background-color:#888;all:unset",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                self.assertNotIn("> 图注：", self.extract(self.badge(style)))
+
+    def test_shorthand_on_inner_run_cannot_borrow_outer_style(self):
+        cases = [
+            '<span style="background:transparent">重叠</span>',
+            '<span style="all:initial">重叠</span>',
+            '<span style="font:inherit">重叠</span>',
+        ]
+        for inner in cases:
+            with self.subTest(inner=inner):
+                content = self.extract(
+                    '<p style="text-align:right;font-size:13px;color:#ffffff;'
+                    'background-color:#8a8a8a">白字灰底' + inner + "</p>"
+                )
+                self.assertNotIn("> 图注：", content)
+
+    def test_point_sizes_convert_by_96_over_72(self):
+        # 13pt renders at 17.33 CSS px, which is not small text.
+        self.assertNotIn(
+            "> 图注：",
+            self.extract(self.badge("font-size:13pt;color:white;background-color:#888")),
+        )
+        self.assertNotIn(
+            "> 图注：",
+            self.extract(self.badge("font-size:11pt;color:white;background-color:#888")),
+        )
+        # 9pt = 12 CSS px and 10.5pt = 14 CSS px remain inside the boundary.
+        self.assertIn(
+            "> 图注：",
+            self.extract(self.badge("font-size:9pt;color:white;background-color:#888")),
+        )
+        self.assertIn(
+            "> 图注：",
+            self.extract(self.badge("font-size:10.5pt;color:white;background-color:#888")),
+        )
+
+    def test_zero_and_non_positive_sizes_fail_closed(self):
+        styles = [
+            "font-size:0px;color:white;background-color:#888",
+            "font-size:0.0px;color:white;background-color:#888",
+            "font-size:0pt;color:white;background-color:#888",
+            "font-size:-13px;color:white;background-color:#888",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                self.assertNotIn("> 图注：", self.extract(self.badge(style)))
+
+    def test_em_and_rem_sizes_are_unsupported_in_the_badge_branch(self):
+        # Rendered parent/root size is unknown here, so 16px cannot be assumed.
+        styles = [
+            "font-size:0.8em;color:white;background-color:#888",
+            "font-size:0.8rem;color:white;background-color:#888",
+            "font-size:1em;color:white;background-color:#888",
+        ]
+        for style in styles:
+            with self.subTest(style=style):
+                self.assertNotIn("> 图注：", self.extract(self.badge(style)))
+        # The legacy grey/centred heuristic keeps its historical em handling.
+        legacy = self.extract(
+            '<p style="text-align:center"><span style="font-size:0.8em;'
+            'color:rgb(133,133,133)">灰色说明</span></p>'
+        )
+        self.assertIn("> 图注：", legacy)
+
+    def test_heading_is_not_a_white_on_grey_caption(self):
+        content = self.extract(
+            '<h3 style="font-size:13px;color:#ffffff;background-color:#8a8a8a">标题文字</h3>'
+        )
+        self.assertNotIn("> 图注：", content)
+        self.assertIn("### 标题文字", content)
+
+    def test_blockquote_or_list_is_not_a_white_on_grey_caption(self):
+        cases = [
+            '<blockquote style="font-size:13px;color:#ffffff;background-color:#8a8a8a">引用文字</blockquote>',
+            '<ul style="font-size:13px;color:#ffffff;background-color:#8a8a8a"><li>列表项</li></ul>',
+        ]
+        for html in cases:
+            with self.subTest(html=html):
+                self.assertNotIn("> 图注：", self.extract(html))
+
+    def test_badge_not_adjacent_to_image_is_not_a_caption(self):
+        content = self.extract(
+            "<p>中间插入的普通段落。</p>"
+            + self.badge("font-size:13px;color:#ffffff;background-color:#8a8a8a")
+        )
+        self.assertNotIn("> 图注：", content)
+
+    def test_badge_content_stays_inert(self):
+        content = self.extract(
+            '<p style="font-size:13px;color:#ffffff;background-color:#8a8a8a">'
+            '坏&lt;script&gt;alert(1)&lt;/script&gt; '
+            '<a href="javascript:alert(2)">点我</a></p>'
+        )
+        self.assertNotIn("<script", content)
+        self.assertNotIn("javascript:", content)
+        self.assertIn("> 图注：", content)
+
+
 class GenericMarkupTest(unittest.TestCase):
     def test_explicit_figure_figcaption_is_preserved(self):
         meta, content = archive_url.generic_extract(GENERIC_HTML, "https://example.com/post")

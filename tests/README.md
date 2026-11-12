@@ -165,6 +165,15 @@ mobile pane. It counts requests when they start, including unfinished transfers,
 and requires decoded pixels while the next image is still below the fold. A bad
 geometry precondition fails rather than skipping the assertion. Native `src`
 assignment is observed to catch transient placeholder collapse before decoding.
+The media fixture uses image-only galleries to avoid font-metric timing
+assumptions. A pass-through fetch observer records every occurrence's geometry
+at request time; server response barriers hold the first wave so the mobile
+hide/re-show check has one demonstrably eligible pending object. It requires
+no new requests while actually hidden and resumption without a remount or
+scroll. Earlier initial-placeholder geometry can become stale after image
+decoding and must not classify a later request. Independent scratch-only
+mutations (fetch-all, missing resume, hidden fetch) must still fail the
+corresponding assertions when validating this harness.
 The existing normal/tamper browser test now tests authenticated invalid PNG bytes
 as a separate decode-error case, then uses a valid generated PNG for normal
 acceptance. An error placeholder cannot satisfy the happy path.
@@ -192,7 +201,7 @@ From `tests/`, run the bounded synthetic regression:
 ```bash
 env -u PYTHONPATH ../.venv/bin/python -B -m unittest \
   test_article_formatting test_format_backfill test_format_backfill_cli \
-  test_reader_sort test_publish_capacity -v
+  test_media_markup test_media_rendering test_reader_sort test_publish_capacity -v
 ```
 
 Formatting checks exercise HTML extraction and rendered Markdown, not only
@@ -202,7 +211,11 @@ threshold boundaries and unavailable/unsafe exports without contacting hosting.
 
 Enable the real-Chromium sorting test separately. It covers the offline page,
 an older catalog without the new comparison fields, and a real encrypted export,
-including filtering, selection/scroll retention and preference storage:
+including filtering, selection/scroll retention and preference storage. The
+native heading-row dropdown is checked for keyboard selection/focus, 44px hit
+height and non-overlap at 320, 390 and 1280px. Visual review still requires
+actual screenshots; use CJK fonts in an isolated browser environment for Chinese
+line-breaking checks rather than making preview fonts a production dependency:
 
 ```bash
 env -u PYTHONPATH CA_RUN_BROWSER_TESTS=1 \
@@ -213,6 +226,13 @@ env -u PYTHONPATH CA_RUN_BROWSER_TESTS=1 \
 The Node harness's individual cases are nested assertions, not extra unittest
 tests. A passing selected module does not establish whole-candidate acceptance;
 see [reader-experience boundaries](../docs/reader-experience.md).
+
+Badge-caption regressions cover same-run white/grey style evidence, nested
+inline spans, mixed-color/size and structural negatives, opaque-color parsing,
+non-finite input, shorthand/reset rejection and absolute-size conversion.
+End-to-end cases exercise extraction, safe caption rendering, candidate-only
+backfill, unchanged source/raw/media bytes and repeat planning. These tests do
+not establish perfect semantic caption detection or authorize live application.
 
 ## Repository checks
 

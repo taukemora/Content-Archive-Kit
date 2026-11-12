@@ -131,6 +131,22 @@ CSS_CAPTION_PLAIN = (
     "小声说明图示内容。\n\n正文继续。"
 )
 
+# A white-on-grey badge caption (small, right-aligned) recognised only by the
+# new conservative style branch; archived copy kept the plain paragraph.
+BADGE_CAPTION_HTML = (
+    '<html><body><div id="js_content">'
+    "<p>导语段落。</p>"
+    '<p><img data-src="https://mmbiz.qpic.cn/synthetic/pic001.png" alt="示意图"></p>'
+    '<p style="text-align:right;font-size:13px;color:#ffffff;'
+    'background-color:#8a8a8a">右对齐白字灰底图注。</p>'
+    "<p>正文继续。</p>"
+    "</div></body></html>"
+)
+BADGE_CAPTION_PLAIN = (
+    "导语段落。\n\n![示意图](images/pic001.png)\n\n"
+    "右对齐白字灰底图注。\n\n正文继续。"
+)
+
 # Caption with an attribution link; the link must survive the annotation.
 LINK_CAPTION_HTML = (
     '<html><body><div id="js_content">'
@@ -407,6 +423,78 @@ class CaptionRecoveryTest(SandboxCase):
         row = plan["rows"][0]
         self.assertEqual(row["status"], "needs_review")
         self.assertIn("does not match the raw snapshot", " ".join(row["reasons"]))
+
+
+class BadgeCaptionBackfillTest(SandboxCase):
+    """An old archive becomes caption-only changed by the badge branch."""
+
+    def test_plan_and_prepare_apply_only_the_caption_change(self):
+        root, entry = self.archive(BADGE_CAPTION_PLAIN, BADGE_CAPTION_HTML)
+        source_before = entry.read_bytes()
+        raw_before = (entry.parent / "raw.html.gz").read_bytes()
+        image_before = (entry.parent / "images" / "pic001.png").read_bytes()
+
+        proc, out, plan = self.plan(root)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(len(plan["rows"]), 1)
+        row = plan["rows"][0]
+        self.assertEqual(row["status"], "changed", row["reasons"])
+        added = [line for line in row["diff"].splitlines() if line.startswith("+") and not line.startswith("+++")]
+        removed = [line for line in row["diff"].splitlines() if line.startswith("-") and not line.startswith("---")]
+        # ``content_hash`` is derived metadata; the only body edit is the marker.
+        self.assertEqual(
+            [line for line in added if not line.startswith("+content_hash:")],
+            ["+> 图注：右对齐白字灰底图注。"],
+            row["diff"],
+        )
+        self.assertEqual(
+            [line for line in removed if not line.startswith("-content_hash:")],
+            ["-右对齐白字灰底图注。"],
+            row["diff"],
+        )
+
+        proc, dest, receipt = self.prepare(root, out)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual([r["path"] for r in receipt["written"]], [ENTRY_REL])
+        self.assertFalse(receipt["source_modified"])
+        self.assertFalse(receipt["network_used"])
+
+        text = (dest / ENTRY_REL).read_text(encoding="utf-8")
+        fulltext = self.body_fulltext(text)
+        self.assertEqual(fulltext.count("> 图注：右对齐白字灰底图注。"), 1)
+        self.assertNotIn("\n右对齐白字灰底图注。", fulltext)
+        self.assertIn("![示意图](images/pic001.png)", fulltext)
+        self.assertIn("正文继续。", fulltext)
+        self.assertNotIn("mmbiz.qpic.cn", text)
+        fm, body = common.split_frontmatter(text)
+        self.assertEqual(fm["content_hash"], common.compute_content_hash(body))
+
+        self.assertEqual(entry.read_bytes(), source_before, "source entry.md was modified")
+        self.assertEqual((entry.parent / "raw.html.gz").read_bytes(), raw_before)
+        self.assertEqual((entry.parent / "images" / "pic001.png").read_bytes(), image_before)
+        self.assertFalse((dest / "index.csv").exists())
+        self.assertFalse((dest / ".state").exists())
+
+        proc, _out2, plan2 = self.plan(dest)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(plan2["counts"]["changed"], 0)
+        self.assertEqual(plan2["rows"][0]["status"], "unchanged", plan2["rows"][0]["reasons"])
+        self.assertIn("already current", " ".join(plan2["rows"][0]["reasons"]))
+
+    def test_styled_prose_without_an_adjacent_image_stays_unchanged(self):
+        html = BADGE_CAPTION_HTML.replace(
+            '<p><img data-src="https://mmbiz.qpic.cn/synthetic/pic001.png" alt="示意图"></p>',
+            '<p><img data-src="https://mmbiz.qpic.cn/synthetic/pic001.png" alt="示意图"></p>'
+            "<p>中间插入的普通段落。</p>",
+        )
+        plain = BADGE_CAPTION_PLAIN.replace(
+            "![示意图](images/pic001.png)\n\n",
+            "![示意图](images/pic001.png)\n\n中间插入的普通段落。\n\n",
+        )
+        root, entry = self.archive(plain, html)
+        row, candidate = format_backfill.analyse_entry(root, entry)
+        self.assertEqual(row["status"], "unchanged", row["reasons"])
+        self.assertEqual(candidate, entry.read_text(encoding="utf-8"))
 
 
 class UnicodeBoundaryBackfillTest(SandboxCase):

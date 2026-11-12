@@ -3,8 +3,14 @@
 
 The archive never stores raw article HTML.  This module turns structural media
 evidence (``iframe.video_iframe`` / ``data-mpvid`` / ``<video>`` / explicit
-``<figure><figcaption>`` and a narrow WeChat caption heuristic) into explicit
+``<figure><figcaption>`` and two narrow WeChat caption heuristics) into explicit
 Markdown blockquotes, and installs the matching (safe) reader rendering.
+
+Caption heuristics stay deliberately bounded: small grey/source/centred text
+keeps its historical behaviour, and an image-adjacent small opaque-white-on-
+neutral-grey badge is accepted only when every meaningful text run carries both
+colours from inline declarations inside the candidate itself.  There is no CSS
+engine, class lookup or shorthand expansion here; ambiguous styles fail closed.
 
 Markdown contract::
 
@@ -21,8 +27,9 @@ Nothing here downloads media, executes page scripts or trusts page text.
 """
 from __future__ import annotations
 
+import math
 import re
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 from urllib.parse import unquote, urljoin, urlsplit
 
 from bs4 import BeautifulSoup, NavigableString, Tag
@@ -63,6 +70,25 @@ _COLOR_RE = re.compile(
     r"(?<![-a-z])color\s*:\s*(rgba?\([^)]*\)|#[0-9a-fA-F]{3,8}|[a-zA-Z]+)", re.I
 )
 _CENTER_RE = re.compile(r"text-align\s*:\s*center", re.I)
+_BADGE_MAX_CHARS = 140
+_BADGE_SIZE_RE = re.compile(r"^([0-9]*\.?[0-9]+)\s*(px|pt|em|rem)$", re.I)
+_BADGE_UNSUPPORTED_PROPS = frozenset({"background", "font", "all"})
+_BADGE_INLINE_TAGS = {
+    "span", "strong", "em", "b", "i", "a", "font", "small", "mark",
+    "sub", "sup", "u", "s",
+}
+_BADGE_SELF_REJECT = {
+    "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "ul", "ol", "li",
+    "dl", "dt", "dd", "table", "thead", "tbody", "tr", "td", "th", "pre",
+    "figure", "figcaption", "hr", "br",
+}
+_BADGE_DESCENDANT_REJECT = [
+    "img", "iframe", "video", "audio", "svg", "canvas", "object", "embed",
+    "form", "input", "button", "textarea", "select", "script", "style", "br",
+    "p", "div", "section", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote",
+    "ul", "ol", "li", "dl", "dt", "dd", "table", "thead", "tbody", "tr",
+    "td", "th", "pre", "figure", "figcaption", "hr",
+]
 
 
 def _clean_text(value: str | None) -> str:
@@ -213,6 +239,228 @@ def _is_wechat_caption(node: Tag) -> bool:
     return small and (grey or centered or source) or source and (grey or centered)
 
 
+def _style_declarations(style: str | None) -> list[tuple[str, str, bool]]:
+    """Split one inline ``style`` attribute into (property, value, important).
+
+    Only single-colon declarations are honoured; malformed or unknown syntax is
+    ignored so the caller fails closed rather than guessing.
+    """
+    declarations: list[tuple[str, str, bool]] = []
+    for chunk in str(style or "").split(";"):
+        if ":" not in chunk:
+            continue
+        name, _, value = chunk.partition(":")
+        name = name.strip().lower()
+        value = value.strip()
+        if not name or not value:
+            continue
+        important = False
+        match = re.search(r"\s*!\s*important\s*$", value, re.I)
+        if match:
+            important = True
+            value = value[: match.start()].strip()
+        if value:
+            declarations.append((name, value, important))
+    return declarations
+
+
+def _declared_value(style: str | None, prop: str) -> str | None:
+    """Winning declaration for ``prop`` inside one element's style attribute."""
+    best: tuple[bool, str] | None = None
+    for name, value, important in _style_declarations(style):
+        if name != prop:
+            continue
+        if best is not None and best[0] and not important:
+            continue
+        best = (important, value)
+    return best[1] if best is not None else None
+
+
+def _run_value(elements: Sequence[Tag], prop: str) -> str | None:
+    """Nearest declared value along an innermost-first element chain.
+
+    ``color`` is inherited and ``background-color`` paints behind the run, so
+    the closest declaring element is what the reader actually sees.  A nearer
+    declaration always replaces a farther one, exactly like the cascade.
+    """
+    for element in elements:
+        style = element.get("style")
+        value = _declared_value(style if isinstance(style, str) else None, prop)
+        if value is not None:
+            return value
+    return None
+
+
+def _parse_opaque_colour(value: str | None) -> tuple[int, int, int] | None:
+    """Return (r, g, b) only for an opaque colour; everything else is None."""
+    text = (value or "").strip().lower()
+    if text == "white":
+        return (255, 255, 255)
+    if text.startswith("#"):
+        digits = text[1:]
+        if len(digits) == 4:
+            if digits[-1] != "f":
+                return None
+            digits = digits[:-1]
+        elif len(digits) == 8:
+            if digits[-2:] != "ff":
+                return None
+            digits = digits[:-2]
+        if len(digits) == 3:
+            digits = "".join(ch * 2 for ch in digits)
+        if len(digits) != 6:
+            return None
+        try:
+            red, green, blue = (int(digits[i:i + 2], 16) for i in (0, 2, 4))
+        except ValueError:
+            return None
+        return (red, green, blue)
+    match = re.match(r"^rgba?\(([^)]*)\)$", text)
+    if not match:
+        return None
+    parts = [part.strip() for part in match.group(1).split(",")]
+    if len(parts) not in (3, 4):
+        return None
+    try:
+        channels = [float(part) for part in parts[:3]]
+        alpha = float(parts[3]) if len(parts) == 4 else 1.0
+    except ValueError:
+        return None
+    if not math.isfinite(alpha) or alpha != 1.0:
+        return None
+    if any(
+        not math.isfinite(channel) or channel < 0 or channel > 255
+        for channel in channels
+    ):
+        return None
+    red, green, blue = (int(round(channel)) for channel in channels)
+    return (red, green, blue)
+
+
+def _is_white(rgb: tuple[int, int, int] | None) -> bool:
+    return rgb == (255, 255, 255)
+
+
+def _is_neutral_grey(rgb: tuple[int, int, int] | None) -> bool:
+    if rgb is None:
+        return False
+    red, green, blue = rgb
+    return max(rgb) - min(rgb) <= 16 and 48 <= (red + green + blue) / 3 <= 232
+
+
+def _badge_size_px(value: str | None) -> float | None:
+    """Inline size in CSS pixels, or ``None`` when it cannot be resolved.
+
+    ``px`` is taken literally and ``pt`` converts by 96/72.  ``em``/``rem``
+    depend on the rendered parent/root font size, which this module cannot
+    know without a layout engine, so they are unsupported in this branch.
+    Non-positive sizes are invisible text and never qualify.
+    """
+    match = _BADGE_SIZE_RE.match((value or "").strip())
+    if not match:
+        return None
+    try:
+        size = float(match.group(1))
+    except ValueError:
+        return None
+    unit = match.group(2).lower()
+    if unit == "pt":
+        size *= 96.0 / 72.0
+    elif unit in ("em", "rem"):
+        return None
+    if not math.isfinite(size) or size <= 0.0:
+        return None
+    return size
+
+
+def _is_small_size(value: str | None) -> bool:
+    size = _badge_size_px(value)
+    return size is not None and size <= 14.0
+
+
+def _has_unsupported_declaration(elements: Sequence[Tag]) -> bool:
+    """True when a run chain declares a shorthand/reset this branch cannot read.
+
+    ``background``, ``font`` and ``all`` reset the exact properties the badge
+    test relies on, and their longhand/``!important`` interaction is not
+    modelled here.  Their presence is therefore ambiguous and fails closed.
+    """
+    for element in elements:
+        style = element.get("style")
+        for name, _value, _important in _style_declarations(
+            style if isinstance(style, str) else None
+        ):
+            if name in _BADGE_UNSUPPORTED_PROPS:
+                return True
+    return False
+
+
+def _badge_text_runs(node: Tag) -> list[list[Tag]] | None:
+    """Element chains for every meaningful text node, innermost first.
+
+    Returns ``None`` when the candidate contains anything other than inline
+    descendants, which keeps block/mixed structures out of the badge branch.
+    """
+    runs: list[list[Tag]] = []
+    for descendant in node.descendants:
+        if not isinstance(descendant, NavigableString) or not str(descendant).strip():
+            continue
+        parent = descendant.parent
+        if not isinstance(parent, Tag):
+            return None
+        chain: list[Tag] = []
+        current: Tag | None = parent
+        while isinstance(current, Tag):
+            chain.append(current)
+            if current is node:
+                break
+            current = current.parent
+        if not chain or chain[-1] is not node:
+            return None
+        if any(
+            (element.name or "").lower() not in _BADGE_INLINE_TAGS
+            for element in chain[:-1]
+        ):
+            return None
+        runs.append(chain)
+    return runs
+
+
+def _is_badge_caption(node: Tag) -> bool:
+    """Conservative white-on-grey badge branch.
+
+    Every meaningful text run must carry small opaque white text over an opaque
+    neutral-grey background from the same bounded inline chain.  "Small" means
+    strictly positive and <=14 CSS px, with ``px`` literal and ``pt`` converted
+    by 96/72; ``em``/``rem`` are rejected because the rendered parent/root size
+    is unknown.  Right alignment and shortness alone never qualify, and
+    ambiguous styles (transparency, non-finite/unknown colour syntax,
+    ``background``/``font``/``all`` shorthands or resets, external classes)
+    fail closed.
+    """
+    if (node.name or "").lower() in _BADGE_SELF_REJECT:
+        return False
+    if node.find(_BADGE_DESCENDANT_REJECT):
+        return False
+    text = _clean_text(node.get_text(" ", strip=True))
+    if not text or len(text) > _BADGE_MAX_CHARS:
+        return False
+    runs = _badge_text_runs(node)
+    if not runs:
+        return False
+    for chain in runs:
+        if _has_unsupported_declaration(chain):
+            return False
+        if not _is_white(_parse_opaque_colour(_run_value(chain, "color"))):
+            return False
+        background = _parse_opaque_colour(_run_value(chain, "background-color"))
+        if not _is_neutral_grey(background):
+            return False
+        if not _is_small_size(_run_value(chain, "font-size")):
+            return False
+    return True
+
+
 def _previous_image_container(node: Tag) -> Tag | None:
     sibling = node.previous_sibling
     while isinstance(sibling, NavigableString) and not str(sibling).strip():
@@ -243,7 +491,7 @@ def _mark_wechat_captions(root: Tag, page_url: str = "") -> int:
             continue
         if sibling.has_attr("data-ca-caption"):
             continue
-        if not _is_wechat_caption(sibling):
+        if not (_is_wechat_caption(sibling) or _is_badge_caption(sibling)):
             continue
         inner = _caption_fragment(sibling, page_url)
         if not _caption_text(inner):

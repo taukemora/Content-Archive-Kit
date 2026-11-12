@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from build_html import build_html  # noqa: E402
 from common import write_entry  # noqa: E402
+import archive_url  # noqa: E402
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 32
 
@@ -215,6 +216,25 @@ class MediaRenderingTest(unittest.TestCase):
         emphasis = caption.find("em")
         self.assertIsNotNone(emphasis)
         self.assertEqual(emphasis.get_text(strip=True), "重点")
+
+    def test_extracted_badge_caption_renders_as_safe_figure(self):
+        source = (
+            '<html><body><div id="js_content"><p>前文。</p>'
+            '<section><img data-src="images/001.png" alt="示意图"></section>'
+            '<p style="text-align:right"><span style="font-size:13px;color:#fff;'
+            'background-color:#8a8a8a">右对齐白字灰底图注</span></p>'
+            "<p>后文。</p></div></body></html>"
+        )
+        _, content, _ = archive_url.wechat_extract(source, "https://mp.weixin.qq.com/s/badge")
+        self.assertIn("> 图注：右对齐白字灰底图注", content)
+        body = self.body(self.build(content))
+        figure = body.find("figure", class_="article-figure")
+        self.assertIsNotNone(figure)
+        self.assertEqual(figure.find("img")["src"], "library/tech/entry-one/images/001.png")
+        caption = figure.find("figcaption")
+        self.assertEqual(caption.get_text(strip=True), "右对齐白字灰底图注")
+        self.assertNotIn("图注：右对齐", body.get_text(" ", strip=True))
+        self.assertNotIn("background-color", str(body))
 
     def test_template_has_media_styles(self):
         css = (ROOT / "scripts" / "archive_page.html").read_text(encoding="utf-8")
