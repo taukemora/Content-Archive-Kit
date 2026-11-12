@@ -459,21 +459,61 @@ class SortControlMarkupTests(unittest.TestCase):
     def setUp(self):
         self.template = TEMPLATE.read_text(encoding="utf-8")
 
-    def test_compact_accessible_control_near_filters(self):
-        self.assertIn('id="sort-archived"', self.template)
-        self.assertIn('id="sort-published"', self.template)
-        self.assertIn('role="group"', self.template)
-        self.assertIn('aria-label="排序方式"', self.template)
-        self.assertIn('data-sort="archived"', self.template)
-        self.assertIn('data-sort="published"', self.template)
-        self.assertIn('aria-pressed="true"', self.template)
-        self.assertIn("最近归档", self.template)
-        self.assertIn("最近发布", self.template)
-        # The control belongs to the sidebar filter block, before the list.
-        self.assertLess(self.template.index('id="sort-archived"'), self.template.index('id="article-list"'))
+    def _sort_select_markup(self) -> str:
+        match = re.search(r'<select[^>]*id="sort-select".*?</select>', self.template, re.S)
+        if match is None:
+            self.fail("native sort select missing")
+        return match.group(0)
+
+    def test_compact_native_select_in_heading_row(self):
+        select = self._sort_select_markup()
+        self.assertIn('aria-label="排序方式"', select)
+        self.assertIn('value="archived"', select)
+        self.assertIn('value="published"', select)
+        self.assertIn("最近归档优先", select)
+        self.assertIn("最近发布优先", select)
+        self.assertEqual(select.count("<option"), 2)
+        # Default selection is archived; visible labels describe the mode.
+        self.assertRegex(select, r'<option value="archived"[^>]*selected')
+        # One control only: no duplicate hint, no legacy button row.
+        self.assertEqual(self.template.count('id="sort-select"'), 1)
+        self.assertEqual(self.template.count("最近归档优先"), 1)
+        self.assertEqual(self.template.count("最近发布优先"), 1)
+        for legacy in (
+            'id="sort-archived"',
+            'id="sort-published"',
+            'id="browse-sort-hint"',
+            'class="sort-row"',
+            'class="sort-btn"',
+        ):
+            with self.subTest(legacy=legacy):
+                self.assertNotIn(legacy, self.template)
+        # The control belongs to the browse heading, before the search box,
+        # filters and article list.
+        heading = re.search(r'<div class="browse-heading">(.*?)</div>', self.template, re.S)
+        if heading is None:
+            self.fail("browse heading missing")
+        self.assertIn('id="sort-select"', heading.group(1))
+        self.assertLess(self.template.index('id="sort-select"'), self.template.index('id="article-list"'))
         self.assertGreater(
-            self.template.index('id="sort-archived"'), self.template.index('id="category-filter"')
+            self.template.index('id="sort-select"'), self.template.index('class="browse-heading"')
         )
+        self.assertLess(self.template.index('id="sort-select"'), self.template.index('id="search-input"'))
+
+    def test_sort_select_uses_subtle_compact_tokens(self):
+        style = re.search(r'\.sort-select\s*\{([^}]*)\}', self.template)
+        self.assertIsNotNone(style, "sort select styles missing")
+        body = style.group(1)
+        self.assertRegex(body, r'min-height:\s*44px')
+        self.assertRegex(body, r'background-color:\s*transparent')
+        self.assertRegex(body, r'color:\s*var\(--text-muted\)')
+        self.assertRegex(body, r'border:\s*1px solid var\(--border-light\)')
+        self.assertRegex(body, r'font-size:\s*12px')
+        self.assertNotRegex(body, r'font-weight:\s*(?:600|700|bold)')
+        self.assertNotIn("--accent-subtle", body)
+        # Native select with a small drawn chevron, not a custom popup.
+        self.assertIn("appearance: none", body)
+        self.assertIn("background-image: url(\"data:image/svg+xml", body)
 
     def test_sort_module_is_extractable_for_node(self):
         self.assertIsNotNone(SORT_SCRIPT_RE.search(self.template), "inline sort module missing")
@@ -785,7 +825,7 @@ class EncryptedIndexMetadataTests(SyntheticArchiveCase):
         )
         self.assertIsNotNone(data)
         self.assertEqual(json.loads(data.group(1)), [])
-        self.assertIn('id="sort-published"', shell)
+        self.assertIn('id="sort-select"', shell)
 
 
 class BrowserSortAcceptance(SyntheticArchiveCase):

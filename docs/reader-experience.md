@@ -1,10 +1,8 @@
 # Reader formatting, ordering and export capacity
 
-This document describes the locally accepted development candidate, not a
-released or deployed update. The first independent review was conditional;
-its targeted repairs passed parent reproduction, whole-candidate regression
-and focused independent re-review. Private-instance upgrades, source-entry
-changes, publication and storage migration require separate approval.
+This document describes implemented reader behavior and its verification
+boundaries. Installing an update does not apply old-entry repairs or publish
+an archive; those operations require separate review and approval.
 
 ## Source formatting
 
@@ -37,9 +35,15 @@ not comprehensively normalized and can still show literal markers.
 
 ## Reader ordering
 
-The filter area provides **最近归档** (recently archived, the default) and
-**最近发布** (recently published). Switching order retains the search/filter,
-selected article and article scroll position.
+
+The **浏览藏文** heading row provides one native dropdown at its right edge:
+**最近归档优先** (recently archived, the default) and **最近发布优先**
+(recently published). It replaces the former hint and separate two-button row.
+The control uses the existing muted palette, regular 12px text, a subtle border
+and chevron, a 44px minimum hit height and the shared keyboard-focus ring.
+The browser/OS owns the native popup's appearance. Switching order retains the
+search, category, publisher and collection filters, selected article and article
+scroll position; the comparator and preference key are unchanged.
 
 - Archived ordering uses archive time, then publication time, then stable ID.
 - Published ordering uses publication time, then archive time, then stable ID.
@@ -63,7 +67,36 @@ Missing, disabled or corrupt preference storage falls back safely. Preference
 persistence may differ between browser origins and `file://` implementations.
 The encrypted shell remains empty of article data until unlock.
 
-## Read-only backfill candidate workflow
+## White-on-grey caption badges
+
+In addition to explicit `figcaption` and the existing caption heuristic, the
+WeChat extractor recognizes a narrow image-adjacent badge shape: a standalone
+short paragraph whose meaningful text runs all have small white text on a
+neutral grey background. Foreground, background and size must come from the
+same run's inline element chain **inside the candidate**, not unrelated siblings
+or a tiny decorative span. Right alignment or shortness alone is insufficient.
+Headings, lists, quotations and mixed block content do not qualify through this
+new branch. Recognized text becomes the existing explicit Markdown caption and
+safe `figure`/`figcaption`; the source's grey badge styling is not copied.
+
+The supported sizes are strictly positive and at most 14 CSS px (`pt` is
+converted at 96/72). `em`/`rem` are not inferred from an assumed root size. White
+supports `white`, hex, comma-separated `rgb` and opaque `rgba`; grey supports
+hex/rgb/opaque rgba. Transparent, translucent, non-finite and unsupported values
+are rejected without aborting extraction. Same-element declaration order and
+`!important` are respected, and explicit descendant overrides remain local to
+their own runs. `background`, `font` and `all` declarations anywhere on the run
+chain conservatively reject this branch, even when they might be harmless.
+
+This is still a bounded structural/style heuristic, not computed browser CSS or
+semantic understanding. External stylesheets/classes, visual effects and
+shorthand expansion are not evaluated; unsupported structures can be missed.
+Identically styled adjacent prose can still be indistinguishable from a caption.
+The historical grey/source/centred heuristic is unchanged, including its own
+limitations. Existing entries require a reviewed backfill; upgrading extraction
+does not automatically rewrite them.
+
+## Candidate-only backfill workflow
 
 The new CLI entry point is:
 
@@ -95,15 +128,16 @@ indexes, download media, or publish. The receipt identifies copied candidates
 and whether an eventual separately approved application would require index
 rebuilding. This patch tree is not a complete replacement archive.
 
-The first backfill implementation failed independent checks for unmarked
+Earlier backfill candidates failed checks for unmarked
 captions, heading-only promotion, repeat planning after promotion, CRLF
-preservation and truncated gzip handling. Targeted repairs passed those five
-checks, followed by the whole-candidate regression and independent reviews
-recorded below. These results do not authorize application to a live archive.
+preservation and truncated gzip handling; the acceptance record below covers
+these five checks in the current candidate. These results do not authorize
+application to a live archive.
 
 Caption recovery requires exact raw-derived text and a recognized caption
-shape (native caption, the existing small/grey heuristic, or an image-adjacent
-literal `图注：` paragraph). Ordinary neighboring prose is not guessed into a
+shape (native caption, the existing small/grey heuristic, the bounded white-on-
+grey badge above, or an image-adjacent literal `图注：` paragraph). Unstyled
+neighboring prose is not guessed into a
 caption. Entries containing carriage returns or invalid UTF-8 are refused
 without rewriting them. A damaged/truncated gzip is reported per entry rather
 than aborting the batch. Heading-only promotions are changes, and planning
@@ -148,7 +182,47 @@ when planning hosting. Splitting the shell from encrypted object storage or
 moving the site to another host is a separate migration, not implemented by
 this capacity report.
 
-## Local candidate acceptance
+## Caption/dropdown local acceptance
+
+Implementation and tests were frozen on baseline
+`79cc04edfb825d7fa5520b5ba3917d2e8259136c`. Local Python 3.13 regression
+with real Chromium and process-local CJK fonts completed **903 tests: 902
+passed, one intentional production-instance skip, zero failures or errors**.
+The reviewed pre-documentation snapshot inventory digest was
+`21c0e48544a7fafbdbd39090568ffc638ca709d27cb7a29a2b228db70046f562`.
+Final documentation and its checksum inventory are separate from that digest;
+executable, test and workflow bytes must remain identical to the tested snapshot.
+
+- Eight badge boundary probes were replayed independently, all passing. These
+  include non-finite colors, shorthand/reset overrides, pt conversion and zero
+  size; extraction/rendering/backfill regressions are in the full suite.
+- Six offline/encrypted viewport combinations (320, 390 and 1280px) produced
+  twelve screenshots, inspected for intact Chinese labels, no heading/control
+  overlap, a restrained palette and visible keyboard focus. Real-browser tests
+  also cover stored preference, disabled storage, filtering, selection and
+  reading-position preservation.
+- A separate rendering check confirms that no active script or
+  JavaScript-scheme link is emitted.
+- The media-browser probe observes geometry when each request starts and holds
+  response bytes until the mobile pane is hidden. It requires a pending eligible
+  job to resume without remount or scroll. This replaces stale-placeholder
+  geometry and timing assumptions that caused false failures in the previous
+  probe. Scratch-only fetch-all, missing-resume and hidden-fetch mutants fail
+  the intended behavioral assertions. Production scheduling code is unchanged;
+  reruns also pass without the preview font override.
+- Caption recognition does not replace renderer sanitization. Some existing
+  extraction paths can retain unsafe Markdown links; the safe renderer rejects
+  JavaScript-scheme links and active scripts.
+
+Non-blocking limits remain: mobile request-time observations do not have the
+desktop phase's observer/server-count equality check (the current transport is
+`fetch`, and hidden/resume assertions use server events); dropdown style tests
+pin the current accent and tab order; identically styled adjacent prose remains
+semantically ambiguous. Native OS popup appearance and physical devices were
+not accepted. These local results do not establish hosted CI, a release,
+private-instance installation, live article backfill or publication.
+
+## Original formatting/ordering/capacity acceptance
 
 The tested implementation is based on
 `d48ec273691275afb6e12c7b2306020412eec570`. A clean, frozen Python 3.13 export
@@ -160,8 +234,8 @@ deliberately disabled production-instance dry run. The browser tests use real
 Chromium with synthetic fixtures, not the production reader or its keys.
 
 - Source-format tests exercise the actual extractor and safe Markdown renderer,
-  not only the generated Markdown string. Parent probes independently reproduced
-  and then closed the Unicode punctuation-flanking and unreadable-entry findings.
+  not only the generated Markdown string. Independent probes reproduced and
+  then closed the Unicode punctuation-flanking and unreadable-entry findings.
 - Backfill tests exercise the actual CLI `plan → prepare → plan` transition,
   exact candidate reconstruction, unchanged source/raw/media bytes, reviewed
   heading idempotence and refusal of ambiguous or unsafe inputs. This proves
@@ -173,16 +247,12 @@ Chromium with synthetic fixtures, not the production reader or its keys.
   unchanged publication limits. Storage negative controls reject writes outside
   the one approved sort-preference module, key or enumerated value.
 
-The implementation author used `deepseek-v4.1-flash`; the independent reviewer
-used `z-ai/glm-5.3-flash`. The first whole-candidate review returned
-**CONDITIONAL**, identifying literal emphasis markers beside Unicode
-punctuation and entry-read errors aborting a batch. After repairs, the focused
-review returned **PASS** for those findings and the marker-only backfill
-integration, with no new blocking finding in that scope. It did not repeat the
-earlier sorting/capacity review or the parent's full browser regression.
+Regression coverage includes literal emphasis markers beside Unicode
+punctuation, unreadable entries, and marker-only backfill integration.
 
-Accepted implementation SHA-256 values (subsequent acceptance-document and
-public-manifest edits do not change these runnable bytes):
+Historical implementation SHA-256 values for the original candidate, not the
+later caption/dropdown candidate (the current inventory is
+`docs/public-tree-sha256.json`):
 
 | File | SHA-256 |
 | --- | --- |

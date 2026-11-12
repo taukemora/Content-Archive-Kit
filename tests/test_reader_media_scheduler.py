@@ -9,9 +9,11 @@ Two layers:
   is available (the repository already uses Node for WebCrypto interop tests).
 * ``SchedulerSourceContractTests`` pins the browser wiring and the placeholder
   CSS that makes pending encrypted images measurable.
-* ``BrowserMediaAcceptance`` is opt-in (``CA_RUN_BROWSER_TESTS=1``) and builds a
-  synthetic eight-image article to check real Chromium fetch timing, decoded
-  ``naturalWidth`` values, and scroll-driven hydration.
+* ``BrowserMediaAcceptance`` is opt-in (``CA_RUN_BROWSER_TESTS=1``). It builds
+  font-independent synthetic galleries, holds the first response wave at the
+  test server, and checks real Chromium fetch timing, per-request geometry,
+  decoded ``naturalWidth`` values, scroll-driven hydration, and hide/resume
+  behaviour of the same mobile mount.
 """
 from __future__ import annotations
 
@@ -154,45 +156,61 @@ def _png(width: int, height: int, rgb: tuple[int, int, int]) -> bytes:
 class BrowserMediaAcceptance(EncryptedSiteBase):
     """Opt-in real-Chromium check of prefetch timing and decoded pixels."""
 
-    @unittest.skipUnless(
-        os.environ.get("CA_RUN_BROWSER_TESTS") == "1",
-        "set CA_RUN_BROWSER_TESTS=1",
-    )
-    def test_visible_first_prefetch_and_scroll_hydration(self):
+    @staticmethod
+    def _write_gallery(entry, specs, shrink_index=None, duplicate_last=False):
+        """Replace an entry body with an image-only gallery.
+
+        Block heights then come from the fixed pending aspect-ratio instead of
+        wrapped prose, so the measured layout does not drift with font metrics.
+        ``shrink_index`` swaps one image for a wider/shorter one: when it
+        decodes, everything below it moves up. That reflow is deliberate -- the
+        request-time assertions must judge each request by the layout that
+        existed when it was issued, not by the initial placeholder layout.
+        """
         from common import read_entry, write_entry
 
-        # Reuse the shared synthetic archive, then replace the alpha body with
-        # a long mixed-aspect-ratio gallery. The tall first image pushes the
-        # second below the pane but keeps it inside the two-screen window.
-        entry = self.root / "library" / "coding" / "2026-01-01-alpha"
         images = entry / "images"
         images.mkdir(exist_ok=True)
+        sizes = list(specs)
+        if shrink_index is not None:
+            sizes[shrink_index] = (1200, 320)
         fm, _ = read_entry(entry / "entry.md")
-        sizes = [
-            (800, 1200),
-            (800, 450),
-            (1200, 320),
-            (600, 600),
-            (800, 450),
-            (760, 1000),
-            (900, 300),
-            (640, 640),
-        ]
         parts: list[str] = []
         for index, (width, height) in enumerate(sizes):
             (images / f"m{index}.png").write_bytes(
                 _png(width, height, (20 + index * 20, 90, 140))
             )
             parts.append(f"![合成图{index}](images/m{index}.png)")
-            parts.extend(
-                "这是用于撑开版面的合成段落，只存在于测试数据中。" * 2
-                for _ in range(3)
-            )
-        # The same object appears again as an image and as an attachment link:
-        # one fetch must hydrate every occurrence.
-        parts.append("![重复图4](images/m4.png)")
-        parts.append("[重复图4附件](images/m4.png)")
+        if duplicate_last:
+            # The same object appears again as an image and as an attachment
+            # link beyond the prefetch window: one fetch must hydrate both.
+            last = len(sizes) - 1
+            parts.append(f"![重复图{last}](images/m{last}.png)")
+            parts.append(f"[重复图{last}附件](images/m{last}.png)")
         write_entry(entry / "entry.md", fm, "\n\n".join(parts))
+
+    @unittest.skipUnless(
+        os.environ.get("CA_RUN_BROWSER_TESTS") == "1",
+        "set CA_RUN_BROWSER_TESTS=1",
+    )
+    def test_visible_first_prefetch_and_scroll_hydration(self):
+        # Desktop fixture: eight 16:9 images (the pending placeholder box is
+        # also 16:9, so decoding changes no height) plus one short image that
+        # shrinks and reflows the gallery below it. The repeated object sits at
+        # the far end, beyond the two-screen prefetch window.
+        self._write_gallery(
+            self.root / "library" / "coding" / "2026-01-01-alpha",
+            [(800, 450)] * 8,
+            shrink_index=2,
+            duplicate_last=True,
+        )
+        # Mobile fixture: four short images, all initially inside the two-screen
+        # window at 390x844, so one job stays pending and eligible behind the
+        # three concurrent first-wave jobs.
+        self._write_gallery(
+            self.root / "library" / "coding" / "2026-01-02-beta",
+            [(800, 450)] * 4,
+        )
         self.build()
 
         python = os.environ.get("CA_PLAYWRIGHT_PYTHON") or sys.executable
@@ -215,6 +233,10 @@ class BrowserMediaAcceptance(EncryptedSiteBase):
             "media",
             "--article-title",
             "加密标题甲",
+            "--mobile-article-title",
+            "加密标题乙",
+            "--repeat-link-text",
+            "重复图7附件",
         ]
         browser = os.environ.get("CA_PLAYWRIGHT_BROWSER")
         if browser:

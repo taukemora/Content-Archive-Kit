@@ -24,6 +24,7 @@ Content Archive Kit 将可复用的代码和技能与私人文章、运行状态
 - RSS 优先的监视来源采集，内置通用 RSS 适配器和特定站点的 HTML/文档适配器，保留明确的失败重试状态并如实呈现日报。
 - 本地阅读页，以及需要显式配置的可选发布适配器。
 - 一个 Hermes 技能，定义中文 `收藏：<文章链接>` 和英文 `Save: <文章链接>` / `Archive: <文章链接>` 入口，以及裸链接、一次性摘要和引用示例不得触发归档的规则；模型实际行为须另行验证。
+- 阅读体验：行内强调源格式归一化、归档/发布时间排序、保守的白字灰底图注识别、仅生成候选副本的 `format-backfill plan|prepare` 回填 CLI，以及发布体积报告（既有发布上限不变）。
 
 ## 环境要求
 
@@ -67,7 +68,7 @@ cd tests
 
 ## 发布准备
 
-首个计划版本为 **v0.1.0**，目前尚未发布。详见[更新记录](CHANGELOG.md)、[双语发布说明草稿](docs/releases/v0.1.0.md)和[发布流程](docs/releasing.md)。工作流在 Ubuntu 上验证 Python 3.13，但存在工作流不等于已经通过。[CI 准备验收](docs/ci-acceptance.md)区分本地结果、精确提交的 GitHub CI 与后续工具包验收，并保留此前 macOS 失败和随后收敛为 Linux-only 的范围决定。标签、Release、附件上传及私人实例升级均须另行授权。
+首个计划版本为 **v0.1.0**，目前尚未发布：尚无标签、GitHub Release 或已公开的发布附件。计划内容详见[更新记录](CHANGELOG.md)、[双语发布说明草稿](docs/releases/v0.1.0.md)和[发布流程](docs/releasing.md)。[CI 准备验收](docs/ci-acceptance.md)区分本地结果、精确提交的 GitHub CI 与后续工具包验证。标签、Release、附件上传及私人实例升级均须另行授权。
 
 ## Hermes 技能
 
@@ -99,15 +100,14 @@ assets/                   公开品牌资源
 
 ## 当前状态
 
-本地阅读体验候选新增源格式归一化、归档/发布时间排序、仅生成候选副本的回填 CLI，以及导出体积预警。冻结候选在干净 Python 3.13 环境完成 **870 项测试：869 项通过、1 项明确跳过，零失败或错误**，真实 Chromium 检查已启用；唯一跳过项是有意禁用的生产实例测试。首轮独立审阅为 conditional，定向修复已通过父代理复现及异模型聚焦复审（**PASS**）。详见[行为、验收与安全边界](docs/reader-experience.md)。这是本地验收，不代表新候选的远程 CI、私人实例升级或上线。
+处于早期、未发布的开发阶段。首个计划版本 **v0.1.0** 尚未发布；已实现内容见[更新记录](CHANGELOG.md)，验证边界见下列文档。
 
-阅读器图片预加载候选已完成干净 Python 3.13 本地回归：**737 项测试，734 项通过、3 项明确跳过，零失败或错误**。另行启用的浏览器与调度测试 **8/8 通过**，覆盖真实图片解码、隐藏阅读区、重复媒体、取消及篡改处理；异模型代码复审结论为 **PASS**。这些是本地合成环境结果，不代表新候选的远程 CI 或私人阅读站已升级。源码哈希、增量升级演练和限制见[阅读器图片验收](docs/reader-media-acceptance.md)。
+- 测试：完整本地/CI 检查见 [tests/README.md](tests/README.md)。
+- CI 工作流：[.github/workflows/test.yml](.github/workflows/test.yml) 在 Ubuntu + Python 3.13 上运行合成测试套件；浏览器与真实实例套件在 CI 中默认关闭。
+- 验收边界与已知限制：[阅读体验](docs/reader-experience.md)、[阅读器图片验收](docs/reader-media-acceptance.md)、[行为验收](docs/behavior-acceptance.md)。
+- 当前 CI 结果见 [GitHub Actions](https://github.com/taukemora/Content-Archive-Kit/actions/workflows/test.yml)。请核对拟使用提交对应的运行记录；历史验收记录不能证明后续改动已经通过。
 
-此前双语收藏功能的本地回归和 [`a0831ad` 的远程 PR CI](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42944156572)均完成 **730 项测试：728 项通过、2 项明确跳过，零失败或错误**。预加载技能探针以 `opencode-go` / `deepseek-v4.1-flash` 完成 **18/18 项授权与 CLI 路由检查**。随后隔离对话验收通过 **6/6 例**：使用正常技能发现和针对合成网页的真实 CLI，覆盖中文收藏、英文跨项目收藏、重复链接去重、引用示例、明确只摘要不保存、裸链接；实际生成两条中文标题条目，摘要校验、索引/状态一致性和审计均通过。
-
-以上均为有界验收，不代表真实网页、消息网关或生产安装已经验收。此前 18 例探针不检查最终回复语义，曾出现不必要的未来保存邀约；后续六例不能证明这一通用回复质量问题已修复。绑定源码的收据、保留的适配器失败轮次及限制见[行为验收记录](docs/behavior-acceptance.md)。所链接的 CI 只覆盖 `a0831ad`，不覆盖后续文档提交；最终候选仍须在合并前通过自己的 CI。[CI 准备验收](docs/ci-acceptance.md)保留此前准备阶段历史。
-
-[初始迁移记录](docs/acceptance.md)保留了此前新建收藏库和既有库副本的 CLI 验收证据；其中历史测试总数不是当前通过数。项目愿景和架构见 [IDEA.md](IDEA.md)。上游提交或推送不代表私人实例已自动升级。
+项目愿景与架构见 [IDEA.md](IDEA.md)。上游提交或推送不代表私人实例已自动升级。
 
 ## 隐私与部署边界
 

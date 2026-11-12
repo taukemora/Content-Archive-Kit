@@ -20,14 +20,23 @@ The first planned release is **v0.1.0**. No release date, final release commit, 
 - 单一 `content-archive` Hermes 技能原件、通用禁用配置示例、依赖声明、合成测试、双语 README 和 MIT 许可证。
 - 公开源码、私人实例及发布目标相互分离；采用固定版本升级而非自动部署。
 
+### Caption badges and understated sorting / 图注徽标与轻量排序
+
+- A narrow image-adjacent small white-on-grey caption rule checks each text run's inline style chain; unsupported overrides, non-finite colors and ambiguous sizes are rejected. The existing safe caption-rendering/backfill pipeline remains authoritative.
+- One native sorting dropdown now sits at the right of the Browse Articles heading, replacing the hint and prominent two-button row; preference, filtering, selection and reading position are preserved.
+- 保守识别紧接图片的小字号白字灰底图注，不跨无关文字拼接样式证据；异常颜色值、覆盖简写和不明确字号不触发新规则。
+- 「浏览藏文」标题行右侧改为低调的原生排序下拉，删除原提示与整行双按钮；排序偏好、筛选与阅读位置保持。旧文须先审阅候选差异，不自动回填或上线。行为与限制见 [reader experience](docs/reader-experience.md)。
+- The media-browser acceptance probe now observes request-time geometry and uses response barriers for deterministic hidden-pane recovery, avoiding false failures caused by stale placeholder geometry and timing assumptions. Production scheduling is unchanged. Coverage and limits are recorded in [reader experience](docs/reader-experience.md).
+- 媒体浏览器验收探针改用请求时刻的真实几何和响应屏障，避免占位布局过期和时序假设造成的误报失败；生产调度器不变。覆盖范围与限制见 [reader experience](docs/reader-experience.md)。
+
 ### Reader-experience candidate / 阅读体验候选
 
 - Supported inline CSS emphasis and cross-block emphasis normalization, without guessing headings from short bold paragraphs.
 - Archived/published ordering with preserved timestamp precision, unknown-date handling and one validated preference-storage key.
 - Candidate-only `format-backfill plan|prepare` CLI; supported caption/heading recovery and marker-only punctuation-boundary repairs preserve source files, with per-entry handling of unreadable entries and damaged snapshots.
 - Validated current-export capacity reporting with 75%/90% warnings; existing publication safety limits remain unchanged.
-- Frozen local acceptance: 870 tests (869 passed, one production-instance skip), real-Chromium checks enabled; targeted fixes passed focused independent re-review. This is not hosted CI or deployment.
-- 边界、验收结果和使用方式见 [reader experience](docs/reader-experience.md)：源格式归一化、归档/发布时间排序、仅候选回填和体积报告；冻结候选完成 870 项测试（869 通过、1 项生产实例测试跳过），真实浏览器检查已启用，补修的异模型聚焦复审通过；不是已发布或已部署的更新。
+- Boundaries, acceptance coverage and known limits are recorded in [reader experience](docs/reader-experience.md). Existing archives require a separately reviewed upgrade and backfill.
+- 边界、验收覆盖和使用方式见 [reader experience](docs/reader-experience.md)；既有收藏库须单独审阅升级与回填。
 
 ### Encrypted-reader media prefetch / 加密阅读器图片预加载
 
@@ -42,13 +51,13 @@ The first planned release is **v0.1.0**. No release date, final release commit, 
 ### CI and release preparation / CI 与发布准备
 
 - Python 3.13 validation workflow for Ubuntu, with explicit Node setup, read-only repository permissions, and no release/deployment step.
-- Support and release acceptance narrowed to Linux by maintainer decision; historical macOS failures remain recorded, not relabeled as passes. All tests remain in the Ubuntu suite.
+- Support and release acceptance are narrowed to Linux by maintainer decision; all tests remain in the Ubuntu suite.
 - Shared syntax, example-configuration, and public-tree integrity checks, with synthetic failure-path tests.
 - Recorded the CLI launcher's executable Git mode so clean checkouts and source exports retain a runnable `bin/ca`; launcher contents are unchanged.
 - Documented exact-commit CI gate, artifact export/installation verification, and separate tag, Release, asset, and deployment approvals.
 
 - Ubuntu 上的 Python 3.13 验证工作流，显式配置 Node，仓库权限只读，不含发布或部署步骤。
-- 经维护者确认，将支持与发布验收范围收敛为 Linux；保留历史 macOS 失败记录，不改写为通过，全部测试仍在 Ubuntu 套件中运行。
+- 经维护者确认，支持与发布验收范围收敛为 Linux；全部测试仍在 Ubuntu 套件中运行。
 - 本地与 CI 共用的语法、示例配置、公开树完整性检查，以及合成失败路径测试。
 - 修正命令行入口的 Git 执行权限，确保新克隆和源码导出保留可运行的 `bin/ca`；入口内容不变。
 - 明确精确提交的 CI 门槛、工具包导出与安装验证，以及标签、Release、附件和部署的独立授权。

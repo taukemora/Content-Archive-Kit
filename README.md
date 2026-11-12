@@ -25,6 +25,7 @@ Content Archive Kit separates reusable source code and skills from private artic
 - A local reader and optional, explicitly configured publication adapters.
 - Encrypted-reader media prefetch: visible first, up to two viewport-heights ahead/behind, with three concurrent fetch/decrypt jobs and cancellation on article switch or lock.
 - One Hermes skill defining English `Save: <article-url>` / `Archive: <article-url>` and Chinese `收藏：<article-url>` intake commands, with a no-archive policy for bare URLs, one-off summaries, and quoted examples. Model behavior must be verified separately from these written rules.
+- Reader experience: inline-emphasis source-format normalization, archived/published ordering, conservative white-on-grey caption recognition, a candidate-only `format-backfill plan|prepare` CLI, and export-capacity reporting with unchanged publication limits.
 
 ## Requirements
 
@@ -68,7 +69,7 @@ The test suite uses synthetic fixtures only. Browser acceptance and real-instanc
 
 ## Release readiness
 
-The first planned release is **v0.1.0**, not yet released. See the [changelog](CHANGELOG.md), [bilingual release-notes draft](docs/releases/v0.1.0.md), and [release procedure](docs/releasing.md). The workflow validates Ubuntu with Python 3.13; its presence is not proof of a successful run. [CI readiness acceptance](docs/ci-acceptance.md) distinguishes local results from exact-commit GitHub CI and future artifact verification, and preserves the earlier macOS failures and subsequent Linux-only scope decision. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
+The first planned release, **v0.1.0**, is not yet released: there is no tag, GitHub Release, or published release asset. The [changelog](CHANGELOG.md), [bilingual release-notes draft](docs/releases/v0.1.0.md), and [release procedure](docs/releasing.md) describe the planned content. [CI readiness acceptance](docs/ci-acceptance.md) distinguishes local results from exact-commit GitHub CI and future artifact verification. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
 
 ## Hermes skill
 
@@ -100,15 +101,16 @@ assets/                   public brand assets
 
 ## Current status
 
-The local reader-experience candidate adds source-format normalization, archived/published ordering, a candidate-only backfill CLI and export-capacity warnings. Its frozen Python 3.13 candidate completed **870 tests: 869 passed and 1 explicitly skipped**, with real-Chromium checks enabled and no failures or errors. The production-instance test was deliberately disabled. The first independent review was conditional; the targeted repairs passed parent reproduction and focused independent re-review (**PASS**). See [behavior, acceptance and safety boundaries](docs/reader-experience.md). This is local acceptance, not hosted CI, a private-instance upgrade or deployment.
+Early-stage, pre-release toolkit under active development. The first planned
+release, **v0.1.0**, is not yet released; see the [changelog](CHANGELOG.md) for
+what is implemented and the documents below for what is verified.
 
-The reader-prefetch candidate passed clean Python 3.13 local regression: **737 tests: 734 passed and 3 explicitly skipped**, with no failures or errors. Separately enabled browser/scheduler checks passed **8/8**, covering real image decoding, hidden panes, repeated media, cancellation, and tamper handling. The independent code review returned **PASS**. These are local synthetic results, not hosted CI or a private-site upgrade; see [reader media acceptance](docs/reader-media-acceptance.md) for source hashes, incremental-upgrade evidence, and limits.
+- Tests: [tests/README.md](tests/README.md) documents the complete local/CI checks.
+- CI workflow: [.github/workflows/test.yml](.github/workflows/test.yml) runs the synthetic suite on Ubuntu with Python 3.13; the optional browser and real-instance suites stay off in CI.
+- Acceptance boundaries and known limitations: [reader experience](docs/reader-experience.md), [reader media acceptance](docs/reader-media-acceptance.md), and [behavior acceptance](docs/behavior-acceptance.md).
+- Current CI results are available in [GitHub Actions](https://github.com/taukemora/Content-Archive-Kit/actions/workflows/test.yml). Check the run for the commit you intend to use; historical acceptance records do not certify later changes.
 
-The preceding bilingual-intake local regression and the [hosted PR run for `a0831ad`](https://github.com/taukemora/Content-Archive-Kit/actions/runs/42944156572) each completed **730 tests: 728 passed and 2 explicitly skipped**, with no failures or errors. The separate preloaded-skill probe passed **18/18 authorization and CLI-routing cases** on `opencode-go` / `deepseek-v4.1-flash`. A later isolated conversation run passed **6/6 cases** using normal skill discovery and real CLI execution against synthetic pages: Chinese intake, English cross-project intake, duplicate detection, a quoted example, explicit summary-only/no-save, and a bare URL. It produced two Chinese-titled entries with validated summaries, matching indexes/state and a clean audit.
-
-These are bounded results, not live-web, messaging-gateway or production-installation acceptance. The earlier 18-case probe did not grade final-response compliance and exposed unwanted future-save offers; the later six-case run does not prove that general reply-quality issue fixed. See [behavior acceptance](docs/behavior-acceptance.md) for source-bound receipts, the preserved failed adapter run and limitations. The linked CI run covers `a0831ad`, not later documentation commits; each final candidate must pass its own CI before merge. [CI readiness acceptance](docs/ci-acceptance.md) retains the earlier CI-preparation history.
-
-The [initial migration record](docs/acceptance.md) preserves earlier fresh-archive and copied-existing-archive CLI evidence; its historical test totals are not the current pass count. [IDEA.md](IDEA.md) describes the project vision and architecture. No production upgrade is implied by an upstream commit or push.
+[IDEA.md](IDEA.md) describes the project vision and architecture. No production upgrade is implied by an upstream commit or push.
 
 ## Privacy and deployment boundary
 
