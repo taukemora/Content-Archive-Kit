@@ -69,9 +69,9 @@ cd tests
 
 ## 已发布版本与后续开发
 
-**[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** 已作为早期 GitHub **Pre-release** 发布，不是稳定版。精确源提交、CI、附件与限制见[双语发布说明](docs/releases/v0.1.0.md)。该版本**不包含研究／重大性自动订阅筛选**。
+**[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** 已作为早期 GitHub **Pre-release** 发布，不是稳定版。精确源提交、CI、附件与限制见[双语发布说明](docs/releases/v0.1.0.md)。该版本**不包含**订阅筛选。
 
-可选的入库前订阅筛选是下一阶段开发重点；其[设计与实现状态](docs/subscription-selection.md)独立于已发布版本。[ROADMAP.md](ROADMAP.md)记录范围与验收门槛，不承诺日期。标签、Release、附件上传及私人实例升级仍是独立授权节点；上游发布不会自动改变实例采集行为。
+下一个候选版本 **v0.2.0** **尚未发布**。它新增可选的入库前订阅筛选——默认关闭、须显式启用——以及如实读取实时待补队列的日报。[候选说明](docs/releases/v0.2.0.md)与[设计与实现状态](docs/subscription-selection.md)独立于已发布的 v0.1.0。[ROADMAP.md](ROADMAP.md)记录范围与验收门槛，不承诺日期。标签、Release、附件上传及实例升级仍是独立授权节点；上游变更不会自动安装或启用任何既有部署中的内容，启用须在实例中显式配置并验证。
 
 ## Hermes 技能
 

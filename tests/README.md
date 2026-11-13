@@ -58,7 +58,14 @@ expose missing boundaries. See the current [feature status](../docs/subscription
 to distinguish mixed rejected/technical-failure, rejected/unjudged and
 rejected/pending-archive runs from all-rejected or all-deferred runs. Compatibility
 controls keep historical outstanding-work warnings visible and prevent an empty
-candidate set from producing a vacuous all-rejected/deferred summary.
+candidate set from producing a vacuous all-rejected/deferred summary. The
+pending-queue rendering has its own regression coverage in the same file: a
+digest of the latest fetch run — or an overview rendered without `--run` — reads
+the live `pending.json` queue rather than the run's fetch-time snapshot; a valid
+zero omits the queue line; a missing queue file keeps the snapshot; an unreadable
+queue is reported as unknown, never as zero; a historical run keeps its own
+snapshot; a copy of the latest run is recognized by its non-empty `generated_at`,
+not its path; and rendering never modifies pending, run, seen, or ledger bytes.
 
 ## Existing-archive and skill behavior
 

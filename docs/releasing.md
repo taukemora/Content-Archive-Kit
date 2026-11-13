@@ -1,6 +1,10 @@
 # Release procedure
 
-This is a maintainer checklist, not an automatic release pipeline. The first planned version is **v0.1.0**, proposed as an early GitHub **Pre-release**, not a stable release; preparing these files does not create a tag, GitHub Release, or published asset. Scope and remaining gates live in [ROADMAP.md](../ROADMAP.md).
+This is a maintainer checklist, not an automatic release pipeline. It
+generalizes to any approved candidate version; the current candidate is
+**v0.2.0** (see [its draft notes](releases/v0.2.0.md)), which is not published.
+Preparing these files does not create a tag, GitHub Release, or published
+asset. Scope and remaining gates live in [ROADMAP.md](../ROADMAP.md).
 
 ## Separate authorization gates
 
@@ -25,7 +29,7 @@ Do not package the working directory with a recursive copy: ignored or untracked
 
 ```bash
 CANDIDATE="$(git rev-parse --verify 'HEAD^{commit}')"
-VERSION=v0.1.0
+VERSION=v0.2.0
 # Confirm CANDIDATE against the approved SHA and exact-commit CI first.
 mkdir -p dist
 git archive --format=tar.gz \
@@ -33,7 +37,7 @@ git archive --format=tar.gz \
   --output="dist/Content-Archive-Kit-${VERSION}.tar.gz" \
   "$CANDIDATE"
 printf '%s\n' "$CANDIDATE" > "dist/Content-Archive-Kit-${VERSION}.commit.txt"
-python3.13 -c 'import hashlib, pathlib; p=pathlib.Path("dist/Content-Archive-Kit-v0.1.0.tar.gz"); print(hashlib.sha256(p.read_bytes()).hexdigest()+"  "+p.name)' \
+python3.13 -c "import hashlib, pathlib; p=pathlib.Path('dist/Content-Archive-Kit-${VERSION}.tar.gz'); print(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name)" \
   > "dist/Content-Archive-Kit-${VERSION}.sha256"
 gzip -dc "dist/Content-Archive-Kit-${VERSION}.tar.gz" | git get-tar-commit-id
 ```
@@ -55,9 +59,11 @@ The source tree includes tests, examples, documentation, and the canonical umbre
 
 ## 4. Tag, publish, and read back — only with separate approvals
 
-- Review [the v0.1.0 notes draft](releases/v0.1.0.md) and `CHANGELOG.md`; finalize only claims supported by the candidate's evidence.
+- Review the approved candidate's release notes draft (for the current
+  candidate, [releases/v0.2.0.md](releases/v0.2.0.md)) and `CHANGELOG.md`;
+  finalize only claims supported by the candidate's evidence.
 - With tag authorization, create the agreed tag at the exact accepted commit; pushing the tag is a remote operation that must also be authorized. Read back and compare the tag's peeled commit. Do not silently move an existing tag.
-- With GitHub Release authorization, create the Release for the approved existing tag. For the proposed v0.1.0 early release, explicitly select **Pre-release** and do not mark it as the latest stable release; read back these fields rather than relying on defaults. Draft Release creation is still an external write and needs approval.
+- With GitHub Release authorization, create the Release for the approved existing tag. If the approved candidate is an early pre-release, explicitly select **Pre-release** and do not mark it as the latest stable release; read back these fields rather than relying on defaults. Draft Release creation is still an external write and needs approval.
 - With asset-upload authorization, attach only the verified toolkit archive and its approved provenance/checksum sidecars. Read back the Release target and asset inventory; download and hash the uploaded archive before claiming delivery.
 - Do not describe the release as deployed to a private instance. Pinned installation, backup, copy rehearsal, preservation of instance configuration/state, and rollback are a later, separately approved task; see [deployment and upgrades](../skills/content-archive/references/deployment.md).
 

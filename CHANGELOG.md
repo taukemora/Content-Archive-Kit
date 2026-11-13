@@ -2,12 +2,17 @@
 
 ## Unreleased / 未发布
 
-Optional pre-archive subscription selection is under development, separately from v0.1.0. See its [design and implementation status](docs/subscription-selection.md); no private-instance activation is implied.
+The next release candidate, **v0.2.0**, is **not published yet**; see the candidate notes in [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md). The following is implemented on this development branch, separately from published v0.1.0:
 
-可选的入库前订阅筛选正在独立开发，不属于 v0.1.0；详见[设计与实现状态](docs/subscription-selection.md)，不代表私人实例已经启用。
+下一个候选版本 **v0.2.0** **尚未发布**；候选说明见 [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)。以下能力已在本开发分支实现，独立于已发布的 v0.1.0：
 
-- Canonical skill candidate 2.1.0 documents optional metadata/body screening, separate editorial and execution outcomes, and the independent calibration/activation gates. The installed skill is unchanged; written guidance is not model-behavior acceptance.
-- 技能原件候选 2.1.0 补充元数据／正文筛选流程，区分编辑性取舍与执行状态，并保留隔离校准及独立启用闸门；未更新已安装技能，文档规则不等于模型行为已验收。
+- Optional pre-archive subscription selection ([contract](docs/subscription-selection.md)): an opt-in, disabled-by-default `selection.yaml` policy (`schema 1`, `enforce` mode only) with metadata/body-evidence `accept`/`reject`/`defer` decisions, per-run judgment and archive budgets, a single structurally validated ledger, bound preview caches, explicit reassessment with bounded attempts and pending-queue capacity refusal, retention/cleanup, admission enforcement before any automatic archive write, and manual-save compatibility — an invalid policy or ledger never blocks a manual save and is never silently repaired.
+- Daily reconciliation and digest: each unique candidate is classified once, incomplete accounting fails the checkpoint, and the report distinguishes execution states (`budget_wait`, `judgment_wait`, `execution_expired`). Zero-new reporting keeps historical open work visible. A pending-queue repair reads the live retry queue for the latest fetch run or an overview without `--run`, omits the line on a valid zero, keeps the fetch-time snapshot when the queue file is absent, reports an unreadable queue as unknown, and rendering never mutates state.
+- The canonical `content-archive` skill in this tree is at 2.1.0 — a skill version independent of the toolkit release number — documenting the screening workflow and its calibration/activation gates. Written skill guidance is not model-behavior acceptance; upstream changes never automatically install or activate the skill in any deployment.
+
+- 可选的入库前订阅筛选（[契约](docs/subscription-selection.md)）：默认关闭、须显式启用的 `selection.yaml` 策略（`schema 1`，仅 `enforce` 模式），基于元数据／正文证据的 `accept`/`reject`/`defer` 判定、每轮判断与归档预算、单一结构化校验账本、绑定预览缓存、显式重评（有尝试上限与待补队列容量原子拒绝）、保留与清理、任何自动归档写入前的准入校验，以及手动收藏兼容——策略或账本损坏时手动收藏不受阻，且不会被静默修复。
+- 日报对账与呈现：每个去重后的候选归入一个结果，对账不完整会使检查点失败，并区分执行状态（`budget_wait`、`judgment_wait`、`execution_expired`）、诚实的零新增报告、历史未结工作可见，以及待补队列修复——日报对最新抓取轮次（或不带 `--run` 的总览）读取实时待补队列，有效零值省略该行，队列文件缺失时保留抓取时快照，不可读队列报告为未知，且渲染不修改任何状态。
+- 仓库内 `content-archive` 技能原件版本为 2.1.0——技能版本与工具包发行号相互独立——记录筛选流程及隔离校准与启用闸门。技能文档不等于模型行为已验收；上游变更不会自动安装或启用任何部署中的技能。
 
 ## v0.1.0 — Early Pre-release / 早期预发布
 

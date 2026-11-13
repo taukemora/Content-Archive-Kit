@@ -1,10 +1,12 @@
 # Optional subscription selection
 
-Status: implemented in this tree as an opt-in, disabled-by-default feature.
-Bounded local repairs cover current-run membership, authoritative counter/identity
-validation, atomic reassessment capacity, outstanding-work age, evicted-work
-overflow, seen-proof recovery and mixed-result digest reporting.
-Not part of v0.1.0 and not activated for any instance. A frozen candidate completed
+Status: implemented in this tree as an opt-in, disabled-by-default feature, the
+main capability of the next release candidate **v0.2.0**, which is not published
+(see [its notes](releases/v0.2.0.md)). Bounded local repairs cover current-run
+membership, authoritative counter/identity validation, atomic reassessment
+capacity, outstanding-work age, evicted-work overflow, seen-proof recovery,
+mixed-result digest reporting and live pending-queue counting in the digest.
+Not part of published v0.1.0. A frozen candidate completed
 a narrow isolated semantic-judgment and CLI-replay experiment; independent review
 passed only that experiment's result claims, not product or release acceptance.
 See the verification scope below. Manual saves and existing articles are unaffected
@@ -348,6 +350,16 @@ failures never become a zero-news success. Existing delivery/publication status
 handling is unchanged: delivery and publication remain optional and absent from this
 flow.
 
+Separately, the digest's `待补队列` count reports the live retry queue, not a
+fetch-time snapshot: for the latest run — or an overview rendered without
+`--run` — it counts the current `pending.json` entries; a valid zero omits the
+line instead of replaying a stale positive snapshot; a missing queue file keeps
+the snapshot; an unreadable or malformed queue is reported as unknown, never as
+zero; and a historical or unidentifiable explicit run keeps its own snapshot.
+A run is identified as current by a matching, non-empty `generated_at` in
+`.state/runs/latest-fetch.json`, not by the supplied filename.
+Rendering the digest never mutates pending, run, seen or ledger state.
+
 ## Verification
 
 `tests/test_subscription_selection.py` covers the policy contract, disabled
@@ -382,7 +394,11 @@ The repair added focused regressions, all synthetic and loopback-only:
   editorial/non-editorial results must not be reported as all rejected/deferred;
   all-rejected and all-deferred runs retain their legitimate summary, historical
   outstanding work stays visible, and an empty run cannot satisfy an all-editorial
-  claim merely because both counts are zero.
+  claim merely because both counts are zero. The digest's pending-queue count is
+  covered end-to-end: current-run digests and overviews rendered without `--run`
+  read the live queue, a valid zero omits the line, a missing queue file keeps
+  its snapshot, an unreadable queue reports unknown, a historical run keeps its
+  own snapshot, and rendering never changes pending, run, seen or ledger bytes.
 - `tests/test_subscription_manual.py` — manual duplicate unaffected by an invalid
   policy, automatic add still blocked, corrupt ledger warning without repair, and
   manual closure of undecided automatic work.
@@ -455,7 +471,7 @@ compatibility; follow-up product changes need their own engineering regressions.
   also closes accepted ready/budget_wait/archive_failure work left open by an
   interrupted `mark_archived`, preserving the editorial outcome and history.
 - Local engineering checks and the narrow experiment-result review above are not
-  product/release acceptance, real-source calibration or private-instance activation.
-- Further model or real-feed evaluation, private-instance upgrades/activation, cron
-  changes and publication/delivery targets require separate approval; an upstream
-  implementation does not perform these operations automatically.
+  product/release acceptance, real-source calibration or a deployment activation.
+- Further model or real-feed evaluation, deployment activation, cron changes and
+  publication/delivery targets require separate approval; an upstream implementation
+  does not automatically install, activate, or modify any deployment.

@@ -14,10 +14,13 @@ roadmap points to evidence rather than replacing it.
   `c383f1ae2bab39e4da871ead8baae992b5804c1e`. Its annotated tag, prerelease
   metadata and three downloaded assets have been read back and verified.
   Exact CI and artifact bindings are in [release notes](docs/releases/v0.1.0.md).
-- Optional pre-archive subscription selection is the next priority. The
+- Optional pre-archive subscription selection is implemented on this
+  development branch as the main capability of the next release candidate,
+  **v0.2.0**, which is not published. It is opt-in and disabled by default. The
   [implementation contract](docs/subscription-selection.md) separates content
-  judgments, execution state and coverage. It is not part of v0.1.0; isolated
-  validation and separate private-instance activation approval are required.
+  judgments, execution state and coverage. It is not part of published v0.1.0;
+  final release acceptance remains separate from any instance installation or
+  activation, which requires explicit local configuration and verification.
 - The public tree was created by migrating a frozen, accepted reference
   implementation; provenance and acceptance boundaries are recorded in
   [docs/migration-baseline.json](docs/migration-baseline.json) and
@@ -97,15 +100,24 @@ Historical model evidence still applies only to its recorded skill/harness/engin
 configuration, not to every installation. A release does not approve a private-
 instance upgrade, and its tests do not certify later subscription-selection code.
 
-## Next priority: optional subscription selection
+## Release candidate: v0.2.0 (not published)
 
-Implement the approved [selection contract](docs/subscription-selection.md):
-strict opt-in policy, metadata/body evidence, accept/reject/defer decisions,
-independent technical failures, separate budgets, durable queue reconciliation,
-bounded review/retention and manual-save compatibility. Keep instance preferences
-out of generic code. Freeze the candidate before isolated calibration and held-out
-evaluation; report program correctness separately from semantic reliability.
-Only after those gates may a separately approved instance upgrade enable it.
+The [selection contract](docs/subscription-selection.md) is implemented on this
+development branch: strict opt-in policy, metadata/body evidence,
+accept/reject/defer decisions, independent technical failures, separate
+budgets, durable queue reconciliation, bounded review/retention, and
+manual-save compatibility. A digest repair reports the live retry queue for the
+latest run — or an overview without `--run` — instead of a stale fetch-time
+snapshot: a valid zero omits the line, a missing queue keeps its snapshot, an
+unreadable queue is reported as unknown, historical or unidentifiable runs keep
+their own snapshot, and rendering never mutates state. The canonical
+`content-archive` skill in this tree is at 2.1.0, a skill version independent
+of the toolkit release number. Before v0.2.0 can be tagged or published, freeze
+the candidate, complete the [release gates](docs/releasing.md) for the approved
+version, and record exact commit, CI, and artifact bindings outside that same
+candidate tree. Engineering tests provide bounded correctness evidence, not
+editorial or model-accuracy guarantees. Instance installation and activation
+remain separately approved and verified operations.
 
 ## Later work (not v0.1.0 promises)
 
@@ -118,11 +130,11 @@ Only after those gates may a separately approved instance upgrade enable it.
 - Ongoing code and test maintenance, including dependency updates.
 - Cache, sharding, and object-store changes for large archives.
 
-These later directions follow the subscription-selection priority; no dates or
+These later directions follow the v0.2.0 release-candidate work; no dates or
 release assignments are promised by listing them here.
 
 ## 中文摘要
 
 历史模型证据只适用于其记录的技能、测试装置与引擎配置；发布验收须记录精确提交 SHA、CI 运行及发行包校验值，不能外推历史通过结果。
 
-本文件是项目唯一的发布范围与状态路线图，不承诺日期。**v0.1.0 已作为早期 Pre-release 发布**，不是稳定版；精确提交、CI 和三项附件的回读核验见发布说明。该版本不包含研究／重大性筛选，也不代表私人实例已经升级。下一阶段优先完成可选订阅筛选，先做合成程序验收，再冻结候选并做隔离校准与未见样本评估，最后单独批准实例启用。MIT 许可与仅支持 Linux 的平台范围不变。依赖拆分、可选 HTML 索引、适配器泛化、缓存和对象存储属于更后续方向，不构成当前发布承诺。
+本文件是项目唯一的发布范围与状态路线图，不承诺日期。**v0.1.0 已作为早期 Pre-release 发布**，不是稳定版；精确提交、CI 和三项附件的回读核验见发布说明。该版本不包含订阅筛选，发布也不代表任何既有部署已升级。可选订阅筛选已在本开发分支实现，是下一个候选版本 **v0.2.0**（尚未发布）的主要能力：默认关闭、须显式启用；发布前须完成发布门槛并在树外记录精确提交、CI 与工件绑定；工程测试提供有界的程序正确性证据，不构成编辑判断或模型准确性保证。在部署中启用筛选属于须显式配置并验证的实例操作。MIT 许可与仅支持 Linux 的平台范围不变。依赖拆分、可选 HTML 索引、适配器泛化、缓存和对象存储属于更后续方向，不构成当前发布承诺。

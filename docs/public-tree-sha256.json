@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-13T14:14:33.215506+00:00",
+  "captured_at": "2026-11-13T22:11:15.069209+00:00",
   "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/reader-media-acceptance.md",
@@ -20,8 +20,8 @@
       "sha256": "becb2da77bb47e103ea25d2bd1bae960faa6daa8c640cc6cc3d113aa8136bc55"
     },
     "CHANGELOG.md": {
-      "bytes": 8065,
-      "sha256": "148d3cd626e3baa5b292646238dde4e290b12965b81f934b40a4610f28dc4bf4"
+      "bytes": 10509,
+      "sha256": "bc15d1152a336d0bbd055e08e9f60bc120143871c1ed3473861806cf83e589e2"
     },
     "CONTRIBUTING.md": {
       "bytes": 5121,
@@ -36,16 +36,16 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 9749,
-      "sha256": "6b419e5e9efa34e04efc7c3e13e4affbd6badbd8fb0cd5b06de7d691b4684f37"
+      "bytes": 9987,
+      "sha256": "f85534a5e4e33aa5722c01d69fd8de17d19a7d63bb60c0b11d8af2174fa8f611"
     },
     "README.zh-CN.md": {
-      "bytes": 8635,
-      "sha256": "6e3d3937de03d0e83664553ad92d245a1d139bffcedbbd9b6649058f8463873e"
+      "bytes": 8835,
+      "sha256": "8569a4fcd054368fb52868eacd96a4a3ddea534858c32cab6c68fb0c60b2e874"
     },
     "ROADMAP.md": {
-      "bytes": 8214,
-      "sha256": "02d9e0f656267b50cbc3f7b3dbd34672bb5a025044c98207b3a266db8249dab7"
+      "bytes": 9321,
+      "sha256": "f81180c56d36325934ccb03b7ed79f39801e7c66894506919e873f8168f1c816"
     },
     "SECURITY.md": {
       "bytes": 4435,
@@ -87,9 +87,13 @@
       "bytes": 11168,
       "sha256": "334c3eb4bbebc7e54c91efa60b93b05421276733c0988a0af52acab0356043b2"
     },
+    "docs/releases/v0.2.0.md": {
+      "bytes": 3340,
+      "sha256": "5395e6c237a0cb24ed61f5ef85963c5285c703b65f8af908963bfe2662eb7e46"
+    },
     "docs/releasing.md": {
-      "bytes": 7884,
-      "sha256": "d0acb42b9a6463847eecf4e0921675b7923550e5062c65fa14267bfd5a129595"
+      "bytes": 8021,
+      "sha256": "382608c1b0b681b54438edd4f7b3758badc90f96f3323e9cac3789f07c4d492e"
     },
     "docs/reviews/2026-11-10-bilingual-skill-probe-receipt-01.json": {
       "bytes": 85882,
@@ -124,8 +128,8 @@
       "sha256": "148ef48fa8a9d3a8bd71abe11542d42d2d0a53113039984aeb2f40785cba3ad9"
     },
     "docs/subscription-selection.md": {
-      "bytes": 29232,
-      "sha256": "1febc832ad652277318d0349f1a465bdd969fe9e25bf95913627395c7c840b3e"
+      "bytes": 30416,
+      "sha256": "41fa80d51551316c80fe1ef6723055b67c1155005a6f68cf7bd079b5f333ca43"
     },
     "examples/README.md": {
       "bytes": 1940,
@@ -320,8 +324,8 @@
       "sha256": "6ee0d7b6bccb1fa47d505a54af80283fd18719bc765b19228de8758ce61409c4"
     },
     "tests/README.md": {
-      "bytes": 24994,
-      "sha256": "821014b2428286286dbdafdd9179ce60ee1bfe57a3f04ae48d7aa2c4836684d3"
+      "bytes": 25560,
+      "sha256": "5c9cd71f3d1f962619efb084a450f4f9b7f33731c28e9d2c678508cf90466d6f"
     },
     "tests/_support.py": {
       "bytes": 4129,
