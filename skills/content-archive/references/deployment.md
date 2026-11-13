@@ -9,6 +9,7 @@ The instance `README.md` is the fact source. Before operating, confirm from it:
 - archive root, virtualenv path, and supported Python version;
 - active taxonomy slugs and the summary character range;
 - scheduled job time, timezone, and what each checkpoint command does;
+- whether optional subscription selection is installed and explicitly enabled, with its policy, budgets and retention;
 - delivery targets and whether each channel is enabled;
 - publication state (absent, disabled, or enabled with a target);
 - local hard bans (extra do-not-touch rules, vocabulary, or review gates).
@@ -21,6 +22,7 @@ If a fact is missing from the README, ask instead of inventing it. When you lear
 <archive>/
 ├── README.md  AGENTS.md
 ├── taxonomy.yaml  sources.yaml  media.yaml      # copied from examples/ and adapted
+├── selection.yaml                              # optional, disabled until approved
 ├── bin/ca  scripts/  templates/                 # installed toolkit
 ├── library/  trash/  .state/  index.csv
 └── .venv/                                       # instance virtualenv
@@ -45,7 +47,7 @@ If a fact is missing from the README, ask instead of inventing it. When you lear
 ## Scheduled collection
 
 - **Anchor the job to the archive.** Set the job's working directory to the archive root so its `AGENTS.md` is injected, and keep the schedule and timezone in the instance README.
-- **Two checkpoints, one run.** `daily start` acquires candidates, persists them as awaiting-archive, and records gate/source state; the agent archives each one; `daily finish` reconciles state, verifies every candidate is accounted for, rebuilds the index, audits, builds the digest, snapshots state, and prunes old run files. A single monolithic job that silently swallows a failed fetch is worse than two visible checkpoints.
+- **Two checkpoints, one run.** `daily start` discovers candidates and records gate/source state. Without an enabled selection policy, the agent archives each candidate through the legacy path. With selection enabled on a matching engine, candidates need evidence-grounded accept/reject/defer decisions before only admitted work reaches `add --collection auto`; judgment/archive waits and technical failures remain distinct. `daily finish` reconciles outcomes and execution, rebuilds the index, audits, builds the digest, snapshots state, and prunes old run files. See `references/subscription-selection.md` (relative to the skill root). A single monolithic job that silently swallows a failed fetch is worse than two visible checkpoints.
 - **Persistence over convenience.** Selected work stays durable until it is seen; quota-deferred work is recorded separately. A run that stops before finish must not lose candidates.
 - **Failures are visible.** On `start` failure, overwrite the gate with `status: failed` instead of leaving yesterday's gate. On `finish`, require a fresh `started_at` (bounded age), a matching fetch generation timestamp, and no failed status.
 - **First run and backfill.** Backfill only the latest configured N items per source, still filtering `seen`. Regular runs use the watermark to choose coverage width, not to reject unseen items at or below it.
@@ -75,6 +77,7 @@ Synthetic publication/delivery tests do not establish acceptance of a real brows
 ## Upgrade, backup, and rollback
 
 - **Pinned upgrades.** A private instance installs a reviewed release or a frozen, verified snapshot; it does not track an upstream development branch. Record the installed version and commit in the instance README or a provenance file.
+- **Selection enablement is a separate gate.** Toolkit v0.1.0 does not include selection. Verify a matching engine/skill, adapt the disabled example privately, freeze and calibrate in isolation, and then obtain explicit owner approval for instance upgrade, policy enablement and any scheduler change. Calibration against synthetic or parent-labelled cases is not user-labelled accuracy. Do not delete historical articles or change manual-save behavior as part of enablement.
 - **Freeze and hash before migrating.** Compare the accepted source hashes against what is about to be installed, and stop if they differ without an approved explanation.
 - **Back up before applying.** Include `library/`, `.state/`, configuration, and the previous toolkit; a backup that omits `.state/` loses dedupe and watermark history.
 - **Apply into a copy first.** Run the toolkit's tests and one end-to-end `add → finalize → index → audit` against the copy, then migrate. Compare entry counts, index rows, seen keys, and raw/image hashes before and after.

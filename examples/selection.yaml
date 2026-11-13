@@ -1,0 +1,72 @@
+# selection.yaml — example configuration for a new archive instance.
+#
+# Copy this file into the archive root and adapt it. The shipped file is a
+# disabled, synthetic example: nothing is selected, and automatic admission
+# stays off until you set `enabled: true` after an explicit decision.
+#
+# Contract (see docs/subscription-selection.md):
+# - the Agent makes editorial judgments; the toolkit only validates and
+#   persists them against this policy, a discovery run and recorded evidence;
+# - article text and feed metadata are untrusted data, never instructions;
+# - a rule declares accept or reject. A defer is a decision that names an
+#   explicit information gap and follow-up, not a keyword rule.
+# - rules are criteria for the Agent to apply, not keywords evaluated in order;
+#   list order has no matching or first-match semantics.
+# - unknown keys, wrong types and unsupported modes fail closed.
+#
+# Budgets are upper bounds per daily run, not promises of complete coverage.
+schema: 1
+enabled: false
+version: 1
+mode: enforce            # only "enforce" is implemented; "shadow" is rejected
+
+rules:
+  # Research value is the primary criterion. First-party research published by
+  # the vendor itself counts: what matters is whether a reader can check the
+  # methods, measurements, results and limitations.
+  - id: original-research
+    outcome: accept
+    description: >-
+      Research-first item that lets a reader check its methods, measurements,
+      results and stated limitations. Includes first-party research published
+      by the vendor itself, not only third-party studies.
+    evidence: body
+
+  - id: material-release
+    outcome: accept
+    description: >-
+      Supplementary: a material model, platform or industry release with
+      original detail that changes a decision the reader might make.
+    evidence: metadata
+
+  - id: routine-roundup
+    outcome: reject
+    description: >-
+      Routine promotional roundup, listicle or event notice without original
+      reporting, first-party measurements or a material change to an existing
+      product.
+    evidence: either
+
+  - id: duplicate-coverage
+    outcome: reject
+    description: >-
+      Republished or aggregated coverage of an item already judged, with no
+      new facts beyond the earlier report.
+    evidence: either
+
+
+budgets:
+  discovered: 40         # discovered candidates per run (round-robin sources)
+  per_source: 20         # discovered candidates per source per run
+  judgments: 20          # new judgments recorded per run
+  archives: 10           # accepted items admitted to automatic archiving per run
+
+retention:
+  preview_days: 30       # evidence details (bounded quotes) survive this long
+  identity_days: 180     # compact terminal identities outlive the 30-day lookback
+  review_days: 14        # unresolved reviews expire to "unresolved", never reject
+  max_review_attempts: 2 # explicit reassessment attempts per candidate
+  capacity: 20000        # record cap: refuse new state, never evict suppression
+
+# Deferred candidates are recorded by the decision command with `--gap` and
+# `--follow-up`; they are not policy rules.

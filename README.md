@@ -71,7 +71,7 @@ The test suite uses synthetic fixtures only. Browser acceptance and real-instanc
 
 **[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** is published as an early GitHub **Pre-release**, not a stable release. See the [bilingual release notes](docs/releases/v0.1.0.md) for its exact source commit, CI, assets and limitations. It does **not** include research/materiality-based subscription selection.
 
-[ROADMAP.md](ROADMAP.md) tracks scope and acceptance gates without promising dates. Tags, Releases, asset uploads, and private-instance upgrades remain separate approval checkpoints; upstream publication never changes an instance's collection behavior automatically.
+Optional pre-archive subscription selection is the next development priority; its [design and implementation status](docs/subscription-selection.md) are separate from the published release. [ROADMAP.md](ROADMAP.md) tracks scope and acceptance gates without promising dates. Tags, Releases, asset uploads, and private-instance upgrades remain separate approval checkpoints; upstream publication never changes an instance's collection behavior automatically.
 
 ## Hermes skill
 

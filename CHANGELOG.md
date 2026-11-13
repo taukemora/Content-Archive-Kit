@@ -1,5 +1,14 @@
 # Changelog / 更新记录
 
+## Unreleased / 未发布
+
+Optional pre-archive subscription selection is under development, separately from v0.1.0. See its [design and implementation status](docs/subscription-selection.md); no private-instance activation is implied.
+
+可选的入库前订阅筛选正在独立开发，不属于 v0.1.0；详见[设计与实现状态](docs/subscription-selection.md)，不代表私人实例已经启用。
+
+- Canonical skill candidate 2.1.0 documents optional metadata/body screening, separate editorial and execution outcomes, and the independent calibration/activation gates. The installed skill is unchanged; written guidance is not model-behavior acceptance.
+- 技能原件候选 2.1.0 补充元数据／正文筛选流程，区分编辑性取舍与执行状态，并保留隔离校准及独立启用闸门；未更新已安装技能，文档规则不等于模型行为已验收。
+
 ## v0.1.0 — Early Pre-release / 早期预发布
 
 Published from `c383f1ae2bab39e4da871ead8baae992b5804c1e`. The [bilingual release notes](docs/releases/v0.1.0.md) bind exact-commit CI and verified download assets. This release does not include research/materiality-based selection.

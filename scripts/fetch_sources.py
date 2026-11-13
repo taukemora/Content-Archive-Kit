@@ -145,6 +145,24 @@ def log(msg: str) -> None:
     print(msg, file=sys.stderr)
 
 
+def _load_selection_policy():
+    """Return ``(module, policy)``; ``(None, None)`` when selection is absent.
+
+    A present-but-invalid policy fails visibly instead of silently reverting to
+    the legacy path (fail closed). The import is lazy so a project copy without
+    the optional module keeps working while selection is not configured.
+    """
+    if not (ROOT / "selection.yaml").exists():
+        return None, None
+    try:
+        import subscription_selection as module
+    except Exception as exc:  # pragma: no cover - broken installation
+        raise RuntimeError(
+            f"selection.yaml exists but subscription_selection.py is unavailable: {exc}"
+        ) from exc
+    return module, module.load_policy(ROOT)
+
+
 @contextmanager
 def state_lock():
     """Exclusive advisory lock on ``.state/.lock`` (parallel cron safety)."""
@@ -666,15 +684,31 @@ def select_for_source(
     window_hours: int,
     per_source_cap: int,
     backfill: int,
+    suppressed_keys: set[str] | None = None,
+    protected_keys: set[str] | None = None,
+    selection_active: bool = False,
 ) -> dict:
+
     """Choose this source's candidates (pure: no I/O, no clock beyond ``fetched_at``).
 
     Ordering: pending records first (they are already owed), then unseen fresh
     items inside the coverage window, newest first. Only ``seen.json`` filters
     archived work; the water mark decides *how wide* the sweep is, never whether
     an individual unseen item is eligible.
+
+    ``suppressed_keys`` are terminal selection identities (reject/defer/archived
+    in the ledger). They are removed from fresh work and exited from pending so a
+    stale queue delta can never resurrect rejected work. ``protected_keys`` are
+    owed open identities (accepted admissions, judgment-budget waits): the
+    undecided-retry TTL never discards them.
     """
-    fresh = [it for it in items if not is_seen(it, seen_keys)]
+    suppressed = suppressed_keys or set()
+    protected = protected_keys or set()
+    exited_this_run: set[str] = set()
+    fresh = [
+        it for it in items
+        if not is_seen(it, seen_keys) and it.get("_key") not in suppressed
+    ]
     fresh_by_key = {it.get("_key"): it for it in fresh}
     exits: list[dict] = []
     remove_keys: set[str] = set()
@@ -685,12 +719,19 @@ def select_for_source(
                     reverse=True)
     for key, rec in ranked:
         url = str(rec.get("url") or "")
+        if key in suppressed:
+            exits.append({"key": key, "url": url, "source_id": sid,
+                          "reason": "selection_terminal"})
+            remove_keys.add(key)
+            exited_this_run.add(key)
+            continue
         if is_seen(rec, seen_keys):
             exits.append({"key": key, "url": url, "source_id": sid, "reason": "seen"})
             remove_keys.add(key)
+            exited_this_run.add(key)
             continue
         enqueued = pending_enqueued_at(rec, fetched_at)
-        if enqueued < fetched_at - timedelta(days=PENDING_MAX_AGE_DAYS):
+        if key not in protected and enqueued < fetched_at - timedelta(days=PENDING_MAX_AGE_DAYS):
             exits.append({
                 "key": key,
                 "url": url,
@@ -699,6 +740,7 @@ def select_for_source(
                 "queued_at": iso(enqueued),
             })
             remove_keys.add(key)
+            exited_this_run.add(key)
             continue
         if backfill:
             # A backfill is an explicit "newest N now" action; parked items keep
@@ -720,6 +762,11 @@ def select_for_source(
         for it in fresh:
             if it.get("_key") in queued_keys:
                 continue
+            if selection_active and it.get("_key") in exited_this_run:
+                # A selection-active run must not re-park an identity it just
+                # exited (expired/seen/terminal); legacy mode keeps the historic
+                # same-run rediscovery behaviour.
+                continue
             if within_coverage(it, wm, fetched_at, window_hours):
                 coverage_pool.append(it)
             else:
@@ -736,6 +783,9 @@ def select_for_source(
         "pending_kept": pending_kept,
         "pending_selected": len(pending_pool),
         "coverage_skipped": coverage_skipped,
+        "suppressed_skipped": sum(
+            1 for it in items if it.get("_key") in suppressed and not is_seen(it, seen_keys)
+        ),
         "fresh": fresh,
     }
 
@@ -1359,6 +1409,8 @@ def commit_states(
     dry_run: bool,
     extra_keep_caches: set[str] | None = None,
     extra_keep_raw: set[str] | None = None,
+    selection=None,
+    next_rotation: int | None = None,
 ) -> dict:
     """Merge this run's delta into ``pending.json`` / ``sources.json``.
 
@@ -1378,12 +1430,38 @@ def commit_states(
             upserts=upserts,
             remove_keys=remove_keys,
         )
+        selection_stats: dict = {}
+        if selection is not None:
+            # Re-read the ledger while this process holds .state/.lock, so a
+            # rejection written by another run cannot be resurrected by a stale
+            # pending delta, and crash-lost queue work is re-derived.
+            ledger = selection["module"].load_ledger(ROOT)
+            seen_under_lock = set(
+                (load_json(ROOT / ".state" / "seen.json", {"entries": {}})
+                 .get("entries") or {}).keys()
+            )
+            selection_stats = selection["module"].apply_commit(
+                ledger,
+                selection["policy"],
+                run_gen=selection["run_gen"],
+                candidates=selection["candidates"],
+                observed=selection.get("observed"),
+                merged=merged,
+                evicted=evicted,
+                dry_run=dry_run,
+                seen_keys=seen_under_lock,
+                expired_keys=set(selection.get("expired_keys") or ()),
+            )
+            if not dry_run:
+                selection["module"].save_ledger(ROOT, ledger)
         counts: dict[str, int] = {}
         for rec in merged.values():
             sid = str(rec.get("source_id") or "")
             counts[sid] = counts.get(sid, 0) + 1
 
         state = dict(disk_sources or {})
+        if next_rotation is not None:
+            state["rotation"] = int(next_rotation)
         records = dict(state.get("sources") or {})
         stamp = iso(fetched_at)
         for sid, delta in deltas.items():
@@ -1401,6 +1479,7 @@ def commit_states(
             "evicted": evicted,
             "sources": state,
             "pending_out": pending_out,
+            "selection": selection_stats,
         }
 
     if dry_run:
@@ -1451,11 +1530,32 @@ def main() -> int:
     ap.add_argument("--json-out", default="")
     args = ap.parse_args()
 
+    try:
+        selection_module, selection_policy = _load_selection_policy()
+    except Exception as e:
+        print(f"[fetch] selection policy error: {e}", file=sys.stderr)
+        return 2
+    suppressed_keys: set[str] = set()
+    protected_keys: set[str] = set()
+    if selection_policy is not None and selection_module is not None:
+        try:
+            ledger_snapshot = selection_module.load_ledger(ROOT)
+            suppressed_keys = selection_module.suppressed_keys(ledger_snapshot)
+            protected_keys = selection_module.owed_keys(ledger_snapshot)
+        except Exception as e:
+            print(f"[fetch] selection ledger error: {e}", file=sys.stderr)
+            return 3
+
+
     fetched_at = now()
     cfg = load_yaml(ROOT / "sources.yaml")
     defaults = cfg.get("defaults", {})
     window_hours = args.window_hours or int(defaults.get("window_hours", 36))
     per_source_cap = int(defaults.get("max_items_per_source", 8))
+    if selection_policy is not None:
+        # The policy budget replaces the generic per-source default; an explicit
+        # --max below still tightens the global cap.
+        per_source_cap = int(selection_policy.budgets["per_source"])
     backfill_default = int(defaults.get("backfill_items", 2))
 
     # Baseline snapshot, read once for the whole (unlocked) network phase. The
@@ -1490,6 +1590,7 @@ def main() -> int:
     deltas: dict[str, dict] = {}
     processed: list[str] = []
     glm_section_names: set[str] = set()
+    observed_candidates: list[dict] = []
 
     for src in cfg.get("sources", []):
         if not src.get("enabled", True):
@@ -1557,6 +1658,7 @@ def main() -> int:
             for it in uniq:
                 if it.get("_cache_name"):
                     glm_section_names.add(it["_cache_name"])
+            observed_candidates.extend(uniq)
             found = len(uniq)
             no_date = sum(1 for it in uniq if it.get("published_unknown"))
             skipped = sum(1 for it in uniq if is_seen(it, seen_keys))
@@ -1570,6 +1672,9 @@ def main() -> int:
                 window_hours=window_hours,
                 per_source_cap=per_source_cap,
                 backfill=backfill,
+                suppressed_keys=suppressed_keys,
+                protected_keys=protected_keys,
+                selection_active=selection_policy is not None,
             )
         except SourceEmpty as e:
             status = "empty"
@@ -1600,6 +1705,7 @@ def main() -> int:
             "coverage_skipped": selection["coverage_skipped"],
             "pending": len(pending_for_source),
             "pending_selected": selection["pending_selected"],
+            "suppressed_skipped": selection.get("suppressed_skipped", 0),
             "pending_expired": 0,
             "pending_exits": [],
             "stale_days": None,
@@ -1639,7 +1745,19 @@ def main() -> int:
 
     # ---- global quota: round-robin over sources
     order = [s["id"] for s in report]
-    remaining = args.max if args.max and args.max > 0 else None
+    rotation = int(state.get("rotation") or 0)
+    quota_order = order
+    if selection_policy is not None and order:
+        # A rotating starting source keeps a scarce budget from always favouring
+        # the first configured source. Disabled mode keeps the legacy order.
+        start = rotation % len(order)
+        quota_order = order[start:] + order[:start]
+    if args.max and args.max > 0:
+        remaining = args.max
+    elif selection_policy is not None:
+        remaining = int(selection_policy.budgets["discovered"])
+    else:
+        remaining = None
     chosen: dict[str, list[dict]] = {sid: [] for sid in order}
     cut: dict[str, list[dict]] = {sid: [] for sid in order}
     if remaining is None:
@@ -1647,8 +1765,8 @@ def main() -> int:
             chosen[sid] = per_source_selected.get(sid, [])
     else:
         queues = {sid: list(per_source_selected.get(sid, [])) for sid in order}
-        while remaining > 0 and any(queues[sid] for sid in order):
-            for sid in order:
+        while remaining > 0 and any(queues[sid] for sid in quota_order):
+            for sid in quota_order:
                 if remaining <= 0:
                     break
                 if not queues[sid]:
@@ -1751,17 +1869,44 @@ def main() -> int:
             extra_keep_raw.add(str(it["raw_file"]))
 
     # ---- commit: re-read + merge under the lock
-    result = commit_states(
-        fetched_at=fetched_at,
-        pending_baseline=pending_baseline,
-        upserts={k: {kk: vv for kk, vv in v.items() if not kk.startswith("_")}
-                 for k, v in upserts.items()},
-        remove_keys=remove_keys,
-        deltas=deltas,
-        dry_run=args.dry_run,
-        extra_keep_caches=extra_keep_caches,
-        extra_keep_raw=extra_keep_raw,
-    )
+    try:
+        result = commit_states(
+            fetched_at=fetched_at,
+            pending_baseline=pending_baseline,
+            upserts={k: {kk: vv for kk, vv in v.items() if not kk.startswith("_")}
+                     for k, v in upserts.items()},
+            remove_keys=remove_keys,
+            deltas=deltas,
+            dry_run=args.dry_run,
+            extra_keep_caches=extra_keep_caches,
+            extra_keep_raw=extra_keep_raw,
+            selection=(
+                {
+                    "module": selection_module,
+                    "policy": selection_policy,
+                    "run_gen": iso(fetched_at),
+                    "candidates": [
+                        {k: v for k, v in it.items() if not k.startswith("_")}
+                        for it in all_candidates
+                    ],
+                    "observed": [
+                        {k: v for k, v in it.items() if not k.startswith("_")}
+                        for it in observed_candidates
+                    ],
+                    "expired_keys": {
+                        e.get("key") for e in planned_exits if e.get("reason") == "expired"
+                    },
+                }
+                if selection_policy is not None
+                else None
+            ),
+            next_rotation=(rotation + 1) if selection_policy is not None else None,
+        )
+    except Exception as e:
+        if selection_module is not None and isinstance(e, selection_module.SelectionError):
+            print(f"[fetch] selection commit failed: {e}", file=sys.stderr)
+            return e.exit_code
+        raise
     merged_pending: dict[str, dict] = result["pending"]
     sources_after = result["sources"].get("sources") or {}
 
@@ -1821,6 +1966,14 @@ def main() -> int:
         "candidates": [],
         "sources": report,
     }
+    if selection_policy is not None:
+        stats = dict(result.get("selection") or {})
+        # Suppressed work that was skipped before it could enter the queue is
+        # still reported: zero pending resurrection is not "nothing to report".
+        stats["suppressed"] = int(stats.get("suppressed") or 0) + sum(
+            int(s.get("suppressed_skipped") or 0) for s in report
+        )
+        out["selection"] = stats
     for it in all_candidates:
         clean = {k: v for k, v in it.items() if not k.startswith("_")}
         out["candidates"].append(clean)

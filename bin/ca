@@ -42,6 +42,7 @@ case "$cmd" in
   format-backfill) exec "$PY" "$ROOT/scripts/format_backfill.py" "$@" ;;
   validate) exec "$PY" "$ROOT/scripts/validate_summary.py" "$@" ;;
   daily) exec "$PY" "$ROOT/scripts/daily_gate.py" "$@" ;;
+  select) exec "$PY" "$ROOT/scripts/subscription_selection.py" "$@" ;;
   reconcile-seen) exec "$PY" "$ROOT/scripts/reconcile_seen.py" "$@" ;;
   snapshot-seen) exec "$PY" "$ROOT/scripts/reconcile_seen.py" --snapshot "$@" ;;
   *)
@@ -74,6 +75,17 @@ Commands:
   daily deliver [--dry-run] [--force]
                           send (or preview) the dual-channel delivery for this run
   daily fail-candidate    record candidate fetch failure & park into pending queue
+  select status|preview|decide|ready|reassess|cleanup
+                          optional subscription selection (policy, evidence, ledger)
+  select preview (--url U | --key K) [--run P] [--content-file P] [--dry-run]
+                          bounded preview text; never archives or localizes media
+  select decide --key K --outcome accept|reject|defer --reason TEXT --evidence QUOTE
+                          record one validated decision (defer needs --gap/--follow-up)
+  select ready [--run P]  accepted candidates admitted for automatic archiving
+  select reassess --key K [--apply] [--run P]
+                          preview-first explicit reassessment (max 2 attempts)
+  select cleanup [--apply]
+                          retention/capacity plan; writes only with --apply
   reconcile-seen          reconcile seen.json with library entries
   snapshot-seen           gzip snapshot of seen.json to .state/backups/
 EOF

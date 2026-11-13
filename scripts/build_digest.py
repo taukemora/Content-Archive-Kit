@@ -23,7 +23,7 @@ from pathlib import Path
 
 from dateutil import parser as dateparser
 
-from common import ROOT, TZ, dedupe_key, now
+from common import ROOT, TZ, dedupe_key, load_seen, now
 
 STALE_DAYS_WARN = 14
 GATE_NAME = "daily-gate.json"
@@ -124,6 +124,43 @@ def rejection_records(sources: list[dict]) -> list[tuple[str, dict]]:
     return records
 
 
+def selection_view(run_data: dict | None, gate_data: dict) -> dict | None:
+    """Read-only selection accounting for this digest, or ``None`` when disabled."""
+    if not (ROOT / "selection.yaml").exists():
+        return None
+    try:
+        import subscription_selection as mod
+
+        policy = mod.load_policy(ROOT)
+        if policy is None:
+            return None
+        ledger = mod.load_ledger(ROOT)
+    except Exception as exc:
+        return {"error": str(exc)}
+    try:
+        seen_keys = set((load_seen(ROOT / ".state" / "seen.json").get("entries") or {}).keys())
+    except Exception:
+        seen_keys = set()
+    failed = {
+        dedupe_key(str(rec.get("url") or ""))
+        for rec in (gate_data.get("failed_candidates") or [])
+        if isinstance(rec, dict)
+    }
+    failed.discard("")
+    report = mod.classify_candidates(
+        ledger,
+        policy,
+        (run_data or {}).get("candidates") or [],
+        seen_keys=seen_keys,
+        failed_keys=failed,
+    )
+    return {
+        "policy": policy,
+        "report": report,
+        "overview": mod.ledger_overview(ledger, policy),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", default="", help="ISO timestamp; default today 00:00 +08:00")
@@ -197,6 +234,40 @@ def main() -> int:
     pending_total = int((run_data or {}).get("pending_total") or 0)
     attention = [s for s in sources if s.get("needs_attention")]
 
+    selection = selection_view(run_data, gate_data)
+    selection_error = (selection or {}).get("error") if isinstance(selection, dict) else ""
+    selection_report = (selection or {}).get("report") if isinstance(selection, dict) else None
+    selection_overview = (selection or {}).get("overview") if isinstance(selection, dict) else {}
+    review_limit = int((selection_overview or {}).get("review_limit") or 2)
+    open_counts = dict((selection_overview or {}).get("open_counts") or {})
+    overview_open = int((selection_overview or {}).get("open_total") or 0)
+    selection_attention = False
+    if selection_report:
+        selection_counts = selection_report["counts"]
+        selection_attention = any(
+            selection_counts.get(kind)
+            for kind in (
+                "unjudged",
+                "pending_archive",
+                "archive_unproven",
+                "budget_wait",
+                "judgment_wait",
+                "technical_failure",
+                "execution_expired",
+            )
+        ) or bool((selection_overview or {}).get("unresolved")) or bool(
+            (selection_overview or {}).get("needs_reassessment")
+        )
+    # Open work outside the current run is never a healthy empty result.
+    selection_attention = selection_attention or bool(
+        overview_open
+        or (selection_overview or {}).get("stalled")
+        or (selection_overview or {}).get("overflow")
+    )
+    if selection_error:
+        selection_attention = True
+
+
     date_label = now().strftime("%Y-%m-%d")
     lines = [f"📚 内容收藏夹 · {date_label}"]
 
@@ -209,7 +280,37 @@ def main() -> int:
     head.append(f"空/失败 {len(not_ok)} 源")
     if global_dropped:
         head.append(f"因配额顺延 {global_dropped} 篇")
+    if selection_report:
+        selection_counts = selection_report["counts"]
+        head.append(
+            f"选题：归档 {selection_counts['archived']} · 排除 {selection_counts['rejected']}"
+            f" · 暂缓 {selection_counts['deferred']} · 预算等待 {selection_counts['budget_wait']}"
+            f" · 判断预算等待 {selection_counts['judgment_wait']}"
+            f" · 技术失败 {selection_counts['technical_failure']}"
+        )
     lines.append(" · ".join(head))
+    if selection_report and overview_open:
+        oldest = (selection_overview or {}).get("oldest_open_days")
+        lines.append(
+            f"历史未结选题 {overview_open} 个"
+            + (f"（最久 {oldest} 天）" if oldest is not None else "")
+            + f" · 预算等待 {open_counts.get('budget_wait', 0)}"
+            + f" · 判断预算等待 {open_counts.get('judgment_wait', 0)}"
+            + f" · 执行暂停/过期 {open_counts.get('execution_expired', 0)}"
+            + f" · 停滞 {int((selection_overview or {}).get('stalled') or 0)} 个"
+            + "。下一步：`bin/ca select status` 查看并处理。"
+        )
+
+    overflow_keys = list((selection_overview or {}).get("overflow") or [])
+    if overflow_keys:
+        shown = "、".join(overflow_keys[:5])
+        lines.append(
+            f"待补队列溢出标记 {len(overflow_keys)} 条：{shown}"
+            "（保留原入队时间，稍后有容量时自动恢复；也可显式 reassess）"
+        )
+
+    if selection_error:
+        lines.append(f"⚠️ 选题账本不可读：{selection_error}（不能据此判断今日无新增）")
     if no_date_total:
         lines.append(f"其中 {no_date_total} 条无日期，已按抓取日期暂存")
     if pending_total:
@@ -264,6 +365,21 @@ def main() -> int:
             )
             lines.append("")
             lines.append("未达源见下方“源状态”，恢复后再判断今天是否真的没有更新。")
+        elif selection_report and selection_report["rows"] and (
+            # Only every current candidate rejected or deferred is an editorial
+            # close: one mixed technical failure/unjudged/pending falls through.
+            selection_report["counts"]["rejected"] + selection_report["counts"]["deferred"]
+            == len(selection_report["rows"])
+        ):
+            lines.append(
+                "本次没有归档新增：本轮候选均已判定排除或暂缓，详见下方选题。"
+            )
+        elif selection_attention:
+            lines.append(
+                "本次没有归档新增，但选题账务仍有未闭合项"
+                "（未判断/待归档/预算等待/判断预算等待/技术失败/执行暂停），"
+                "不能据此判断今天真的没有更新。"
+            )
         elif sources:
             lines.append("今日无新增。")
         else:
@@ -320,6 +436,7 @@ def main() -> int:
             "expired": "已过期（超过保留期）",
             "seen": "已归档（不再重试）",
             "over_limit": "超出待补容量",
+            "selection_terminal": "已由选题终态取代（不再重试）",
         }
         for exit_rec in pending_exits:
             url = str(exit_rec.get("url") or exit_rec.get("key") or "")
@@ -366,6 +483,71 @@ def main() -> int:
             if date:
                 bits.append(date)
             lines.append(f"- {label}：{title} — " + " · ".join(bits))
+        lines.append("")
+
+    if selection_report:
+        counts = selection_report["counts"]
+        lines.append("## 选题")
+        lines.append("")
+        lines.append(
+            f"本轮候选 {len(selection_report['rows'])} 个：归档 {counts['archived']}"
+            f" · 排除 {counts['rejected']} · 暂缓 {counts['deferred']}"
+            f" · 预算等待 {counts['budget_wait']} · 技术失败 {counts['technical_failure']}"
+            f" · 判断预算等待 {counts['judgment_wait']}"
+            f" · 未判断 {counts['unjudged']} · 待归档 {counts['pending_archive']}"
+            f" · 待补证 {counts['archive_unproven']}"
+        )
+        unproven = [
+            row for row in selection_report["rows"] if row["kind"] == "archive_unproven"
+        ]
+        if unproven:
+            lines.append("")
+            lines.append(
+                f"归档缺少持久证据 {len(unproven)} 个（账务未闭合，需要审计/修复，不是选题拒绝）："
+            )
+            for row in unproven[:10]:
+                lines.append(f"- {row['url']}")
+
+        if selection_report["exclusions"]:
+            lines.append("")
+            lines.append("排除（按规则）：")
+            for entry in selection_report["exclusions"][:10]:
+                reason = f"（{entry['reason']}）" if entry.get("reason") else ""
+                lines.append(f"- {entry['rule_id']}：{entry['count']} 篇{reason}")
+        if selection_report["unresolved"]:
+            lines.append("")
+            lines.append("未解决的暂缓：")
+            for item in selection_report["unresolved"][:10]:
+                tail = "（已过期，仍未结案）" if item.get("expired") else ""
+                lines.append(
+                    f"- {item.get('title') or item.get('url')}："
+                    f"缺口 {item.get('gap') or '—'}；后续 {item.get('follow_up') or '—'}"
+                    f"（复核 {item.get('review_attempts') or 0}/{review_limit}）{tail}"
+
+                )
+        technical = [
+            row for row in selection_report["rows"] if row["kind"] == "technical_failure"
+        ]
+        if technical:
+            lines.append("")
+            lines.append(f"技术失败 {len(technical)} 个（不是选题拒绝，仍会重试）：")
+            for row in technical[:10]:
+                lines.append(f"- {row['url']}")
+        overview = selection_overview or {}
+        if overview.get("needs_reassessment"):
+            lines.append("")
+            lines.append(
+                f"需要显式重评 {len(overview['needs_reassessment'])} 个"
+                "（政策或观测内容已变化，不会自动重排）"
+            )
+        if overview.get("unresolved") and not selection_report["unresolved"]:
+            lines.append("")
+            lines.append(f"历史未解决的暂缓 {len(overview['unresolved'])} 个（见 `bin/ca select status`）")
+        lines.append("")
+        lines.append(
+            "选题账务闭合只说明本轮候选都已登记处理，不等于站点或研究全覆盖；"
+            "预算、覆盖窗口与未扫描工作见上列。"
+        )
         lines.append("")
 
     if sources:

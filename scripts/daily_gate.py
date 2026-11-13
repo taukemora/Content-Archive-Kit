@@ -154,6 +154,19 @@ def _one_line(text: str) -> str:
     return " ".join(str(text or "").split())
 
 
+def _selection_context():
+    """Return ``(module, policy)``; ``(None, None)`` when selection is absent."""
+    if not (ROOT / "selection.yaml").exists():
+        return None, None
+    try:
+        import subscription_selection as module
+    except Exception as exc:
+        raise RuntimeError(
+            f"selection.yaml exists but subscription_selection.py is unavailable: {exc}"
+        ) from exc
+    return module, module.load_policy(ROOT)
+
+
 
 def cleanup_runs(days: int = 30) -> list[str]:
     """Delete old run JSON files while keeping the current gate/fetch files."""
@@ -383,10 +396,16 @@ def run_start(deliver_on_fail: bool = False) -> int:
             refresh_overall_status(gate)
         return 1
 
+    try:
+        selection_module, selection_policy = _selection_context()
+    except Exception as e:
+        return fail_start(f"selection policy error: {e}")
+
     cmd = [
         sys.executable,
         str(ROOT / "scripts" / "fetch_sources.py"),
-        "--max", "10",
+        "--max",
+        str(selection_policy.budgets["discovered"]) if selection_policy is not None else "10",
         "--json-out", str(fetch_out),
     ]
     res = subprocess.run(cmd, capture_output=True, text=True)
@@ -428,6 +447,14 @@ def run_start(deliver_on_fail: bool = False) -> int:
         "archive_status": "pending",
         "overall_status": "pending",
     }
+    if selection_policy is not None:
+        gate_data["selection"] = {
+            "enabled": True,
+            "policy_version": selection_policy.version,
+            "policy_digest": selection_policy.digest,
+            "budgets": dict(selection_policy.budgets),
+            "fetch": data.get("selection") or {},
+        }
     write_json_atomic(gate, gate_data)
 
     if not_ok:
@@ -597,6 +624,11 @@ def run_finish(deliver: bool = False) -> int:
         print(f"[finish] reconcile-seen warning: {e}", file=sys.stderr)
 
     # ---- candidate accountability: archived, failed, or it fails the run.
+    try:
+        selection_module, selection_policy = _selection_context()
+    except Exception as e:
+        return fail_finish("selection_policy", str(e))
+
     candidates = fetch_data.get("candidates") or []
     unaccounted: list[dict] = []
     if candidates:
@@ -606,13 +638,66 @@ def run_finish(deliver: bool = False) -> int:
             return fail_finish("load_seen", str(e))
         seen_keys = set((seen.get("entries") or {}).keys())
         known_failed = failed_keys(gate_data)
-        for cand in candidates:
-            keys = candidate_keys(cand)
-            if not keys:
-                continue
-            if keys & seen_keys or keys & known_failed:
-                continue
-            unaccounted.append(cand)
+        if selection_policy is not None and selection_module is not None:
+            try:
+                ledger = selection_module.load_ledger(ROOT)
+            except Exception as e:
+                return fail_finish("selection_ledger", str(e))
+            report = selection_module.classify_candidates(
+                ledger,
+                selection_policy,
+                candidates,
+                seen_keys=seen_keys,
+                failed_keys=known_failed,
+            )
+            judgment_wait: dict = {}
+            if report["unjudged"]:
+                # Judgment-budget-limited work is a durable wait, not a
+                # fabricated reject and not a permanently failing daily job.
+                try:
+                    judgment_wait = selection_module.mark_judgment_wait(
+                        ROOT,
+                        selection_policy,
+                        keys=[row["key"] for row in report["unjudged"]],
+                        run_gen=fetch_data.get("generated_at", ""),
+                    )
+                except Exception as e:
+                    return fail_finish("selection_judgment_wait", str(e))
+                if judgment_wait.get("marked"):
+                    report = selection_module.classify_candidates(
+                        selection_module.load_ledger(ROOT),
+                        selection_policy,
+                        candidates,
+                        seen_keys=seen_keys,
+                        failed_keys=known_failed,
+                    )
+            gate_data["selection"] = {
+                **(gate_data.get("selection") or {}),
+                "counts": report["counts"],
+                "accounted": report["accounted"],
+                "coverage": report["coverage"],
+                "unjudged": report["unjudged"],
+                "pending_archive": report["pending_archive"],
+                "archive_unproven": report["archive_unproven"],
+                "unresolved": report["unresolved"],
+                "exclusions": report["exclusions"],
+                "judgment_wait": judgment_wait,
+            }
+            unaccounted = report["unaccounted"]
+            try:
+                gate_data["selection"]["pending_pruned"] = selection_module.prune_pending(
+                    ROOT, selection_policy
+                )
+            except Exception as e:
+                return fail_finish("selection_pending_prune", str(e))
+        else:
+            for cand in candidates:
+                keys = candidate_keys(cand)
+                if not keys:
+                    continue
+                if keys & seen_keys or keys & known_failed:
+                    continue
+                unaccounted.append(cand)
 
     if unaccounted:
         parked = park_candidates(unaccounted, "unaccounted_at_finish", fetch_data)
@@ -620,10 +705,13 @@ def run_finish(deliver: bool = False) -> int:
             {"url": c.get("url"), "title": c.get("title") or ""} for c in unaccounted
         ]
         gate_data["unaccounted_parked"] = parked
-        detail = "；".join(str(c.get("url")) for c in unaccounted)
+        detail = "；".join(
+            f"{c.get('kind') or 'unaccounted'}: {c.get('url')}" for c in unaccounted
+        )
         return fail_finish(
             "unaccounted_candidates",
-            f"{len(unaccounted)} 个候选既未归档也未登记失败（已入待补队列）：{detail}",
+            f"{len(unaccounted)} 个候选未闭合选题账务（unjudged/pending_archive，"
+            f"已入待补队列）：{detail}",
         )
 
     # Run rebuild_index.py BEFORE audit.py so newly added/finalized entries in

@@ -35,6 +35,31 @@ skipped test is not a passing test. Only quote a pass count when the summary is
 any non-zero exit, so a green workflow already means no failures or errors, but
 the skip count still has to be read separately.
 
+## Optional subscription selection (unreleased)
+
+```bash
+cd tests
+../.venv/bin/python -B -m unittest \
+  test_subscription_selection test_subscription_binding \
+  test_subscription_recovery test_subscription_budget test_subscription_digest \
+  test_subscription_manual test_subscription_repair_v2 \
+  test_selection_repository_boundary -v
+```
+
+These synthetic suites exercise policy and evidence validation, preview binding,
+admission, retry/reassessment, budgets, accounting/digest reporting and manual-save
+independence. The repository checks reject a live root `selection.yaml` and an
+enabled or invalid shipped selection example. They do not enable an instance,
+call an editorial model, or establish editorial accuracy. Passing these tests is
+not sufficient acceptance: independent cross-run and corruption probes can still
+expose missing boundaries. See the current [feature status](../docs/subscription-selection.md).
+
+`test_subscription_digest.py` uses the real digest renderer in synthetic projects
+to distinguish mixed rejected/technical-failure, rejected/unjudged and
+rejected/pending-archive runs from all-rejected or all-deferred runs. Compatibility
+controls keep historical outstanding-work warnings visible and prevent an empty
+candidate set from producing a vacuous all-rejected/deferred summary.
+
 ## Existing-archive and skill behavior
 
 ```bash
@@ -258,7 +283,7 @@ is read-only: it does not rewrite the manifest and, because it sets
   `.`/`..` components, traversal, or non-canonical spellings;
 - no symbolic links (the file itself or any ancestor) and no non-regular files;
 - private-path screens (`.state`, `library`, `trash`, `.handoff`, live root
-  configuration such as `publish.yaml`, and key/environment filenames) plus a
+  configuration such as `publish.yaml` or `selection.yaml`, and key/environment filenames) plus a
   private-key content screen. Private-key findings name the path without
   printing matched bytes; syntax and loader diagnostics can include values;
 - syntax: every shipped `.py` file is compiled in memory, `bin/ca` is checked
@@ -266,12 +291,13 @@ is read-only: it does not rewrite the manifest and, because it sets
 - the launcher: `bin/ca` must be tracked as mode `100755`, and an extracted
   artifact must have the executable bit set;
 - `examples/` configuration loaded through the real loaders: every watched
-  source must be disabled and `publish.yaml` must stay disabled.
+  source must be disabled, and `publish.yaml` and `selection.yaml` must stay disabled.
 
 The checks run in a fixed order: path safety, membership, byte counts, SHA-256
 and private-material screens first; Python/Bash/JavaScript syntax second; the
 `examples/` loaders last. The loader step imports and executes
-`scripts/common.py`, `scripts/media_policy.py`, and `scripts/publish_site.py`,
+`scripts/common.py`, `scripts/media_policy.py`, `scripts/publish_site.py`, and
+`scripts/subscription_selection.py`,
 so it runs only when the earlier steps are clean and every loader and example
 path is a regular file reached without a symlink. An unsafe or syntactically
 invalid tree never executes them.

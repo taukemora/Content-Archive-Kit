@@ -50,12 +50,16 @@ sys.dont_write_bytecode = True
 
 MANIFEST_REL = "docs/public-tree-sha256.json"
 LAUNCHER_REL = "bin/ca"
-EXAMPLE_LOADERS = ("scripts/common.py", "scripts/media_policy.py", "scripts/publish_site.py")
+EXAMPLE_LOADERS = (
+    "scripts/common.py", "scripts/media_policy.py", "scripts/publish_site.py",
+    "scripts/subscription_selection.py",
+)
 EXAMPLE_CONFIGS = (
     "examples/taxonomy.yaml",
     "examples/sources.yaml",
     "examples/media.yaml",
     "examples/publish.yaml",
+    "examples/selection.yaml",
 )
 
 # Local, machine-specific directories an extracted artifact may contain. They
@@ -70,6 +74,7 @@ ROOT_ONLY_PRIVATE = {
     "compose.yaml",
     "taxonomy.yaml",
     "sources.yaml",
+    "selection.yaml",
     "media.yaml",
     "index.csv",
     "index.md",
@@ -434,6 +439,29 @@ def _check_examples(root: Path) -> list[str]:
         else:
             if publish.enabled is not False:
                 findings.append("example publish.yaml must remain disabled")
+
+    selection_path = examples / "selection.yaml"
+    if selection_path.is_file():
+        # Use the checked tree's common module, not a host-injected import path.
+        # Restore the module table so a caller importing this checker is unchanged.
+        previous_common = sys.modules.get("common")
+        try:
+            sys.modules["common"] = common
+            selection_module = _load_loader(
+                "subscription_selection", scripts / "subscription_selection.py"
+            )
+            selection = selection_module.load_policy(root, selection_path)
+        except Exception as exc:  # noqa: BLE001
+            findings.append(f"example selection.yaml invalid: {exc}")
+        else:
+            # load_policy returns None for a validated disabled policy.
+            if selection is not None:
+                findings.append("example selection.yaml must remain disabled")
+        finally:
+            if previous_common is None:
+                sys.modules.pop("common", None)
+            else:
+                sys.modules["common"] = previous_common
 
     return findings
 

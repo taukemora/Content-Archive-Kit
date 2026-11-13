@@ -71,7 +71,7 @@ cd tests
 
 **[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** 已作为早期 GitHub **Pre-release** 发布，不是稳定版。精确源提交、CI、附件与限制见[双语发布说明](docs/releases/v0.1.0.md)。该版本**不包含研究／重大性自动订阅筛选**。
 
-[ROADMAP.md](ROADMAP.md)记录范围与验收门槛，不承诺日期。标签、Release、附件上传及私人实例升级仍是独立授权节点；上游发布不会自动改变实例采集行为。
+可选的入库前订阅筛选是下一阶段开发重点；其[设计与实现状态](docs/subscription-selection.md)独立于已发布版本。[ROADMAP.md](ROADMAP.md)记录范围与验收门槛，不承诺日期。标签、Release、附件上传及私人实例升级仍是独立授权节点；上游发布不会自动改变实例采集行为。
 
 ## Hermes 技能
 

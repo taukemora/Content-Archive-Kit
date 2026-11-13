@@ -877,6 +877,36 @@ def main() -> int:
     # A plain ``add`` is a deliberate user save, even without --collection.
     requested_collection = args.collection or "manual"
 
+    # Optional subscription selection. Absent/disabled policy leaves every path
+    # below byte-for-byte legacy behaviour; a present-but-invalid policy fails
+    # automatic add visibly but never blocks a deliberate manual save.
+    selection_module = None
+    selection_policy = None
+    selection_error = ""
+    if (ROOT / "selection.yaml").exists():
+        try:
+            import subscription_selection as selection_module  # type: ignore[no-redef]
+
+            selection_policy = selection_module.load_policy(ROOT)
+        except Exception as e:
+            selection_error = str(e)
+            selection_module = None
+            selection_policy = None
+            log(
+                "selection automation unavailable; manual saves are unaffected "
+                f"and the ledger is left untouched: {e}"
+            )
+
+    def auto_fail(reason: str) -> None:
+        """Accepted work that could not be archived stays retryable + visible."""
+        if requested_collection == "auto" and selection_policy is not None:
+            try:
+                selection_module.mark_archive_failure(
+                    ROOT, selection_policy, url=url, reason=reason
+                )
+            except Exception as e:
+                log(f"selection automation warning: could not record archive failure: {e}")
+
     if key in seen.get("entries", {}) and not args.force:
         payload = {
             "status": "duplicate",
@@ -909,20 +939,61 @@ def main() -> int:
                 )
             payload["collection"] = collection
             payload["promoted"] = promoted
+        if requested_collection == "auto" and selection_policy is not None:
+            # A duplicate is already archived work: stop retrying the admission
+            # instead of leaving a stale 'ready' record forever.
+            try:
+                selection_module.mark_archived(
+                    ROOT,
+                    selection_policy,
+                    url=url,
+                    entry_id=str((payload.get("entry") or {}).get("id") or ""),
+                    path=str(((payload.get("entry") or {}).get("path") or "")),
+                )
+            except Exception as e:
+                log(f"selection automation warning: could not mark duplicate archived: {e}")
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 0
+
+    # Automatic admission: checked before any directory, media or content write.
+    # An unreadable/invalid policy fails automatic add closed, never the manual path.
+    if requested_collection == "auto" and selection_error:
+        print(json.dumps({
+            "status": "blocked",
+            "url": url,
+            "error": f"selection policy error: {selection_error}",
+        }, ensure_ascii=False, indent=2))
+        return 1
+    if requested_collection == "auto" and selection_policy is not None:
+        try:
+            selection_module.admit(
+                ROOT,
+                selection_policy,
+                url=url,
+                content_file=args.content_file or None,
+            )
+        except Exception as e:
+            print(json.dumps({
+                "status": "blocked",
+                "url": url,
+                "error": f"selection admission blocked: {e}",
+            }, ensure_ascii=False, indent=2))
+            return 1
 
     # Validate raw-file if provided
     raw_file_path: Path | None = None
     if args.raw_file:
         rf_path = resolve_local_arg(args.raw_file)
         if not rf_path.exists() or not rf_path.is_file():
+            auto_fail(f"raw-file not found: {args.raw_file}")
             print(json.dumps({"status": "error", "error": f"raw-file not found: {args.raw_file}"}, ensure_ascii=False, indent=2))
             return 1
         if not is_allowed_file_path(rf_path):
+            auto_fail(f"raw-file path not allowed: {args.raw_file}")
             print(json.dumps({"status": "error", "error": f"raw-file path not allowed: {args.raw_file}"}, ensure_ascii=False, indent=2))
             return 1
         if rf_path.stat().st_size > 5 * 1024 * 1024:
+            auto_fail(f"raw-file exceeds 5MB: {args.raw_file}")
             print(json.dumps({"status": "error", "error": f"raw-file exceeds 5MB limit: {args.raw_file}"}, ensure_ascii=False, indent=2))
             return 1
         raw_file_path = rf_path
@@ -959,20 +1030,25 @@ def main() -> int:
         if args.content_file:
             cf_path = resolve_local_arg(args.content_file)
             if not cf_path.exists() or not cf_path.is_file():
+                auto_fail(f"content-file not found: {args.content_file}")
                 print(json.dumps({"status": "error", "error": f"content-file not found: {args.content_file}"}, ensure_ascii=False, indent=2))
                 return 1
             if not is_allowed_file_path(cf_path):
+                auto_fail(f"content-file path not allowed: {args.content_file}")
                 print(json.dumps({"status": "error", "error": f"content-file path not allowed: {args.content_file}"}, ensure_ascii=False, indent=2))
                 return 1
             if cf_path.stat().st_size > 5 * 1024 * 1024:
+                auto_fail(f"content-file exceeds 5MB: {args.content_file}")
                 print(json.dumps({"status": "error", "error": f"content-file exceeds 5MB limit: {args.content_file}"}, ensure_ascii=False, indent=2))
                 return 1
             try:
                 content = cf_path.read_text(encoding="utf-8").strip()
             except UnicodeDecodeError as e:
+                auto_fail(f"content-file UTF-8 decode failed: {args.content_file}")
                 print(json.dumps({"status": "error", "error": f"content-file UTF-8 decode failed: {e}"}, ensure_ascii=False, indent=2))
                 return 1
             if not content:
+                auto_fail(f"content-file is empty: {args.content_file}")
                 print(json.dumps({"status": "error", "error": "content-file 为空"}, ensure_ascii=False, indent=2))
                 return 1
 
@@ -1020,6 +1096,7 @@ def main() -> int:
             meta, content = generic_extract(raw_html, url)
             content, media_report = preserve_media(content, raw_html, url)
     except Exception as e:
+        auto_fail(str(e))
         print(json.dumps({"status": "error", "url": url, "error": str(e)}, ensure_ascii=False, indent=2))
         return 1
 
@@ -1321,6 +1398,19 @@ def main() -> int:
             "first_seen": existing.get("first_seen") or iso(),
         }
         save_seen(seen)
+
+    if selection_policy is not None:
+        try:
+            selection_module.mark_archived(
+                ROOT,
+                selection_policy,
+                url=url,
+                entry_id=entry_dir.name,
+                path=str(entry_dir / "entry.md"),
+                manual=(requested_collection == "manual"),
+            )
+        except Exception as e:
+            log(f"selection automation warning: could not record archive outcome: {e}")
 
     print(json.dumps({
         "status": "ok",

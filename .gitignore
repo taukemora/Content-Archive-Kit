@@ -23,6 +23,7 @@ __pycache__/
 /.state/
 /trash/
 /publish.yaml
+/selection.yaml
 /compose.yaml
 
 # Local session handoffs

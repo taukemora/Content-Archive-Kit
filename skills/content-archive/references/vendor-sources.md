@@ -48,8 +48,9 @@ One RSS adapter should serve every feed: read `extractor`, `language`, and `sour
 
 ## Run policy
 
-- **Selection:** a valid archived watermark enables a bounded unseen lookback that includes items at or older than the watermark; it is not a timestamp exclusion gate. Initialized sources without a watermark use a short guard window; unknown and future dates never advance a watermark. Date-only inputs compare calendar days.
-- **Persistence:** selected items stay durable awaiting-archive until seen, alongside quota deferrals. Pending TTL uses the first enqueue time across both the fetch writer and the failure writer.
+- **Discovery:** a valid archived watermark enables a bounded unseen lookback that includes items at or older than the watermark; it is not a timestamp exclusion gate. Initialized sources without a watermark use a short guard window; unknown and future dates never advance a watermark. Date-only inputs compare calendar days.
+- **Optional editorial selection:** with an explicitly enabled `selection.yaml` and matching engine, discovery candidates must be judged before archiving. Follow `subscription-selection.md` in this directory; accept/reject/defer is separate from technical failure or budget waiting. Without the policy, retain the legacy archive-each-candidate path.
+- **Persistence:** retain owed work and its acquisition evidence across interrupted runs, with explicit quota waits, expiry and exit reasons. Pending TTL uses the first enqueue time across fetch and failure writers; recovery must not reset that clock or requeue seen/terminal identities. With selection, the ledger keeps editorial decisions separate from queue execution.
 - **First run:** the latest 2 items per source by default. A later explicit backfill must still filter `seen` and must not re-select the same top N.
 - **Caps:** per-source and per-batch limits, allocated round-robin, reporting dropped candidates when the batch cap is hit.
 - **Zero parsed items:** record `status: empty`; do not mark the source initialized or advance the watermark; report it in the digest.
@@ -70,4 +71,4 @@ One RSS adapter should serve every feed: read `extractor`, `language`, and `sour
 - **Full historical feed on first run.** Cap the backfill; otherwise the digest and archive flood.
 - **Section feeds mix topics.** A category feed can carry unrelated posts. Decide whether to accept the mix or filter on `<category>` before enabling, and record the choice in the YAML `notes` rather than filtering silently at runtime.
 - **Transient TLS/timeout on large pages.** Retry the add or fetch two or three times with a short delay before marking a source `error`; one network blip should not become a missing day.
-- **A partial backfill leaves stale items in the horizon.** The lookback keeps selecting unseen items after the requested window; backfill every unarchived item in the current feed and require a dry run to select zero before enabling the schedule.
+- **A partial backfill leaves owed work in the horizon.** The lookback keeps discovering unseen items after the requested window. Complete the legacy backfill or account for each item under the enabled selection policy before scheduling; report unresolved work and coverage limits. Do not archive excluded items merely to make a dry run select zero.
