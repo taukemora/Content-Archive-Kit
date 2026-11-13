@@ -5,6 +5,7 @@ Synthetic scratch projects only; no delivery or publication path is exercised.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -246,6 +247,179 @@ class DigestAttentionTests(fx.ProjectCase):
         self.assertNotIn(UNSETTLED, res.stdout)
         self.assertIn("本轮候选 0 个", res.stdout)
         self.assertIn("今日无新增", res.stdout)
+
+
+class PendingQueueCountTests(fx.ProjectCase):
+    """The digest shows the live retry queue, not the fetch-time snapshot.
+
+    ``daily_gate.finish`` prunes terminal selections from ``.state/pending.json``
+    *after* the run JSON is written, so ``run.pending_total`` can be stale by the
+    time the digest renders. Every case below drives the real CLI on a synthetic
+    scratch archive and verifies rendering leaves state bytes untouched.
+    """
+
+    def snapshot(self, root: Path) -> dict[str, str]:
+        return {
+            str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in root.rglob("*")
+            if p.is_file() and "__pycache__" not in p.parts
+        }
+
+    def render(self, root: Path, run: Path | None = None,
+               gate: Path | None = None) -> subprocess.CompletedProcess:
+        args = [fx.PY, "-B", str(root / "scripts" / "build_digest.py")]
+        if run is not None:
+            args += ["--run", str(run)]
+        if gate is not None:
+            args += ["--gate", str(gate)]
+        before = self.snapshot(root)
+        res = subprocess.run(args, capture_output=True, text=True,
+                             cwd=str(root), timeout=120)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertEqual(
+            before, self.snapshot(root),
+            "rendering the digest must not change pending/run/seen/ledger bytes",
+        )
+        return res
+
+    def set_pending(self, root: Path, urls: list[str]) -> Path:
+        path = root / ".state" / "pending.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        entries = {
+            sel.identity_for_url(url): {"url": url, "queued_at": fx.stamp(days=-1)}
+            for url in urls
+        }
+        path.write_text(json.dumps({"schema": 2, "entries": entries}),
+                        encoding="utf-8")
+        return path
+
+    def run_with_snapshot(self, root: Path, snapshot: int, *,
+                          name: str = "latest-fetch.json",
+                          generated_at: str | None = None) -> Path:
+        run = self.write_run(root, [], name=name, generated_at=generated_at)
+        data = json.loads(run.read_text(encoding="utf-8"))
+        data["pending_total"] = snapshot
+        data["sources"] = [{"id": "alpha", "status": "ok", "skipped": 0}]
+        run.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        (root / "index.csv").write_text("id,title\n", encoding="utf-8")
+        return run
+
+    def test_current_run_reports_live_queue_not_fetch_snapshot(self):
+        root = self.project()
+        self.set_pending(root, ["https://example.com/live-1"])
+        run = self.run_with_snapshot(root, 4)
+        out = self.render(root, run).stdout
+        self.assertIn("待补队列 1 篇", out)
+        self.assertNotIn("待补队列 4 篇", out)
+
+    def test_current_empty_queue_never_falls_back_to_fetch_snapshot(self):
+        root = self.project()
+        self.set_pending(root, [])
+        run = self.run_with_snapshot(root, 4)
+        out = self.render(root, run).stdout
+        self.assertNotRegex(out, r"待补队列 [1-9][0-9]* 篇")
+        self.assertNotIn("待补队列 4 篇", out)
+
+    def test_missing_live_queue_keeps_legacy_snapshot(self):
+        root = self.project()
+        run = self.run_with_snapshot(root, 4)
+        out = self.render(root, run).stdout
+        self.assertFalse((root / ".state" / "pending.json").exists())
+        self.assertIn("待补队列 4 篇", out)
+
+    def test_historical_run_does_not_read_the_current_queue(self):
+        root = self.project()
+        self.set_pending(root, ["https://example.com/live-1"])
+        self.run_with_snapshot(root, 4)
+        old = self.run_with_snapshot(root, 7, name="historical.json",
+                                     generated_at=fx.stamp(days=-2))
+        out = self.render(root, old).stdout
+        self.assertIn("待补队列 7 篇", out)
+        self.assertNotIn("待补队列 1 篇", out)
+
+    def test_same_run_at_another_path_is_recognised_by_generated_at(self):
+        root = self.project()
+        self.set_pending(root, ["https://example.com/live-1"])
+        latest = self.run_with_snapshot(root, 4)
+        copy = root / ".state/runs/copied-latest-fetch.json"
+        copy.write_text(latest.read_text(encoding="utf-8"), encoding="utf-8")
+        out = self.render(root, copy).stdout
+        self.assertIn("待补队列 1 篇", out)
+        self.assertNotIn("待补队列 4 篇", out)
+
+    def test_overview_without_run_reads_the_current_queue(self):
+        root = self.project()
+        self.set_pending(root, ["https://example.com/live-1",
+                                "https://example.com/live-2"])
+        (root / "index.csv").write_text("id,title\n", encoding="utf-8")
+        out = self.render(root).stdout
+        self.assertIn("待补队列 2 篇", out)
+
+    def test_invalid_live_queue_is_unknown_never_zero_or_snapshot(self):
+        payloads = {
+            "broken_json": "{broken",
+            "null_entries": json.dumps({"entries": None}),
+            "list_entries": json.dumps({"entries": []}),
+            "string_entries": json.dumps({"entries": "nope"}),
+            "missing_entries": json.dumps({"updated_at": fx.stamp()}),
+            "list_root": json.dumps([]),
+        }
+        for label, payload in payloads.items():
+            with self.subTest(payload=label):
+                root = self.project()
+                path = root / ".state" / "pending.json"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(payload, encoding="utf-8")
+                run = self.run_with_snapshot(root, 4)
+                out = self.render(root, run).stdout
+                self.assertRegex(out, r"待补队列[^\n]*未知")
+                self.assertNotRegex(out, r"待补队列 \d+ 篇")
+                self.assertNotIn("待补队列 4 篇", out)
+
+    def test_prune_pending_leaves_only_the_technical_failure_queued(self):
+        root = self.project(fx.base_policy())
+        roundup = "Routine promotional roundup without original reporting."
+        urls = [f"https://example.com/prune-{i}" for i in range(4)]
+        cands = [fx.candidate(urls[0], summary=roundup),
+                 fx.candidate(urls[1]),
+                 fx.candidate(urls[2]),
+                 fx.candidate(urls[3])]
+        run = self.write_run(root, cands)
+        data = json.loads(run.read_text(encoding="utf-8"))
+        data["pending_total"] = 4
+        data["sources"] = [{"id": "alpha", "status": "ok", "skipped": 0}]
+        run.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        (root / "index.csv").write_text("id,title\n", encoding="utf-8")
+        self.register(root, cands, run=run)
+        self.decide_ok(root, urls[0], "reject", rule="routine-roundup",
+                       quotes=(roundup,), run=run)
+        self.decide_ok(root, urls[1], "defer",
+                       quotes=("A material platform release with original detail.",),
+                       run=run, gap="Pricing is missing.",
+                       follow_up="Check the pricing page.")
+        self.decide_ok(root, urls[2], "accept", rule="material-release",
+                       quotes=("A material platform release with original detail.",),
+                       run=run)
+        sel.mark_archived(root, sel.load_policy(root), url=urls[2],
+                          entry_id="synthetic-prune-entry",
+                          path="library/tech/synthetic-prune-entry/entry.md")
+        pending = self.set_pending(root, urls)
+        queued_before = json.loads(pending.read_text(encoding="utf-8"))["entries"]
+        self.assertEqual(len(queued_before), 4)
+
+        removed = sel.prune_pending(root, sel.load_policy(root))
+        self.assertEqual(len(removed), 3, removed)
+        queued_after = json.loads(pending.read_text(encoding="utf-8"))["entries"]
+        self.assertEqual(list(queued_after), [sel.identity_for_url(urls[3])])
+
+        gate = root / ".state" / "runs" / "synthetic-prune-gate.json"
+        gate.write_text(json.dumps({"failed_candidates": [
+            {"url": urls[3], "reason": "synthetic HTTP 503"},
+        ]}), encoding="utf-8")
+        out = self.render(root, run, gate).stdout
+        self.assertIn("待补队列 1 篇", out)
+        self.assertNotIn("待补队列 4 篇", out)
+        self.assertIn("技术失败 1 个", out)
 
 
 if __name__ == "__main__":

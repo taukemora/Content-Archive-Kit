@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-13T06:16:07.778048+00:00",
+  "captured_at": "2026-11-13T14:14:33.215506+00:00",
   "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/reader-media-acceptance.md",
@@ -180,8 +180,8 @@
       "sha256": "e270ece97466122d19e880933748418fc65b6e75b0f2484128cb14bd42b7f725"
     },
     "scripts/build_digest.py": {
-      "bytes": 24764,
-      "sha256": "b1c85c44fe2ab5d1674130785385f76a4fb9aae7c5520136be9c131d1fecbfab"
+      "bytes": 27447,
+      "sha256": "197aff1f56bd485ef79e303385d86dc3f8b88f33ccb99e04e2cfd0c74b8129f0"
     },
     "scripts/build_html.py": {
       "bytes": 24287,
@@ -508,8 +508,8 @@
       "sha256": "9c13cc9a7f39d8b61a59a53a913fd70b3b99c7607584d2bafa8689007fac29aa"
     },
     "tests/test_subscription_digest.py": {
-      "bytes": 13111,
-      "sha256": "6fa7c379e7cd7f240c4c8b2fc630e2a218c9e045c5bbb4b7b15316c8c4c08f0d"
+      "bytes": 21542,
+      "sha256": "2d8f483e68316e79b671d112b2c552a7dae3fc27ff6cc38d1d85da766ac7d832"
     },
     "tests/test_subscription_manual.py": {
       "bytes": 4285,

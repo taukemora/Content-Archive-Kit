@@ -27,6 +27,59 @@ from common import ROOT, TZ, dedupe_key, load_seen, now
 
 STALE_DAYS_WARN = 14
 GATE_NAME = "daily-gate.json"
+PENDING_NAME = "pending.json"
+LATEST_RUN_NAME = "latest-fetch.json"
+
+
+def live_pending_count(root: Path) -> tuple[int | None, str]:
+    """Size of the live retry queue: ``(count, status)``.
+
+    ``daily_gate.finish`` prunes terminal selections from ``.state/pending.json``
+    after the run JSON is written, so ``run.pending_total`` is a fetch-time
+    snapshot that may overstate the queue by the time the digest renders.
+
+    ``status`` is ``"ok"`` (``count`` is the number of ``entries``),
+    ``"missing"`` (no queue file at all) or ``"invalid"`` (present but
+    unreadable, or not ``{"entries": {...}}``).  Missing and invalid are
+    deliberately distinct: only a missing file falls back to the snapshot, while
+    an unreadable one must be reported as unknown — never as zero.
+    """
+    path = Path(root) / ".state" / PENDING_NAME
+    if not path.exists():
+        return None, "missing"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None, "invalid"
+    if not isinstance(data, dict):
+        return None, "invalid"
+    entries = data.get("entries")
+    if not isinstance(entries, dict):
+        return None, "invalid"
+    return len(entries), "ok"
+
+
+def run_is_current(run_data: dict | None) -> bool:
+    """True when this digest renders the instance's latest fetch run.
+
+    The live queue is only read for a run identified by
+    ``.state/runs/latest-fetch.json``: same non-empty ``generated_at`` (path
+    alone is not identity — a copied or renamed run JSON still matches).
+    Historical or uncheckable runs keep their own ``pending_total``.
+    """
+    if not isinstance(run_data, dict):
+        return False
+    gen = str(run_data.get("generated_at") or "").strip()
+    if not gen:
+        return False
+    latest_path = ROOT / ".state" / "runs" / LATEST_RUN_NAME
+    try:
+        latest = json.loads(latest_path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    if not isinstance(latest, dict):
+        return False
+    return str(latest.get("generated_at") or "").strip() == gen
 
 
 def load_run(path: str) -> dict | None:
@@ -232,6 +285,15 @@ def main() -> int:
         else (run_data or {}).get("no_date_total") or 0
     )
     pending_total = int((run_data or {}).get("pending_total") or 0)
+    # Only the latest fetch run may report the live queue; a historical run keeps
+    # its own fetch-time snapshot. An unreadable current queue is "unknown", not 0.
+    pending_unknown = False
+    if not args.run or run_is_current(run_data):
+        live_count, pending_status = live_pending_count(ROOT)
+        if pending_status == "ok":
+            pending_total = int(live_count or 0)
+        elif pending_status == "invalid":
+            pending_unknown = True
     attention = [s for s in sources if s.get("needs_attention")]
 
     selection = selection_view(run_data, gate_data)
@@ -313,7 +375,9 @@ def main() -> int:
         lines.append(f"⚠️ 选题账本不可读：{selection_error}（不能据此判断今日无新增）")
     if no_date_total:
         lines.append(f"其中 {no_date_total} 条无日期，已按抓取日期暂存")
-    if pending_total:
+    if pending_unknown:
+        lines.append("⚠️ 待补队列 未知（当前队列不可读，不能视为已清零）")
+    elif pending_total:
         lines.append(f"待补队列 {pending_total} 篇（下次优先）")
     if failed_candidates:
         lines.append(f"本轮抓取失败候选 {len(failed_candidates)} 篇（已入待补队列）")
