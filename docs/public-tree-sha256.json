@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-11-12T07:29:39.429454+00:00",
+  "captured_at": "2026-11-13T06:16:06.859907+00:00",
   "manifest_role": "public_source_inventory",
   "usage": "Verify the current public source and exported toolkit against this manifest. The migration-source baseline is separate provenance; hashes are not an authenticity or privacy guarantee.",
   "acceptance_record": "docs/reader-media-acceptance.md",
@@ -20,8 +20,8 @@
       "sha256": "becb2da77bb47e103ea25d2bd1bae960faa6daa8c640cc6cc3d113aa8136bc55"
     },
     "CHANGELOG.md": {
-      "bytes": 7166,
-      "sha256": "71cbdb8eaacd20e79cd1cc4f3ea7756093a8f167adea4b2fcefd89eea9e95b0b"
+      "bytes": 7176,
+      "sha256": "2597e6029e63801735dfd7bfbe2907b5d90ae3bb9d58d78e57f247b0e9603515"
     },
     "CONTRIBUTING.md": {
       "bytes": 5121,
@@ -36,16 +36,16 @@
       "sha256": "3937426faf0bfc9ef1478008ba3ec798aa15e8a26898e517d37a8b2e1f0e73c4"
     },
     "README.md": {
-      "bytes": 9460,
-      "sha256": "0c7eb086b22b357b93860916015075d7463fd26b2ce652323a730a7054e114d1"
+      "bytes": 9559,
+      "sha256": "578b77d43e3bca5ed975ff1a5eefec765655f27b0ba871a7ba953251c5fa3e07"
     },
     "README.zh-CN.md": {
-      "bytes": 8414,
-      "sha256": "5952d5645f5abc344ee81e04b89764222a9087d2fe413430f036d82258ba9282"
+      "bytes": 8490,
+      "sha256": "ce63b4731c881eea30925df8875e8ca39a53880f626c01bec1ace0e33905a0f3"
     },
     "ROADMAP.md": {
-      "bytes": 8047,
-      "sha256": "94aec207acf7c3c24b0d40da7ade8cc73d23854b2e2d7a09e680ca6d566023ec"
+      "bytes": 7189,
+      "sha256": "b4079529547bc8be1458dddc368df6888eefa020155d5e492b7a5a303d6a4327"
     },
     "SECURITY.md": {
       "bytes": 4435,
@@ -84,8 +84,8 @@
       "sha256": "d9929575d8d8e2fadc14f1de1cde3b640f07bfe6e177771657055ce99b7c593f"
     },
     "docs/releases/v0.1.0.md": {
-      "bytes": 9852,
-      "sha256": "e4df199ea30e96dde10a325bad2c2b3fe40a40060e97978cfaedf044c0a7e207"
+      "bytes": 11168,
+      "sha256": "334c3eb4bbebc7e54c91efa60b93b05421276733c0988a0af52acab0356043b2"
     },
     "docs/releasing.md": {
       "bytes": 7884,

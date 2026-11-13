@@ -9,12 +9,11 @@ roadmap points to evidence rather than replacing it.
 
 ## Status snapshot
 
-- Early-stage, pre-release toolkit under active development. No version has been
-  released: there is no tag, GitHub Release, or published release asset.
-- **v0.1.0** is planned as an early GitHub Pre-release, not a stable release.
-  No release candidate commit, verified distribution artifact, or release-bound
-  CI evidence exists yet. Preparing documents and running the local suite do not
-  create any of these.
+- Early-stage toolkit under active development. **v0.1.0** is published as an
+  early GitHub Pre-release, not a stable release, from commit
+  `c383f1ae2bab39e4da871ead8baae992b5804c1e`. Its annotated tag, prerelease
+  metadata and three downloaded assets have been read back and verified.
+  Exact CI and artifact bindings are in [release notes](docs/releases/v0.1.0.md).
 - The public tree was created by migrating a frozen, accepted reference
   implementation; provenance and acceptance boundaries are recorded in
   [docs/migration-baseline.json](docs/migration-baseline.json) and
@@ -57,7 +56,7 @@ the authority on what was verified and what was skipped or failed.
 
 ## First-release (v0.1.0) completion criteria
 
-v0.1.0 is ready only when every item below holds for one candidate commit. No
+The v0.1.0 release required every item below to hold for one candidate commit. No
 item, and no subset, substitutes for the whole; a green suite alone is not a
 release.
 
@@ -87,15 +86,12 @@ release.
    instance installation happen only after the above, as individually approved
    operations. None is implied by documentation, local tests, or a push.
 
-Existing source-level evidence supports items 1–4 only at the scope of the
-linked records; it is not clean-distribution acceptance. The remaining work is
-to select a final candidate, verify applicable source bindings, rerun affected
-checks, and validate its actual exported artifact, including fresh-instance and
-existing-instance preservation checks. Historical model evidence applies only
-to its recorded skill/harness/engine configuration, not to every installation.
-The final-candidate CI, artifact checks and publication approvals in items 5–6
-are still pending. Record the exact SHA, Actions run and artifact checksums at
-that checkpoint, not an inferred pass from this roadmap.
+The published source commit, hosted CI and verified distribution are bound in
+the [release notes](docs/releases/v0.1.0.md). The three assets were downloaded
+after publication and compared byte-for-byte with the accepted local artifacts.
+Historical model evidence still applies only to its recorded skill/harness/engine
+configuration, not to every installation. A release does not approve a private-
+instance upgrade, and its tests do not certify later subscription-selection code.
 
 ## Later work (not v0.1.0 promises)
 
@@ -116,4 +112,4 @@ land in any release.
 
 历史模型证据只适用于其记录的技能、测试装置与引擎配置；发布验收须记录精确提交 SHA、CI 运行及发行包校验值，不能外推历史通过结果。
 
-本文件是项目唯一的发布范围与状态路线图，不含日期。当前状态：项目处于发布前早期阶段，尚无任何已发布版本；**v0.1.0** 计划作为早期 GitHub Pre-release，尚无候选提交、已验证的发行工件或针对候选的确切 CI 证据。MIT 许可与仅支持 Linux 的平台范围是既定决策。已实现并有验收记录的能力（CLI 收藏/定稿/索引/检索/审计、阅读体验、加密阅读器图片预加载、单一 Hermes 技能、验证性 CI）均以其链接的验收记录为准。v0.1.0 完成标准包括：合成新实例全流程与重复拒绝、既有实例内容保持不变、有边界的技能发现/收藏/拒存证据、公开树与导出工件无私人材料且发布默认禁用、按发布流程完成完整本地检查与精确提交的托管 CI 及工件验证；标签、Release、附件上传与私人实例安装需另行授权。核心/发布依赖拆分、可选 HTML 索引生成、适配器与通道泛化、缓存/分片/对象存储改造属于后续方向，不构成 v0.1.0 承诺。
+本文件是项目唯一的发布范围与状态路线图，不承诺日期。**v0.1.0 已作为早期 Pre-release 发布**，不是稳定版；精确提交、CI 和三项附件的回读核验见发布说明。该版本不包含研究／重大性筛选，也不代表私人实例已经升级。MIT 许可与仅支持 Linux 的平台范围不变。依赖拆分、可选 HTML 索引、适配器泛化、缓存和对象存储属于更后续方向，不构成当前发布承诺。

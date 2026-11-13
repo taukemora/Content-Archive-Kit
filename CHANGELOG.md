@@ -1,10 +1,10 @@
 # Changelog / 更新记录
 
-## Unreleased / 未发布
+## v0.1.0 — Early Pre-release / 早期预发布
 
-The first planned release is **v0.1.0**. No release date, final release commit, tag, or published asset is established by this document. See the [bilingual release-notes draft](docs/releases/v0.1.0.md) and [release procedure](docs/releasing.md).
+Published from `c383f1ae2bab39e4da871ead8baae992b5804c1e`. The [bilingual release notes](docs/releases/v0.1.0.md) bind exact-commit CI and verified download assets. This release does not include research/materiality-based selection.
 
-首个计划版本为 **v0.1.0**。本文不代表已确定发布日期、最终发布提交、标签或已公开的附件。详见[双语发布说明草稿](docs/releases/v0.1.0.md)及[发布流程](docs/releasing.md)。
+已从上述精确提交发布；[双语发布说明](docs/releases/v0.1.0.md)记录 CI 与已核验下载附件。本版本不包含研究／重大性自动订阅筛选。
 
 ### Initial toolkit / 初始工具包
 
@@ -62,6 +62,6 @@ The first planned release is **v0.1.0**. No release date, final release commit, 
 - 修正命令行入口的 Git 执行权限，确保新克隆和源码导出保留可运行的 `bin/ca`；入口内容不变。
 - 明确精确提交的 CI 门槛、工具包导出与安装验证，以及标签、Release、附件和部署的独立授权。
 
-Verification boundaries and actual results belong to [initial migration acceptance](docs/acceptance.md) and [CI readiness acceptance](docs/ci-acceptance.md). Planned release-artifact verification is not a completed release or production upgrade.
+Historical verification boundaries belong to [initial migration acceptance](docs/acceptance.md) and [CI readiness acceptance](docs/ci-acceptance.md); final release bindings belong to the [release notes](docs/releases/v0.1.0.md). Publication is not a production upgrade.
 
-验证边界及实际结果见[初始迁移验收](docs/acceptance.md)与[CI 准备验收](docs/ci-acceptance.md)。计划中的发布包验证不等于已经发布或升级生产实例。
+历史验证边界见[初始迁移验收](docs/acceptance.md)与[CI 准备验收](docs/ci-acceptance.md)，最终发布绑定见[发布说明](docs/releases/v0.1.0.md)。上游发布不等于生产实例升级。

@@ -67,9 +67,11 @@ cd tests
 
 The test suite uses synthetic fixtures only. Browser acceptance and real-instance dry runs are opt-in; see [tests/README.md](tests/README.md) for the complete local/CI checks, including dependency, syntax, example-configuration, and public-tree integrity verification.
 
-## Release readiness
+## Releases and next development
 
-The first planned version, **v0.1.0**, is intended as an early GitHub **Pre-release**, not a stable release. It has not been published. [ROADMAP.md](ROADMAP.md) tracks its scope, remaining gates and completion criteria without promising dates. See the [bilingual notes draft](docs/releases/v0.1.0.md) for intended assets and limitations, and the [release procedure](docs/releasing.md) for exact-commit CI and clean-artifact verification. Tags, Releases, asset uploads, and private-instance upgrades require separate approval.
+**[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** is published as an early GitHub **Pre-release**, not a stable release. See the [bilingual release notes](docs/releases/v0.1.0.md) for its exact source commit, CI, assets and limitations. It does **not** include research/materiality-based subscription selection.
+
+[ROADMAP.md](ROADMAP.md) tracks scope and acceptance gates without promising dates. Tags, Releases, asset uploads, and private-instance upgrades remain separate approval checkpoints; upstream publication never changes an instance's collection behavior automatically.
 
 ## Hermes skill
 

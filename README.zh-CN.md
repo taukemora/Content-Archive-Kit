@@ -67,9 +67,11 @@ cd tests
 
 全部测试使用合成 fixtures。浏览器验收和真实实例 dry run 需要显式开启；完整的本地/CI 检查（包括依赖、语法、示例配置和公开树完整性）见 [tests/README.md](tests/README.md)。
 
-## 发布准备
+## 已发布版本与后续开发
 
-首个计划版本 **v0.1.0** 拟作为早期 GitHub **Pre-release**，不作为稳定版，目前尚未发布。[ROADMAP.md](ROADMAP.md)统一记录首版范围、剩余门槛和完成判据，不承诺日期。计划产物及限制见[双语发布说明草稿](docs/releases/v0.1.0.md)，精确提交的 CI 与干净发行包验收见[发布流程](docs/releasing.md)。标签、Release、附件上传及私人实例升级均须另行授权。
+**[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** 已作为早期 GitHub **Pre-release** 发布，不是稳定版。精确源提交、CI、附件与限制见[双语发布说明](docs/releases/v0.1.0.md)。该版本**不包含研究／重大性自动订阅筛选**。
+
+[ROADMAP.md](ROADMAP.md)记录范围与验收门槛，不承诺日期。标签、Release、附件上传及私人实例升级仍是独立授权节点；上游发布不会自动改变实例采集行为。
 
 ## Hermes 技能
 
