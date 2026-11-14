@@ -2,9 +2,15 @@
 
 ## Unreleased / 未发布
 
-The next release candidate, **v0.2.0**, is **not published yet**; see the candidate notes in [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md). The following is implemented on this development branch, separately from published v0.1.0:
+No unreleased functional changes recorded yet.
 
-下一个候选版本 **v0.2.0** **尚未发布**；候选说明见 [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)。以下能力已在本开发分支实现，独立于已发布的 v0.1.0：
+暂无未发布的功能变更记录。
+
+## v0.2.0 — Early Pre-release / 早期预发布
+
+Published from `4b3ddcfa376a870b784736c5a7a35edec7370d96`. The authoritative public [GitHub Release](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.2.0) binds exact-commit CI and verified download assets; local [notes](docs/releases/v0.2.0.md) describe the preparation snapshot. Adds opt-in subscription selection (disabled by default) and live retry-queue digest reporting.
+
+已从上述精确提交发布；权威的公开 [GitHub Release](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.2.0) 记录精确提交 CI 与已核验下载附件，本地[说明](docs/releases/v0.2.0.md)描述准备快照。本版本新增可选的入库前订阅筛选（默认关闭）与读取实时待补队列的日报。
 
 - Optional pre-archive subscription selection ([contract](docs/subscription-selection.md)): an opt-in, disabled-by-default `selection.yaml` policy (`schema 1`, `enforce` mode only) with metadata/body-evidence `accept`/`reject`/`defer` decisions, per-run judgment and archive budgets, a single structurally validated ledger, bound preview caches, explicit reassessment with bounded attempts and pending-queue capacity refusal, retention/cleanup, admission enforcement before any automatic archive write, and manual-save compatibility — an invalid policy or ledger never blocks a manual save and is never silently repaired.
 - Daily reconciliation and digest: each unique candidate is classified once, incomplete accounting fails the checkpoint, and the report distinguishes execution states (`budget_wait`, `judgment_wait`, `execution_expired`). Zero-new reporting keeps historical open work visible. A pending-queue repair reads the live retry queue for the latest fetch run or an overview without `--run`, omits the line on a valid zero, keeps the fetch-time snapshot when the queue file is absent, reports an unreadable queue as unknown, and rendering never mutates state.

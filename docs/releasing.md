@@ -1,10 +1,13 @@
 # Release procedure
 
 This is a maintainer checklist, not an automatic release pipeline. It
-generalizes to any approved candidate version; the current candidate is
-**v0.2.0** (see [its draft notes](releases/v0.2.0.md)), which is not published.
-Preparing these files does not create a tag, GitHub Release, or published
-asset. Scope and remaining gates live in [ROADMAP.md](../ROADMAP.md).
+generalizes to any approved candidate version. **v0.2.0 is published as an
+early Pre-release**, not a stable release; its public
+[Release](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.2.0)
+records the source commit, CI and verified download assets. The in-tree
+[candidate notes](releases/v0.2.0.md) remain a historical preparation snapshot.
+Preparing documentation alone does not create a tag, Release or asset.
+Scope and future work live in [ROADMAP.md](../ROADMAP.md).
 
 ## Separate authorization gates
 
@@ -26,6 +29,11 @@ A CI badge may be added only after a genuine workflow pass. It is navigation/sta
 ## 2. Export the approved commit locally
 
 Do not package the working directory with a recursive copy: ignored or untracked private files could enter the archive. Export only the reviewed Git tree. Run this **only at the separately approved artifact-preparation checkpoint**, with a clean checkout at the chosen commit:
+
+The version below is the **historical v0.2.0 example**, not an instruction to
+rebuild that published release from the current branch. For a future release,
+use a separately approved, unpublished version and its exact accepted commit.
+Post-release documentation updates do not move existing tags or replace assets.
 
 ```bash
 CANDIDATE="$(git rev-parse --verify 'HEAD^{commit}')"
@@ -59,9 +67,10 @@ The source tree includes tests, examples, documentation, and the canonical umbre
 
 ## 4. Tag, publish, and read back — only with separate approvals
 
-- Review the approved candidate's release notes draft (for the current
-  candidate, [releases/v0.2.0.md](releases/v0.2.0.md)) and `CHANGELOG.md`;
-  finalize only claims supported by the candidate's evidence.
+- Review the approved candidate's release notes draft and `CHANGELOG.md`;
+  finalize only claims supported by the candidate's evidence. The
+  [v0.2.0 candidate notes](releases/v0.2.0.md) are a historical example,
+  not a draft for a new release.
 - With tag authorization, create the agreed tag at the exact accepted commit; pushing the tag is a remote operation that must also be authorized. Read back and compare the tag's peeled commit. Do not silently move an existing tag.
 - With GitHub Release authorization, create the Release for the approved existing tag. If the approved candidate is an early pre-release, explicitly select **Pre-release** and do not mark it as the latest stable release; read back these fields rather than relying on defaults. Draft Release creation is still an external write and needs approval.
 - With asset-upload authorization, attach only the verified toolkit archive and its approved provenance/checksum sidecars. Read back the Release target and asset inventory; download and hash the uploaded archive before claiming delivery.

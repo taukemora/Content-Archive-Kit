@@ -69,9 +69,11 @@ The test suite uses synthetic fixtures only. Browser acceptance and real-instanc
 
 ## Releases and next development
 
-**[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** is published as an early GitHub **Pre-release**, not a stable release. See the [bilingual release notes](docs/releases/v0.1.0.md) for its exact source commit, CI, assets and limitations. It does **not** include subscription selection.
+**[v0.2.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.2.0)** is published as an early GitHub **Pre-release**, not a stable release. It adds optional pre-archive subscription selection — an opt-in feature, disabled by default — plus honest digest reporting of the live retry queue. The authoritative public [v0.2.0 Release](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.2.0) binds its exact source commit (`4b3ddcfa376a870b784736c5a7a35edec7370d96`), successful CI run, and verified download assets; the local [notes](docs/releases/v0.2.0.md) remain a historical preparation snapshot. The design and implementation contract is described in [docs/subscription-selection.md](docs/subscription-selection.md).
 
-The next release candidate, **v0.2.0**, is **not published yet**. It adds optional pre-archive subscription selection — an opt-in feature, disabled by default — plus honest digest reporting of the live retry queue. Its [candidate notes](docs/releases/v0.2.0.md) and the [design and implementation status](docs/subscription-selection.md) are separate from the published v0.1.0. [ROADMAP.md](ROADMAP.md) tracks scope and acceptance gates without promising dates. Tags, Releases, asset uploads, and instance upgrades remain separate approval checkpoints; upstream changes never automatically install or activate anything in an existing deployment — activation requires explicit instance configuration and verification.
+Earlier **[v0.1.0](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.1.0)** ([release notes](docs/releases/v0.1.0.md)) does **not** include subscription selection.
+
+[ROADMAP.md](ROADMAP.md) tracks scope and future work without promising dates. Tags, Releases, asset uploads, and instance upgrades remain separate approval checkpoints; upstream changes never automatically install or activate anything in an existing deployment — activation requires explicit instance configuration and verification.
 
 ## Hermes skill
 

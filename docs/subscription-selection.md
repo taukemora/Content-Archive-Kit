@@ -1,8 +1,12 @@
 # Optional subscription selection
 
-Status: implemented in this tree as an opt-in, disabled-by-default feature, the
-main capability of the next release candidate **v0.2.0**, which is not published
-(see [its notes](releases/v0.2.0.md)). Bounded local repairs cover current-run
+Status: published in **v0.2.0**, an early **Pre-release**, as an opt-in,
+disabled-by-default feature. The public [Release](https://github.com/taukemora/Content-Archive-Kit/releases/tag/v0.2.0)
+records the source commit, CI and verified download assets; the in-tree
+[candidate notes](releases/v0.2.0.md) remain a historical preparation snapshot.
+Publication does not install or enable selection in an existing archive;
+activation requires explicit instance configuration and verification.
+Bounded repairs cover current-run
 membership, authoritative counter/identity validation, atomic reassessment
 capacity, outstanding-work age, evicted-work overflow, seen-proof recovery,
 mixed-result digest reporting and live pending-queue counting in the digest.
